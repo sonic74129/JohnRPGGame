@@ -1322,23 +1322,12 @@ export class BethanyScene extends Phaser.Scene {
   private async runTombSequence(): Promise<void> {
     await this.cutscenes.run(async () => {
       this.story.arriveAtTomb();
-      this.positionTombParty();
       this.createTombElements();
       this.audio.setState("dialogue", 2200);
       this.updateObjective();
       await this.showDialogue(DIALOGUES.tomb);
       await this.revealLazarus();
     });
-  }
-
-  private positionTombParty(): void {
-    this.setActorPosition("jesus", 1840, 520);
-    this.setActorPosition("martha", 1760, 580);
-    this.setActorPosition("mary", 1840, 620);
-    this.setActorPosition("mourner", 1700, 650);
-    this.setActorPosition("guide", 1900, 590);
-    this.player.setPosition(1760, 700);
-    this.cameras.main.centerOn(this.player.x, this.player.y);
   }
 
   private resetForMary(): void {
@@ -1369,16 +1358,58 @@ export class BethanyScene extends Phaser.Scene {
   private async transitionToTombRoad(): Promise<void> {
     await this.cutscenes.run(async () => {
       this.ui.showNotice("跟随带路的人，沿路前往坟墓。");
-      void this.moveActorAlong(
-        "guide",
-        [
-          { x: 1450, y: 620 },
-          { x: 1600, y: 500 },
-          { x: 1800, y: 430 },
-          WORLD_LANDMARKS.tombEntrance,
-        ],
-        () => this.completedJourneys.add("guide"),
-      );
+      const tombRoute = [
+        { x: 1450, y: 620 },
+        { x: 1600, y: 500 },
+        { x: 1800, y: 430 },
+      ] as const;
+      void Promise.all([
+        this.moveActorAlong(
+          "guide",
+          [...tombRoute, { x: 1900, y: 590 }],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "jesus",
+          [
+            { x: 1370, y: 900 },
+            { x: 1450, y: 680 },
+            ...tombRoute,
+            { x: 1840, y: 520 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "martha",
+          [
+            { x: 1280, y: 900 },
+            { x: 1400, y: 700 },
+            ...tombRoute,
+            { x: 1760, y: 580 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "mary",
+          [
+            { x: 1320, y: 950 },
+            { x: 1440, y: 730 },
+            ...tombRoute,
+            { x: 1840, y: 620 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "mourner",
+          [
+            { x: 1360, y: 990 },
+            { x: 1480, y: 760 },
+            ...tombRoute,
+            { x: 1700, y: 650 },
+          ],
+          () => undefined,
+        ),
+      ]).then(() => this.completedJourneys.add("guide"));
     });
   }
 
