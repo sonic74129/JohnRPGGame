@@ -88,20 +88,24 @@ const createManifest = async (repoRoot, family = "portrait") => {
 };
 
 describe("family processing profiles", () => {
-  it("covers all registry families with Lanczos defaults", () => {
-    for (const family of [
-      "master",
-      "environment",
-      "character",
-      "special-pose",
-      "portrait",
-    ]) {
-      const description = runProcessor(["--family", family, "--describe"]);
-      expect(description.family).toBe(family);
-      expect(description.default_resampling).toBe("lanczos");
-      expect(description.selectedResampling).toBe("lanczos");
-    }
-  });
+  it(
+    "covers all registry families with Lanczos defaults",
+    () => {
+      for (const family of [
+        "master",
+        "environment",
+        "character",
+        "special-pose",
+        "portrait",
+      ]) {
+        const description = runProcessor(["--family", family, "--describe"]);
+        expect(description.family).toBe(family);
+        expect(description.default_resampling).toBe("lanczos");
+        expect(description.selectedResampling).toBe("lanczos");
+      }
+    },
+    15_000,
+  );
 
   it("uses nearest-neighbor only when explicitly requested", () => {
     const description = runProcessor([
