@@ -36,6 +36,7 @@ import {
 } from "./NavigationGrid";
 import { NpcPathController, type NpcPathAdapter } from "./NpcPathController";
 import { PlayerController } from "./PlayerController";
+import { ProximityTrigger } from "./ProximityTrigger";
 import { StoryEngine } from "./StoryEngine";
 import { Trigger } from "./Trigger";
 import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
@@ -95,6 +96,8 @@ const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
       { x: 0, y: 0, width: 65, height: 800 },
       { x: 1035, y: 0, width: 65, height: 800 },
       { x: 0, y: 735, width: 870, height: 65 },
+      { x: 105, y: 80, width: 315, height: 225 },
+      { x: 490, y: 250, width: 300, height: 215 },
     ],
     playerSpawn: { x: 530, y: 665 },
     actors: [
@@ -249,8 +252,10 @@ export class BethanyScene extends Phaser.Scene {
   private movementPath: Point[] = [];
   private pendingActor?: ActorId;
   private nearestActor?: ActorId;
+  private openingTrigger?: ProximityTrigger<StoryStage>;
   private houseDoor?: Trigger<StoryStage>;
   private started = false;
+  private controlReadyAt = 0;
   private paused = false;
   private stone?: Phaser.GameObjects.Image;
   private lazarus?: Phaser.GameObjects.Sprite;
@@ -333,6 +338,10 @@ export class BethanyScene extends Phaser.Scene {
       lazarusTextureKey("wrapped-idle"),
       lazarusAssetPath("wrapped-idle"),
     );
+    this.load.image(
+      "sprite-lazarus-sick",
+      "assets/art/sprites/lazarus/sick.png",
+    );
   }
 
   create(): void {
@@ -381,6 +390,7 @@ export class BethanyScene extends Phaser.Scene {
 
     this.updateMovement();
     this.updateInteractionTarget();
+    this.tryOpeningTrigger();
     this.tryHouseDoor();
     this.updateDepths();
   }
@@ -647,8 +657,10 @@ export class BethanyScene extends Phaser.Scene {
     this.movementPath = [];
     this.pendingActor = undefined;
     this.nearestActor = undefined;
+    this.openingTrigger = undefined;
     this.houseDoor = undefined;
     this.started = false;
+    this.controlReadyAt = 0;
     this.paused = false;
     this.stone = undefined;
     this.lazarus = undefined;
@@ -679,6 +691,8 @@ export class BethanyScene extends Phaser.Scene {
     this.nearestActor = undefined;
     if (area === "tomb-garden") {
       this.createTombElements();
+    } else if (area === "lazarus-house") {
+      this.createHouseStoryElements();
     }
     this.cameras.main.centerOn(this.player.x, this.player.y);
   }
@@ -772,6 +786,20 @@ export class BethanyScene extends Phaser.Scene {
     this.decorations = [entrance, this.stone, this.lazarus];
   }
 
+  private createHouseStoryElements(): void {
+    const sickLazarus = this.add
+      .sprite(285, 215, "sprite-lazarus-sick")
+      .setDisplaySize(150, 140)
+      .setDepth(250);
+    this.decorations.push(sickLazarus);
+    this.openingTrigger = new ProximityTrigger({
+      stage: "opening",
+      position: { x: 285, y: 255 },
+      radius: 155,
+      handler: () => this.runOpeningEncounter(),
+    });
+  }
+
   private clearDecorations(): void {
     for (const decoration of this.decorations) {
       decoration.destroy();
@@ -779,6 +807,7 @@ export class BethanyScene extends Phaser.Scene {
     this.decorations = [];
     this.stone = undefined;
     this.lazarus = undefined;
+    this.openingTrigger = undefined;
   }
 
   private configureInput(): void {
@@ -828,23 +857,19 @@ export class BethanyScene extends Phaser.Scene {
       return;
     }
     this.started = true;
+    this.controlReadyAt = this.time.now + 500;
+    this.stopPlayerMovement();
     this.ui.showGameHud();
     this.updateObjective();
-    void this.cutscenes.run(async () => {
-      this.audio.setState("dialogue", 1200);
-      this.cameras.main.fadeIn(500, 20, 18, 14);
-      await this.tweenPlayer(10, -8, 550);
-      await this.showDialogue(DIALOGUES.opening);
-      this.story.completeOpening();
-      this.audio.setState("exploration", 2400);
-      this.updateObjective();
-      this.ui.showNotice("计分已经开始。走到门口，沿道路找到耶稣，并准确传达口信。");
-    });
+    this.audio.setState("exploration", 1200);
+    this.cameras.main.fadeIn(500, 20, 18, 14);
+    this.ui.showNotice("先走近床边，查看患病的拉撒路。");
   }
 
   private canAcceptPlayerInput(): boolean {
     return (
       this.started &&
+      this.time.now >= this.controlReadyAt &&
       !this.paused &&
       !this.ui.isBlockingOpen() &&
       !this.playerController.isLocked
@@ -950,7 +975,7 @@ export class BethanyScene extends Phaser.Scene {
         stage: "deliverMessage",
         handler: () =>
           this.cutscenes.run(async () => {
-          this.enterWorld();
+            this.enterWorld();
             this.cameras.main.fadeIn(350, 20, 18, 14);
             this.ui.showNotice("沿道路前进，找到耶稣。");
           }),
@@ -959,6 +984,36 @@ export class BethanyScene extends Phaser.Scene {
     const houseDoor = this.houseDoor;
     void houseDoor.tryActivate(this.story.stage).catch(() => {
       this.ui.showNotice("转场未完成，请再次靠近门口。");
+    });
+  }
+
+  private tryOpeningTrigger(): void {
+    const trigger = this.openingTrigger;
+    if (!trigger || this.story.stage !== "opening") {
+      return;
+    }
+    void trigger
+      .tryActivate("opening", { x: this.player.x, y: this.player.y })
+      .catch(() => {
+        this.ui.showNotice("床边剧情未完成，请再次靠近拉撒路。");
+      });
+  }
+
+  private async runOpeningEncounter(): Promise<void> {
+    await this.cutscenes.run(async () => {
+      this.stopPlayerMovement();
+      this.audio.setState("dialogue", 1200);
+      this.cameras.main.stopFollow();
+      this.cameras.main.pan(285, 255, 400, "Sine.easeInOut");
+      await this.showDialogue(DIALOGUES.opening);
+      this.story.completeOpening();
+      this.audio.setState("exploration", 2400);
+      this.updateObjective();
+      this.cameras.main.pan(this.player.x, this.player.y, 350, "Sine.easeInOut");
+      this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+      this.ui.showNotice(
+        "计分已经开始。走到门口，沿道路找到耶稣，并准确传达口信。",
+      );
     });
   }
 
@@ -1359,22 +1414,6 @@ export class BethanyScene extends Phaser.Scene {
         if (line.music) {
           this.audio.setState(line.music, this.musicTransitionDuration(line.music));
         }
-      });
-    });
-  }
-
-  private tweenPlayer(offsetX: number, offsetY: number, duration: number): Promise<void> {
-    const x = this.player.x;
-    const y = this.player.y;
-    return new Promise((resolve) => {
-      this.tweens.add({
-        targets: this.player,
-        x: x + offsetX,
-        y: y + offsetY,
-        duration,
-        yoyo: true,
-        ease: "Sine.easeInOut",
-        onComplete: () => resolve(),
       });
     });
   }

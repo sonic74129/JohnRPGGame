@@ -390,7 +390,7 @@ export const QUESTIONS: Record<
 
 export const OBJECTIVES: Record<StoryStage, Objective> = {
   opening: {
-    text: "了解拉撒路患病和姐妹差人报信的背景。",
+    text: "走近床边，查看患病的拉撒路。",
     reference: "约翰福音 11:1–3",
   },
   deliverMessage: {
