@@ -89,5 +89,34 @@
     "startedAt": "2026-08-01T15:53:29.107135Z",
     "completedAt": "2026-08-01T15:53:29.906684Z",
     "failureReason": null
+  },
+  "runtimeMapping": {
+    "columns": [
+      "front",
+      "back",
+      "left",
+      "right"
+    ],
+    "rows": [
+      "mourner-man",
+      "mourner-woman",
+      "guide",
+      "older-witness"
+    ]
+  },
+  "normalization": {
+    "componentCount": 16,
+    "sheetSize": [
+      532,
+      776
+    ],
+    "cellSize": [
+      133,
+      194
+    ],
+    "perFrameScaling": false,
+    "mirroredFrames": [],
+    "backgroundRemoval": "Deterministic background-to-alpha cleanup from the approved source.",
+    "alignment": "Approved figures retain source scale, are centered horizontally, and share a bottom baseline with eight transparent pixels."
   }
 }

@@ -83,5 +83,36 @@
     "startedAt": "2026-08-01T15:31:19.449085Z",
     "completedAt": "2026-08-01T15:31:20.237282Z",
     "failureReason": null
+  },
+  "runtimeMapping": {
+    "columns": [
+      "front",
+      "back",
+      "left",
+      "right"
+    ],
+    "rows": [
+      "thomas",
+      "older-disciple",
+      "younger-disciple"
+    ],
+    "ignoredSourceColumns": [
+      4
+    ]
+  },
+  "normalization": {
+    "componentCount": 12,
+    "sheetSize": [
+      512,
+      747
+    ],
+    "cellSize": [
+      128,
+      249
+    ],
+    "perFrameScaling": false,
+    "mirroredFrames": [],
+    "backgroundRemoval": "Deterministic background-to-alpha cleanup from the approved source.",
+    "alignment": "Approved figures retain source scale, are centered horizontally, and share a bottom baseline with eight transparent pixels."
   }
 }

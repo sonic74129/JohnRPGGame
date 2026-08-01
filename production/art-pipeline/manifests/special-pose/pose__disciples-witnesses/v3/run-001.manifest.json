@@ -84,5 +84,35 @@
     "startedAt": "2026-08-01T16:24:23.891363Z",
     "completedAt": "2026-08-01T16:24:24.564839Z",
     "failureReason": null
+  },
+  "runtimeMapping": {
+    "columns": 3,
+    "rows": 3,
+    "frames": [
+      "mourner-care",
+      "older-witness-rising",
+      "mourner-kneeling-grief",
+      "thomas-listening",
+      "younger-disciple-following",
+      "older-disciple-praying",
+      "guide-calling",
+      "stone-moving",
+      "restrained-group-reaction"
+    ]
+  },
+  "normalization": {
+    "componentCount": 9,
+    "sheetSize": [
+      1167,
+      804
+    ],
+    "cellSize": [
+      389,
+      268
+    ],
+    "perFrameScaling": false,
+    "mirroredFrames": [],
+    "backgroundRemoval": "Deterministic background-to-alpha cleanup from the approved source.",
+    "alignment": "Each approved row-major action is cropped independently, centered without scaling, and bottom-aligned with eight transparent pixels."
   }
 }

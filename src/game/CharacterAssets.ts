@@ -1,0 +1,249 @@
+export const FACINGS = ["front", "back", "left", "right"] as const;
+export type Facing = (typeof FACINGS)[number];
+
+export const WALK_POSES = ["idle", "step-left", "step-right"] as const;
+export type WalkPose = (typeof WALK_POSES)[number];
+
+export type CoreCharacter = "messenger" | "martha" | "mary" | "jesus";
+export type DiscipleCharacter =
+  | "thomas"
+  | "older-disciple"
+  | "younger-disciple";
+export type WitnessCharacter =
+  | "mourner-man"
+  | "mourner-woman"
+  | "guide"
+  | "older-witness";
+export type SupportingCharacter = DiscipleCharacter | WitnessCharacter;
+
+interface SheetAsset {
+  readonly key: string;
+  readonly path: string;
+  readonly frameWidth: number;
+  readonly frameHeight: number;
+}
+
+interface DirectionalSheetAsset extends SheetAsset {
+  readonly rows: readonly Facing[];
+  readonly sourceMirroredFacings: readonly Facing[];
+}
+
+export const DIRECTIONAL_CHARACTER_SHEETS: Readonly<
+  Record<CoreCharacter, DirectionalSheetAsset>
+> = {
+  messenger: {
+    key: "character-messenger",
+    path: "assets/art/characters/core/character__messenger/v3/run-001/character__messenger.png",
+    frameWidth: 160,
+    frameHeight: 208,
+    rows: ["front", "back", "right", "left"],
+    sourceMirroredFacings: ["left"],
+  },
+  martha: {
+    key: "character-martha",
+    path: "assets/art/characters/core/character__martha/v3/run-001/character__martha.png",
+    frameWidth: 96,
+    frameHeight: 192,
+    rows: ["front", "back", "right", "left"],
+    sourceMirroredFacings: [],
+  },
+  mary: {
+    key: "character-mary",
+    path: "assets/art/characters/core/character__mary/v3/run-001/character__mary.png",
+    frameWidth: 120,
+    frameHeight: 224,
+    rows: ["front", "back", "right", "left"],
+    sourceMirroredFacings: ["left"],
+  },
+  jesus: {
+    key: "character-jesus",
+    path: "assets/art/characters/core/character__jesus/v3/run-001/character__jesus.png",
+    frameWidth: 96,
+    frameHeight: 200,
+    rows: ["front", "back", "right", "left"],
+    sourceMirroredFacings: ["left"],
+  },
+};
+
+const indexOf = (values: readonly string[], value: string): number => {
+  const index = values.indexOf(value);
+  if (index < 0) {
+    throw new Error(`${value} is not present in the asset contract.`);
+  }
+  return index;
+};
+
+export const directionalFrame = (
+  character: CoreCharacter,
+  facing: Facing,
+  pose: WalkPose,
+): number => {
+  const sheet = DIRECTIONAL_CHARACTER_SHEETS[character];
+  return indexOf(sheet.rows, facing) * WALK_POSES.length + indexOf(WALK_POSES, pose);
+};
+
+interface SupportingSheetAsset extends SheetAsset {
+  readonly rows: readonly SupportingCharacter[];
+}
+
+export const SUPPORTING_CHARACTER_SHEETS = {
+  disciples: {
+    key: "character-disciples",
+    path: "assets/art/character/character__disciples/v2/run-001/character__disciples.png",
+    frameWidth: 128,
+    frameHeight: 249,
+    rows: ["thomas", "older-disciple", "younger-disciple"],
+  },
+  witnesses: {
+    key: "character-witnesses",
+    path: "assets/art/character/character__witnesses/v2/run-001/character__witnesses.png",
+    frameWidth: 133,
+    frameHeight: 194,
+    rows: ["mourner-man", "mourner-woman", "guide", "older-witness"],
+  },
+} as const satisfies Record<string, SupportingSheetAsset>;
+
+export const supportingSheet = (
+  character: SupportingCharacter,
+): (typeof SUPPORTING_CHARACTER_SHEETS)[keyof typeof SUPPORTING_CHARACTER_SHEETS] =>
+  character === "thomas" ||
+  character === "older-disciple" ||
+  character === "younger-disciple"
+    ? SUPPORTING_CHARACTER_SHEETS.disciples
+    : SUPPORTING_CHARACTER_SHEETS.witnesses;
+
+export const supportingFrame = (
+  character: SupportingCharacter,
+  facing: Facing,
+): number => {
+  const sheet = supportingSheet(character);
+  return (
+    indexOf(sheet.rows, character) * FACINGS.length + indexOf(FACINGS, facing)
+  );
+};
+
+export const LAZARUS_POSES = [
+  "sick",
+  "wrapped-idle",
+  "wrapped-step",
+  "restored",
+] as const;
+export type LazarusPose = (typeof LAZARUS_POSES)[number];
+
+export const LAZARUS_SHEET = {
+  key: "character-lazarus",
+  path: "assets/art/characters/core/character__lazarus/v1/run-001/character__lazarus.png",
+  frameWidth: 400,
+  frameHeight: 544,
+} as const satisfies SheetAsset;
+
+export const lazarusFrame = (pose: LazarusPose): number =>
+  indexOf(LAZARUS_POSES, pose);
+
+export const CORE_POSES = {
+  martha: [
+    "care",
+    "worried-idle",
+    "purposeful-walk",
+    "quiet-call",
+    "calm-conviction",
+  ],
+  mary: [
+    "care",
+    "urgent-rise",
+    "quick-walk",
+    "kneeling-grief",
+    "quiet-weeping",
+  ],
+  jesus: [
+    "listening",
+    "calm-speaking",
+    "visible-grief",
+    "restrained-prayer",
+    "authoritative-call",
+  ],
+} as const;
+
+export type CorePoseCharacter = keyof typeof CORE_POSES;
+export type CorePose =
+  (typeof CORE_POSES)[CorePoseCharacter][number];
+
+export const CORE_POSE_SHEETS: Readonly<
+  Record<CorePoseCharacter, SheetAsset>
+> = {
+  martha: {
+    key: "pose-martha",
+    path: "assets/art/characters/core/pose__martha/v2/run-001/pose__martha.png",
+    frameWidth: 280,
+    frameHeight: 552,
+  },
+  mary: {
+    key: "pose-mary",
+    path: "assets/art/characters/core/pose__mary/v2/run-001/pose__mary.png",
+    frameWidth: 260,
+    frameHeight: 456,
+  },
+  jesus: {
+    key: "pose-jesus",
+    path: "assets/art/characters/core/pose__jesus/v2/run-001/pose__jesus.png",
+    frameWidth: 304,
+    frameHeight: 576,
+  },
+};
+
+export const corePoseFrame = (
+  character: CorePoseCharacter,
+  pose: CorePose,
+): number => indexOf(CORE_POSES[character], pose);
+
+export const SUPPORTING_ACTIONS = [
+  "mourner-care",
+  "older-witness-rising",
+  "mourner-kneeling-grief",
+  "thomas-listening",
+  "younger-disciple-following",
+  "older-disciple-praying",
+  "guide-calling",
+  "stone-moving",
+  "restrained-group-reaction",
+] as const;
+export type SupportingAction = (typeof SUPPORTING_ACTIONS)[number];
+
+export const SUPPORTING_ACTION_SHEET = {
+  key: "pose-disciples-witnesses",
+  path: "assets/art/special-pose/pose__disciples-witnesses/v3/run-001/pose__disciples-witnesses.png",
+  frameWidth: 389,
+  frameHeight: 268,
+} as const satisfies SheetAsset;
+
+export const supportingActionFrame = (action: SupportingAction): number =>
+  indexOf(SUPPORTING_ACTIONS, action);
+
+export const PORTRAIT_ASSETS = {
+  "martha-worried":
+    "assets/art/portrait/portrait__martha-worried/v1/run-001/portrait__martha-worried.png",
+  "martha-grieving":
+    "assets/art/portrait/portrait__martha-grieving/v1/run-001/portrait__martha-grieving.png",
+  "martha-faith":
+    "assets/art/portrait/portrait__martha-faith/v1/run-001/portrait__martha-faith.png",
+  "mary-worried":
+    "assets/art/portrait/portrait__mary-worried/v1/run-001/portrait__mary-worried.png",
+  "mary-urgent":
+    "assets/art/portrait/portrait__mary-urgent/v1/run-001/portrait__mary-urgent.png",
+  "mary-grieving":
+    "assets/art/portrait/portrait__mary-grieving/v1/run-001/portrait__mary-grieving.png",
+  "jesus-listening":
+    "assets/art/portrait/portrait__jesus-listening/v1/run-001/portrait__jesus-listening.png",
+  "jesus-declaration":
+    "assets/art/portrait/portrait__jesus-declaration/v1/run-001/portrait__jesus-declaration.png",
+  "jesus-weeping":
+    "assets/art/portrait/portrait__jesus-weeping/v1/run-001/portrait__jesus-weeping.png",
+  messenger:
+    "assets/art/portrait/portrait__messenger/v1/run-001/portrait__messenger.png",
+  thomas:
+    "assets/art/portrait/portrait__thomas/v1/run-001/portrait__thomas.png",
+  witness:
+    "assets/art/portrait/portrait__witness/v1/run-001/portrait__witness.png",
+} as const;
+
+export type PortraitKey = keyof typeof PORTRAIT_ASSETS;
