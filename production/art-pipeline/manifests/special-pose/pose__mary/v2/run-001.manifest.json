@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "pose.mary",
+    "family": "special-pose",
+    "purpose": "Source sheet of Mary's restrained in-map care, urgency, movement, kneeling and grief actions for playable dialogue staging.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.mary",
+      "environment.house-base"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:58:23.993Z",
+    "updatedAt": "2026-08-01T17:00:18.773Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/special-pose/pose__mary/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/special-pose/pose__mary/v2/run-001",
+    "selectedSource": "production/art-source/characters/core/pose__mary/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/pose__mary/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/special-pose/pose__mary/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__mary/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:59:02.606Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__mary/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:59:41.400Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/special-pose/pose__mary/v2/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/characters/core/pose__mary/v2/run-001-selected.png",
+    "reason": "Candidate 01 scores 66/70: exact ordered five-pose sheet, stable approved Mary face and muted-red outer linen with sand underlayers, strongest distinction across care, urgent rise, quick walk, kneeling grief and quiet weeping, consistent scale and no bed, scenery, text or effects.",
+    "selectedAt": "2026-08-01T17:00:18.773Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "care",
+      "urgent-rise",
+      "quick-walk",
+      "kneeling-grief",
+      "quiet-weeping"
+    ],
+    "rows": [
+      "pose"
+    ]
+  },
+  "normalization": {
+    "componentCount": 5,
+    "sheetSize": [
+      1300,
+      456
+    ],
+    "cellSize": [
+      260,
+      456
+    ],
+    "groundBaseline": 447,
+    "perFrameScaling": false,
+    "backgroundRemoval": "Flat dark-gray background converted to antialiased alpha; partial-alpha RGB unmatted against the measured background and disconnected remnants removed while preserving each primary silhouette.",
+    "alignment": "All five unscaled poses are horizontally centered and translated so their alpha>=32 bottom lands at cell y=447."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/pose__mary/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/pose__mary/v2/run-001/pose__mary.png"
+    ],
+    "startedAt": "2026-08-01T17:00:41.242371Z",
+    "completedAt": "2026-08-01T17:00:41.825262Z",
+    "failureReason": null
+  }
+}
