@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "pose.martha",
+    "family": "special-pose",
+    "purpose": "Source sheet of Martha's restrained in-map care, concern, purposeful movement, calling and conviction actions for playable dialogue staging.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.martha",
+      "environment.house-base"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:49:30.296Z",
+    "updatedAt": "2026-08-01T16:51:20.314Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/special-pose/pose__martha/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/special-pose/pose__martha/v2/run-001",
+    "selectedSource": "production/art-source/characters/core/pose__martha/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/pose__martha/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/special-pose/pose__martha/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__martha/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:50:06.847Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__martha/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:50:42.852Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/special-pose/pose__martha/v2/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/characters/core/pose__martha/v2/run-001-selected.png",
+    "reason": "Candidate 01 scores 66/70: exact ordered five-pose sheet, approved stable Martha face and dark-plum clothing, strongest distinction across care, worried idle, purposeful walk, quiet call and calm conviction, consistent body scale and no bed, scenery, text or effects.",
+    "selectedAt": "2026-08-01T16:51:20.314Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "care",
+      "worried-idle",
+      "purposeful-walk",
+      "quiet-call",
+      "calm-conviction"
+    ],
+    "rows": [
+      "pose"
+    ]
+  },
+  "normalization": {
+    "componentCount": 5,
+    "sheetSize": [
+      1400,
+      552
+    ],
+    "cellSize": [
+      280,
+      552
+    ],
+    "groundBaseline": 543,
+    "perFrameScaling": false,
+    "backgroundRemoval": "Flat warm background converted to antialiased alpha; partial-alpha RGB unmatted against the measured background and disconnected remnants removed while preserving each primary silhouette.",
+    "alignment": "All five unscaled poses are horizontally centered and translated so their alpha>=32 bottom lands at cell y=543."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/pose__martha/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/pose__martha/v2/run-001/pose__martha.png"
+    ],
+    "startedAt": "2026-08-01T16:51:41.610273Z",
+    "completedAt": "2026-08-01T16:51:42.227778Z",
+    "failureReason": null
+  }
+}
