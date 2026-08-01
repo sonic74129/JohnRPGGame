@@ -582,13 +582,13 @@ export const VERSE_BEATS: readonly VerseBeat[] = [
         actorIds: ["martha"],
         verseKeys: ["john11:20"],
         kind: "scripture-narration",
-        exactExcerpt: "马大听见耶稣来了，就出去迎接他。",
+        exactExcerpt: "马大听见耶稣来了，就出去迎接他",
       },
       {
         actorIds: ["mary"],
         verseKeys: ["john11:20"],
         kind: "scripture-narration",
-        exactExcerpt: "马利亚却仍然坐在家里。",
+        exactExcerpt: "马利亚却仍然坐在家里",
       },
     ],
   },
@@ -780,7 +780,7 @@ export const VERSE_BEATS: readonly VerseBeat[] = [
         actorIds: ["mary"],
         verseKeys: ["john11:29"],
         kind: "scripture-narration",
-        exactExcerpt: "马利亚听见了，就急忙起来。",
+        exactExcerpt: "马利亚听见了，就急忙起来",
       },
       {
         actorIds: ["mourner", "mourner-woman", "guide", "older-witness"],
@@ -889,6 +889,12 @@ export const VERSE_BEATS: readonly VerseBeat[] = [
       },
       {
         actorIds: ["mourner", "mourner-woman", "guide", "older-witness"],
+        verseKeys: ["john11:34"],
+        kind: "spoken-scripture",
+        exactExcerpt: "请主来看。",
+      },
+      {
+        actorIds: ["mourner", "mourner-woman", "guide", "older-witness"],
         verseKeys: ["john11:36", "john11:37"],
         kind: "spoken-scripture",
       },
@@ -925,14 +931,7 @@ export const VERSE_BEATS: readonly VerseBeat[] = [
       ],
       playerControl: "sequence",
     },
-    echoGrants: [
-      {
-        actorIds: ["mourner", "mourner-woman", "guide", "older-witness"],
-        verseKeys: ["john11:34"],
-        kind: "spoken-scripture",
-        exactExcerpt: "请主来看。",
-      },
-    ],
+    echoGrants: [],
   },
   {
     id: "tomb-arrival",
@@ -1165,6 +1164,14 @@ export const getActorVisibility = (
   return actors.visibleActorIds.includes(actorId) ? "visible" : "hidden";
 };
 
+export const getFinalActorVisibility = (
+  beatId: VerseBeatId,
+  actorId: ActorId,
+): "visible" | "hidden" =>
+  VERSE_BEAT_BY_ID[beatId].finalState.actors.visibleActorIds.includes(actorId)
+    ? "visible"
+    : "hidden";
+
 export const getActorLabel = (
   beatId: VerseBeatId,
   actorId: ActorId,
@@ -1175,6 +1182,18 @@ export const getActorLabel = (
   const beat = VERSE_BEAT_BY_ID[beatId];
   const actors = beat.duringBeatActors ?? beat.finalState.actors;
   const override = actors.labelOverrides?.[actorId];
+  return override === undefined ? ACTOR_LABELS[actorId] : override;
+};
+
+export const getFinalActorLabel = (
+  beatId: VerseBeatId,
+  actorId: ActorId,
+): string | null => {
+  if (getFinalActorVisibility(beatId, actorId) === "hidden") {
+    return null;
+  }
+  const override =
+    VERSE_BEAT_BY_ID[beatId].finalState.actors.labelOverrides?.[actorId];
   return override === undefined ? ACTOR_LABELS[actorId] : override;
 };
 
