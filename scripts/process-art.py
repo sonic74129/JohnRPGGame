@@ -1,9 +1,19 @@
+import argparse
 import json
 import os
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
 
 from PIL import Image, ImageDraw
+
+from art.processors import (
+    FAMILY_PROFILES,
+    build_processing_plan,
+    describe_profile,
+    execute_processing,
+    parse_size,
+    resampling_filter,
+)
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -180,7 +190,11 @@ def remove_sick_bed_frame(image: Image.Image) -> Image.Image:
     return result
 
 
-def normalize_sprite(image: Image.Image, size: tuple[int, int] = (160, 208)) -> Image.Image:
+def normalize_sprite(
+    image: Image.Image,
+    size: tuple[int, int] = (160, 208),
+    resampling: str = "lanczos",
+) -> Image.Image:
     cleaned = remove_connected_background(image)
     alpha_box = cleaned.getchannel("A").getbbox()
     if alpha_box is None:
@@ -198,7 +212,7 @@ def normalize_sprite(image: Image.Image, size: tuple[int, int] = (160, 208)) -> 
             max(1, round(trimmed.width * scale)),
             max(1, round(trimmed.height * scale)),
         ),
-        Image.Resampling.NEAREST,
+        resampling_filter(resampling),
     )
     canvas = Image.new("RGBA", size, transparent_color())
     canvas.alpha_composite(
@@ -226,13 +240,15 @@ def process_directional_sheet(
     filename: str,
     character_columns: Iterable[tuple[str, int]],
     columns: int,
+    resampling: str = "lanczos",
 ) -> None:
     image = Image.open(SOURCE / filename)
     for character, start_column in character_columns:
         for row, direction in enumerate(DIRECTIONS):
             frames = {
                 motion: normalize_sprite(
-                    crop_cell(image, columns, 4, start_column + step, row)
+                    crop_cell(image, columns, 4, start_column + step, row),
+                    resampling=resampling,
                 )
                 for step, motion in enumerate(STEPS)
             }
@@ -251,13 +267,15 @@ def process_directional_sheet(
 def process_reference_sheet(
     filename: str,
     characters: tuple[str, ...],
+    resampling: str = "lanczos",
 ) -> None:
     image = Image.open(SOURCE / filename)
     source_directions = ("front", "back", "left")
     for column, character in enumerate(characters):
         for row, direction in enumerate(source_directions):
             frame = normalize_sprite(
-                crop_cell(image, len(characters), 3, column, row)
+                crop_cell(image, len(characters), 3, column, row),
+                resampling=resampling,
             )
             save_sprite(frame, character, f"{direction}-idle")
             if direction == "left":
@@ -268,7 +286,7 @@ def process_reference_sheet(
                 )
 
 
-def process_lazarus() -> None:
+def process_lazarus(resampling: str = "lanczos") -> None:
     image = Image.open(SOURCE / "sprite-lazarus-source.png")
     frames = ("sick", "wrapped-idle", "wrapped-step", "restored")
     for column, name in enumerate(frames):
@@ -286,7 +304,11 @@ def process_lazarus() -> None:
                 raise ValueError("No sick Lazarus foreground remained.")
             frame = cleaned.crop(alpha_box)
         else:
-            frame = normalize_sprite(cleaned, (224, 208))
+            frame = normalize_sprite(
+                cleaned,
+                (224, 208),
+                resampling=resampling,
+            )
         save_sprite(frame, "lazarus", name)
 
 
@@ -378,8 +400,10 @@ def process_world_objects() -> None:
     )
 
 
-def main() -> None:
-    category = os.environ.get("ART_CATEGORY")
+def run_legacy(
+    category: Optional[str],
+    resampling: str = "lanczos",
+) -> None:
     if category not in (None, "sprite", "prop", "world"):
         raise ValueError("ART_CATEGORY must be 'sprite', 'prop', or 'world'.")
 
@@ -388,26 +412,31 @@ def main() -> None:
             "sprite-messenger-source.png",
             (("messenger", 0),),
             3,
+            resampling,
         )
         process_directional_sheet(
             "sprite-sisters-source.png",
             (("martha", 0), ("mary", 4)),
             7,
+            resampling,
         )
         process_directional_sheet(
             "sprite-jesus-source.png",
             (("jesus", 0),),
             3,
+            resampling,
         )
         process_reference_sheet(
             "sprite-disciples-source.png",
             ("thomas", "disciple-older", "disciple-younger"),
+            resampling,
         )
         process_reference_sheet(
             "sprite-witnesses-source.png",
             ("mourner-man", "mourner-woman", "guide", "witness-older"),
+            resampling,
         )
-        process_lazarus()
+        process_lazarus(resampling)
         print(f"Processed sprites into {SPRITES}")
 
     prop_sources_available = all((SOURCE / name).exists() for name in PROP_SOURCES)
@@ -484,6 +513,73 @@ def main() -> None:
         print(f"Processed world art into {WORLD}")
     elif category is None:
         print("Skipped world art because its source atlases have not been generated yet.")
+
+
+def run_legacy_family(family: str, resampling: str) -> None:
+    if family == "character":
+        run_legacy("sprite", resampling)
+        return
+    if family == "environment":
+        run_legacy("prop", resampling)
+        run_legacy("world", resampling)
+        return
+    raise ValueError(
+        f"Legacy processing is unavailable for family {family}; use a manifest."
+    )
+
+
+def argument_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Process one recoverable MAI asset family at a time."
+    )
+    parser.add_argument("--family", choices=tuple(FAMILY_PROFILES))
+    parser.add_argument("--asset")
+    parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--mode", choices=("runtime", "review", "legacy"))
+    parser.add_argument("--resampling", choices=("lanczos", "nearest"))
+    parser.add_argument("--size", help="Optional runtime output size as WIDTHxHEIGHT.")
+    parser.add_argument("--plan", action="store_true")
+    parser.add_argument("--describe", action="store_true")
+    parser.add_argument("--repo-root", type=Path, default=ROOT)
+    return parser
+
+
+def main() -> None:
+    parser = argument_parser()
+    args = parser.parse_args()
+    if len(os.sys.argv) == 1:
+        run_legacy(os.environ.get("ART_CATEGORY"))
+        return
+    if args.family is None:
+        parser.error("--family is required.")
+    if args.describe:
+        if args.manifest is not None or args.mode is not None:
+            parser.error("--describe cannot be combined with --manifest or --mode.")
+        print(json.dumps(describe_profile(args.family, args.resampling), indent=2))
+        return
+    if args.mode == "legacy":
+        if args.manifest is not None or args.plan:
+            parser.error("Legacy mode does not use --manifest or --plan.")
+        profile = describe_profile(args.family, args.resampling)
+        run_legacy_family(args.family, profile["selectedResampling"])
+        return
+    if args.manifest is None:
+        parser.error("--manifest is required for runtime or review processing.")
+
+    manifest_path, manifest, plan = build_processing_plan(
+        repo_root=args.repo_root,
+        manifest_path=args.manifest,
+        family=args.family,
+        asset_id=args.asset,
+        mode=args.mode,
+        resampling=args.resampling,
+        size=parse_size(args.size),
+    )
+    if args.plan:
+        print(json.dumps(plan, indent=2))
+        return
+    execute_processing(manifest_path, manifest, plan)
+    print(json.dumps({"status": "completed", **plan}, indent=2))
 
 
 if __name__ == "__main__":

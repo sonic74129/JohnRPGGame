@@ -72,7 +72,52 @@ Theme 1 与 Theme 2 使用处理后的循环版本；Theme 3 不循环。游戏�
 后端固定为 Azure AI Foundry 的 `mai-image-2-5-pro` 部署、
 `MAI-Image-2.5-Pro@2026-06-19`，并使用 Azure CLI / Entra ID；不得切换到
 其他图像模型或保存资源密钥。`art/prompts.json` 仅是退休标记，不能再发送给
-图像后端。生成脚本迁移到新 registry 前不要运行 `npm run art:generate`。
+图像后端。生成脚本已迁移到新 registry，并且一次只接受一个 family。先用 dry-run 检查
+选择、候选数和版本化路径：
+
+```bash
+npm run art:generate -- --family master --asset master.house-interior --dry-run
+```
+
+首次运行、故障恢复和明确重生成分别使用：
+
+```bash
+npm run art:generate -- --family master --asset master.house-interior --mode start
+npm run art:generate -- --family master --asset master.house-interior --mode resume
+npm run art:generate -- --family master --asset master.house-interior --mode regenerate
+```
+
+`start` 在已有 run 时会失败；`resume` 只信任 manifest 状态，发现未记录的旧文件会
+失败；`regenerate` 新建 `run-NNN`，不会覆盖历史。已有批准结果时必须先提升
+`promptVersion`，不能在同一版本上重画。选定候选需要给出理由：
+
+```bash
+npm run art:generate -- --family master --asset master.house-interior \
+  --select 2 --reason "Best approved scale and material match."
+```
+
+候选、manifest、压缩 review sheet、选定源图和运行时输出分别位于：
+
+- `production/art-pipeline/candidates/<family>/<asset>/<promptVersion>/run-NNN/`
+- `production/art-pipeline/manifests/<family>/<asset>/<promptVersion>/`
+- `production/art-pipeline/review/<family>/<asset>/<promptVersion>/`
+- `production/art-source/<family>/<asset>/<promptVersion>/`
+- `public/assets/art/<family>/<asset>/<promptVersion>/run-NNN/`
+
+原始候选和选定源图只通过文件路径交接，不应内联到消息。review contact sheet 最长边
+为 1600 px，目标不超过 900 KB。处理前可只检查 family profile 或 manifest plan，
+不会打开图片：
+
+```bash
+npm run art:process -- --family portrait --describe
+npm run art:process -- --family portrait --asset portrait.messenger \
+  --manifest production/art-pipeline/manifests/portrait/portrait__messenger/v1/run-001.manifest.json \
+  --mode runtime --plan
+```
+
+正式处理去掉 `--plan`。非像素素材默认使用 `lanczos`；只有明确的像素资产才传
+`--resampling nearest`。review sheet 使用 `--mode review`。旧的无参数
+`ART_CATEGORY=sprite|prop|world npm run art:process` 入口仍保留兼容。
 
 每个 registry 项都包含稳定 ID、用途、运行时标记、模型、尺寸、prompt 版本、
 完整可直接发送的 prompt、机器与人工验收、2–3 个候选限制、依赖和输出类型。
