@@ -1,7 +1,7 @@
 import type { Point } from "./NavigationGrid";
 import {
   WORLD_HEIGHT,
-  WORLD_ROUTES,
+  WORLD_ROUTE_LIST,
   WORLD_WIDTH,
 } from "./WorldLayout";
 
@@ -96,7 +96,7 @@ const rasterizeLine = (start: Cell, end: Cell): readonly Cell[] => {
 };
 
 const routeCells = new Map<string, Cell>();
-for (const route of WORLD_ROUTES) {
+for (const route of WORLD_ROUTE_LIST) {
   const points = route.points.map(worldPointToGroundCell);
   for (let index = 1; index < points.length; index += 1) {
     const start = points[index - 1];

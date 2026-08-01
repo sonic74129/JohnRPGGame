@@ -1,184 +1,97 @@
+import worldMapLayout from "../../art/world-map-layout.json";
+
 import {
   NavigationGrid,
   type Point,
   type Rectangle,
 } from "./NavigationGrid";
-import { WORLD_ART_OBSTACLES } from "./WorldArt";
 
 export const WORLD_TILE_SIZE = 32;
-export const WORLD_COLUMNS = 72;
-export const WORLD_ROWS = 48;
-export const WORLD_WIDTH = WORLD_COLUMNS * WORLD_TILE_SIZE;
-export const WORLD_HEIGHT = WORLD_ROWS * WORLD_TILE_SIZE;
-export const WORLD_BOUNDARY = 64;
+export const WORLD_WIDTH = worldMapLayout.canvas.width;
+export const WORLD_HEIGHT = worldMapLayout.canvas.height;
+export const WORLD_COLUMNS = Math.ceil(WORLD_WIDTH / WORLD_TILE_SIZE);
+export const WORLD_ROWS = Math.ceil(WORLD_HEIGHT / WORLD_TILE_SIZE);
+export const WORLD_BOUNDARY = worldMapLayout.canvas.safeBorder;
 export const PLAYER_TRAVEL_SPEED = 260;
+export const WORLD_SELECTED_PROFILE = worldMapLayout.selectedProfile;
+export const WORLD_MAP_SOURCE_KEY = "world-map-source";
+export const WORLD_MAP_FALLBACK_URL = new URL(
+  "../../production/design-contracts/world-map-graybox-b.png",
+  import.meta.url,
+).href;
 
-export type WorldZoneId =
-  | "jerusalem-road"
-  | "martha-house"
-  | "village-square"
-  | "bethany-entrance"
-  | "arrival-road"
-  | "tomb-road"
-  | "tomb-garden";
+const point = (value: { readonly x: number; readonly y: number }): Point => ({
+  x: value.x,
+  y: value.y,
+});
 
-export type WorldLandmarkId =
-  | "jerusalemGate"
-  | "houseDoor"
-  | "villageCenter"
-  | "well"
-  | "bethanyEntrance"
-  | "jesusArrival"
-  | "tombRoadStart"
-  | "tombEntrance";
-
-export interface WorldZone {
-  readonly id: WorldZoneId;
-  readonly label: string;
-  readonly bounds: Rectangle;
-}
-
-export interface WorldStructure {
-  readonly id: string;
-  readonly kind: "building" | "well" | "tomb" | "wall";
-  readonly bounds: Rectangle;
-}
-
-export interface WorldRoute {
-  readonly id: "house" | "arrival" | "tomb" | "jerusalem";
-  readonly width: number;
-  readonly points: readonly Point[];
-}
-
-export const WORLD_LANDMARKS: Readonly<Record<WorldLandmarkId, Point>> = {
-  jerusalemGate: { x: 180, y: 360 },
-  houseDoor: { x: 480, y: 1100 },
-  villageCenter: { x: 1100, y: 820 },
-  well: { x: 1100, y: 740 },
-  bethanyEntrance: { x: 1420, y: 1080 },
-  jesusArrival: { x: 2100, y: 1330 },
-  tombRoadStart: { x: 1320, y: 650 },
-  tombEntrance: { x: 1990, y: 390 },
+const pointAt = (
+  values: readonly { readonly x: number; readonly y: number }[],
+  index: number,
+): Point => {
+  const value = values[index];
+  if (!value) {
+    throw new Error(`World layout is missing tomb route point ${index}.`);
+  }
+  return point(value);
 };
 
-export const WORLD_ZONES: readonly WorldZone[] = [
-  {
-    id: "jerusalem-road",
-    label: "耶路撒冷方向",
-    bounds: { x: 64, y: 120, width: 700, height: 500 },
-  },
-  {
-    id: "martha-house",
-    label: "马大家",
-    bounds: { x: 160, y: 650, width: 640, height: 620 },
-  },
-  {
-    id: "village-square",
-    label: "伯大尼村庄",
-    bounds: { x: 700, y: 500, width: 850, height: 650 },
-  },
-  {
-    id: "bethany-entrance",
-    label: "村庄入口",
-    bounds: { x: 1250, y: 940, width: 520, height: 360 },
-  },
-  {
-    id: "arrival-road",
-    label: "耶稣来路",
-    bounds: { x: 1540, y: 980, width: 700, height: 490 },
-  },
-  {
-    id: "tomb-road",
-    label: "墓园道路",
-    bounds: { x: 1250, y: 300, width: 700, height: 570 },
-  },
-  {
-    id: "tomb-garden",
-    label: "拉撒路坟墓",
-    bounds: { x: 1720, y: 64, width: 520, height: 520 },
-  },
-];
+const rectangle = (value: {
+  readonly xMin: number;
+  readonly xMax: number;
+  readonly yMin: number;
+  readonly yMax: number;
+}): Rectangle => ({
+  x: value.xMin,
+  y: value.yMin,
+  width: value.xMax - value.xMin,
+  height: value.yMax - value.yMin,
+});
 
-export const WORLD_STRUCTURES: readonly WorldStructure[] = [
-  {
-    id: "martha-house",
-    kind: "building",
-    bounds: { x: 325, y: 845, width: 310, height: 162 },
-  },
-  {
-    id: "village-house-west",
-    kind: "building",
-    bounds: { x: 775, y: 410, width: 270, height: 127 },
-  },
-  {
-    id: "village-house-east",
-    kind: "building",
-    bounds: { x: 1245, y: 405, width: 282, height: 128 },
-  },
-  {
-    id: "village-house-south",
-    kind: "building",
-    bounds: { x: 1465, y: 880, width: 270, height: 127 },
-  },
-  {
-    id: "village-well",
-    kind: "well",
-    bounds: { x: 1058, y: 705, width: 82, height: 79 },
-  },
-  {
-    id: "tomb-hillside",
-    kind: "tomb",
-    bounds: { x: 1840, y: 205, width: 320, height: 194 },
-  },
-  {
-    id: "jerusalem-gate",
-    kind: "wall",
-    bounds: { x: 65, y: 315, width: 250, height: 40 },
-  },
-];
+export const WORLD_LANDMARKS = {
+  houseDoor: point(worldMapLayout.regions.marthaCompound.door),
+  villageCenter: point(worldMapLayout.regions.village.center),
+  bethanyMeeting: point(worldMapLayout.regions.meetingArea.center),
+  jesusCamp: point(worldMapLayout.regions.jesusCamp.center),
+  tombRoadStart: pointAt(worldMapLayout.regions.tombRoute.points, 0),
+  tombRoadMiddle: pointAt(worldMapLayout.regions.tombRoute.points, 1),
+  tombEntrance: pointAt(worldMapLayout.regions.tombRoute.points, 2),
+  tombGarden: point(worldMapLayout.regions.tombGarden.center),
+  jerusalemGate: { x: 180, y: 360 },
+  bethanyEntrance: point(worldMapLayout.regions.meetingArea.center),
+  jesusArrival: point(worldMapLayout.regions.jesusCamp.center),
+} as const satisfies Readonly<Record<string, Point>>;
 
-export const WORLD_ROUTES: readonly WorldRoute[] = [
-  {
-    id: "house",
-    width: 120,
-    points: [
-      WORLD_LANDMARKS.houseDoor,
-      { x: 700, y: 1030 },
-      { x: 880, y: 910 },
-      WORLD_LANDMARKS.villageCenter,
-    ],
-  },
-  {
-    id: "arrival",
-    width: 120,
-    points: [
-      WORLD_LANDMARKS.jesusArrival,
-      { x: 1830, y: 1260 },
-      WORLD_LANDMARKS.bethanyEntrance,
-      WORLD_LANDMARKS.villageCenter,
-    ],
-  },
-  {
-    id: "tomb",
-    width: 112,
+export const WORLD_REGIONS = {
+  marthaCompound: rectangle(worldMapLayout.regions.marthaCompound.bounds),
+  village: rectangle(worldMapLayout.regions.village.bounds),
+  meetingArea: rectangle(worldMapLayout.regions.meetingArea.bounds),
+  jesusCamp: rectangle(worldMapLayout.regions.jesusCamp.bounds),
+  tombGarden: rectangle(worldMapLayout.regions.tombGarden.bounds),
+} as const satisfies Readonly<Record<string, Rectangle>>;
+
+export const WORLD_ROUTES = {
+  villageToTomb: {
+    id: "village-to-tomb",
     points: [
       WORLD_LANDMARKS.villageCenter,
       WORLD_LANDMARKS.tombRoadStart,
-      { x: 1600, y: 500 },
+      WORLD_LANDMARKS.tombRoadMiddle,
       WORLD_LANDMARKS.tombEntrance,
+      WORLD_LANDMARKS.tombGarden,
     ],
   },
-  {
-    id: "jerusalem",
-    width: 104,
+  campToMeeting: {
+    id: "camp-to-meeting",
     points: [
-      WORLD_LANDMARKS.jerusalemGate,
-      { x: 480, y: 470 },
-      { x: 760, y: 620 },
-      WORLD_LANDMARKS.villageCenter,
+      WORLD_LANDMARKS.jesusCamp,
+      { x: 1990, y: 1190 },
+      WORLD_LANDMARKS.bethanyMeeting,
     ],
   },
-];
+} as const;
+
+export const WORLD_ROUTE_LIST = Object.values(WORLD_ROUTES);
 
 const boundaryObstacles: readonly Rectangle[] = [
   { x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_BOUNDARY },
@@ -197,10 +110,18 @@ const boundaryObstacles: readonly Rectangle[] = [
   },
 ];
 
+const structureObstacles: readonly Rectangle[] = [
+  { x: 180, y: 880, width: 250, height: 245 },
+  { x: 610, y: 880, width: 150, height: 245 },
+  { x: 720, y: 610, width: 300, height: 200 },
+  { x: 1210, y: 620, width: 290, height: 200 },
+  { x: 840, y: 1040, width: 290, height: 180 },
+  { x: 2040, y: 100, width: 430, height: 190 },
+];
+
 export const WORLD_OBSTACLES: readonly Rectangle[] = [
   ...boundaryObstacles,
-  ...WORLD_STRUCTURES.map(({ bounds }) => bounds),
-  ...WORLD_ART_OBSTACLES,
+  ...structureObstacles,
 ];
 
 export const createWorldNavigation = (): NavigationGrid =>
@@ -217,16 +138,21 @@ export const pathLength = (
   target: Point,
 ): number => {
   const points = [start, ...path, target];
-  let distance = 0;
-  for (let index = 1; index < points.length; index += 1) {
-    const previous = points[index - 1];
-    const current = points[index];
-    if (previous && current) {
-      distance += Math.hypot(current.x - previous.x, current.y - previous.y);
-    }
-  }
-  return distance;
+  return points.slice(1).reduce((distance, current, index) => {
+    const previous = points[index];
+    return previous
+      ? distance + Math.hypot(current.x - previous.x, current.y - previous.y)
+      : distance;
+  }, 0);
 };
+
+export const routeLength = (route: readonly Point[]): number =>
+  route.slice(1).reduce((distance, current, index) => {
+    const previous = route[index];
+    return previous
+      ? distance + Math.hypot(current.x - previous.x, current.y - previous.y)
+      : distance;
+  }, 0);
 
 export const travelTimeSeconds = (
   start: Point,
@@ -234,8 +160,7 @@ export const travelTimeSeconds = (
   speed = PLAYER_TRAVEL_SPEED,
 ): number => {
   const path = createWorldNavigation().findPath(start, target);
-  if (path.length === 0) {
-    return Number.POSITIVE_INFINITY;
-  }
-  return pathLength(start, path, target) / speed;
+  return path.length === 0
+    ? Number.POSITIVE_INFINITY
+    : pathLength(start, path, target) / speed;
 };

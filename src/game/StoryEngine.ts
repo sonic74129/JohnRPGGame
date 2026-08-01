@@ -1,231 +1,156 @@
-import type {
-  ActorId,
-  InteractionResult,
-  QuestionResult,
-  StoryStage,
-} from "./types";
+import {
+  FIND_JESUS_CONTRACT,
+  FIND_JESUS_MEMORIES,
+  RECALL_QUESTIONS,
+  type ActorId,
+  type MemoryCarrierId,
+  type RecallQuestionId,
+} from "./ScriptureContent";
+import {
+  VERSE_BEATS,
+  VERSE_BEAT_BY_ID,
+  type VerseBeat,
+  type VerseBeatId,
+} from "./VerseBeats";
 
-interface Decision {
-  readonly expected: ActorId;
-  readonly wrongCandidates: readonly ActorId[];
-  readonly correctMessage: string;
-  readonly reference: string;
-  readonly nextStage: StoryStage;
+export interface RecallAnswerResult {
+  readonly correct: boolean;
+  readonly penalty: number;
+  readonly message: string;
 }
 
-const DECISIONS: Partial<Record<StoryStage, Decision>> = {
-  chooseMartha: {
-    expected: "martha",
-    wrongCandidates: ["mary"],
-    correctMessage: "正确。马大听见耶稣来了，就出去迎接他。",
-    reference: "约翰福音 11:20",
-    nextStage: "followMartha",
-  },
-  chooseMary: {
-    expected: "mary",
-    wrongCandidates: ["martha"],
-    correctMessage: "正确。马利亚听见了，就急忙起来，到耶稣那里去。",
-    reference: "约翰福音 11:28–29",
-    nextStage: "followMary",
-  },
-  chooseGuide: {
-    expected: "guide",
-    wrongCandidates: ["martha", "mary", "jesus"],
-    correctMessage: "正确。众人回答“请主来看”，随后来到坟墓前。",
-    reference: "约翰福音 11:34、38",
-    nextStage: "followGuide",
-  },
-};
+export type FindJesusResult =
+  | {
+      readonly kind: "memory";
+      readonly memory: (typeof FIND_JESUS_MEMORIES)[keyof typeof FIND_JESUS_MEMORIES];
+      readonly penalty: 0;
+    }
+  | {
+      readonly kind: "identified";
+      readonly actorId: "jesus";
+      readonly penalty: 0;
+    };
 
-const WRONG_MESSAGES: Partial<Record<ActorId, string>> = {
-  martha: "这一阶段不是马大先行动。请再查看当前经文线索。",
-  mary: "马利亚此时仍然坐在家里。请留意谁先出去迎接耶稣。",
-  jesus: "玩家不能控制耶稣；请寻找经文中负责带路的人。",
-};
+const MEMORY_BY_CARRIER: Readonly<
+  Record<MemoryCarrierId, (typeof FIND_JESUS_MEMORIES)[keyof typeof FIND_JESUS_MEMORIES]>
+> = Object.fromEntries(
+  Object.values(FIND_JESUS_MEMORIES).map((memory) => [
+    memory.carrierId,
+    memory,
+  ]),
+) as Record<
+  MemoryCarrierId,
+  (typeof FIND_JESUS_MEMORIES)[keyof typeof FIND_JESUS_MEMORIES]
+>;
 
 export class StoryEngine {
-  private currentStage: StoryStage = "opening";
+  private currentBeatIndex = 0;
   private currentScore = 100;
-  private readonly penalizedAttempts = new Set<string>();
-  private wrongCountForStage = 0;
+  private readonly completed = new Set<VerseBeatId>();
+  private readonly penalizedAnswers = new Set<string>();
 
-  get stage(): StoryStage {
-    return this.currentStage;
+  get beat(): VerseBeat {
+    const beat = VERSE_BEATS[this.currentBeatIndex];
+    if (!beat) {
+      throw new Error("Story has no active verse beat.");
+    }
+    return beat;
+  }
+
+  get beatId(): VerseBeatId {
+    return this.beat.id;
   }
 
   get score(): number {
     return this.currentScore;
   }
 
-  answerQuestion(
-    questionId: string,
-    answerId: string,
-    correctAnswerId: string,
-  ): QuestionResult {
-    if (answerId === correctAnswerId) {
-      return {
-        correct: true,
-        penalty: 0,
-        message: "正确。经文依据已经确认。",
-      };
+  get isComplete(): boolean {
+    return this.completed.has("responses");
+  }
+
+  get completedBeatIds(): readonly VerseBeatId[] {
+    return VERSE_BEATS.filter((beat) => this.completed.has(beat.id)).map(
+      (beat) => beat.id,
+    );
+  }
+
+  hasCompleted(beatId: VerseBeatId): boolean {
+    return this.completed.has(beatId);
+  }
+
+  canTrigger(actorId?: ActorId): boolean {
+    const actorIds = this.beat.trigger.actorIds;
+    return actorIds === undefined || actorId === undefined
+      ? actorIds === undefined
+      : actorIds.includes(actorId);
+  }
+
+  answerRecall(questionId: RecallQuestionId, optionId: string): RecallAnswerResult {
+    const question = RECALL_QUESTIONS[questionId];
+    if (optionId === question.correctOption) {
+      return { correct: true, penalty: 0, message: "经文依据已经确认。" };
     }
 
-    const attemptKey = `question:${questionId}:${answerId}`;
-    const alreadyPenalized = this.penalizedAttempts.has(attemptKey);
-    const penalty = alreadyPenalized ? 0 : 5;
-    if (!alreadyPenalized) {
-      this.penalizedAttempts.add(attemptKey);
-      this.currentScore = Math.max(0, this.currentScore - penalty);
+    const attemptKey = `${questionId}:${optionId}`;
+    const firstAttempt = !this.penalizedAnswers.has(attemptKey);
+    if (firstAttempt) {
+      this.penalizedAnswers.add(attemptKey);
+      this.currentScore = Math.max(
+        0,
+        this.currentScore - question.wrongAnswer.penalty,
+      );
     }
-
     return {
       correct: false,
-      penalty,
-      message:
-        penalty > 0
-          ? "这不是经文记载的答案。经文观察分 -5，请根据出处再试一次。"
-          : "这个答案已经尝试过，请根据经文出处再试一次。",
+      penalty: firstAttempt ? question.wrongAnswer.penalty : 0,
+      message: `请再查看${question.reference}。`,
     };
   }
 
-  completeOpening(): void {
-    this.requireStage("opening");
-    this.setStage("deliverMessage");
-  }
-
-  deliverMessage(): void {
-    this.requireStage("deliverMessage");
-    this.setStage("journey");
-  }
-
-  arriveAtBethany(): void {
-    this.requireStage("journey");
-    this.setStage("chooseMartha");
-  }
-
-  interact(actor: ActorId): InteractionResult {
-    const decision = DECISIONS[this.currentStage];
-
-    if (!decision) {
-      return {
-        kind: "unavailable",
-        message: "这里没有需要作答的人物，请按照当前经文线索继续。",
-        penalty: 0,
-        revealHint: false,
-        nextStage: this.currentStage,
-      };
+  identifyJesus(actorId: ActorId): FindJesusResult {
+    if (this.beatId !== "find-jesus") {
+      throw new Error("Jesus identification is only available during find-jesus.");
     }
-
-    if (actor === decision.expected) {
-      const nextStage = decision.nextStage;
-      this.setStage(nextStage);
-      return {
-        kind: "correct",
-        message: decision.correctMessage,
-        reference: decision.reference,
-        penalty: 0,
-        revealHint: false,
-        nextStage,
-      };
+    if (actorId === FIND_JESUS_CONTRACT.correctActorId) {
+      return { kind: "identified", actorId: "jesus", penalty: 0 };
     }
-
-    if (!decision.wrongCandidates.includes(actor)) {
-      return {
-        kind: "neutral",
-        message: this.neutralMessage(actor),
-        penalty: 0,
-        revealHint: false,
-        nextStage: this.currentStage,
-      };
+    const memory = MEMORY_BY_CARRIER[actorId as MemoryCarrierId];
+    if (!memory) {
+      throw new Error(`Actor ${actorId} is not part of the findJesus bridge.`);
     }
+    return { kind: "memory", memory, penalty: 0 };
+  }
 
-    const attemptKey = `${this.currentStage}:${actor}`;
-    const alreadyPenalized = this.penalizedAttempts.has(attemptKey);
-    const penalty = alreadyPenalized ? 0 : 5;
-    this.wrongCountForStage += 1;
-
-    if (!alreadyPenalized) {
-      this.penalizedAttempts.add(attemptKey);
-      this.currentScore = Math.max(0, this.currentScore - penalty);
+  completeCurrent(expectedBeatId: VerseBeatId): VerseBeat {
+    if (this.beatId !== expectedBeatId) {
+      throw new Error(
+        `Cannot complete ${expectedBeatId}; active beat is ${this.beatId}.`,
+      );
     }
-
-    return {
-      kind: "wrong",
-      message:
-        WRONG_MESSAGES[actor] ??
-        "这不是经文记载的下一位人物，请再查看经文线索。",
-      reference: decision.reference,
-      penalty,
-      revealHint: this.wrongCountForStage >= 2,
-      nextStage: this.currentStage,
-    };
+    const beat = this.beat;
+    this.completed.add(beat.id);
+    if (beat.handoff.nextBeatId) {
+      const nextIndex = VERSE_BEATS.findIndex(
+        (candidate) => candidate.id === beat.handoff.nextBeatId,
+      );
+      if (nextIndex < 0) {
+        throw new Error(`Missing next verse beat ${beat.handoff.nextBeatId}.`);
+      }
+      this.currentBeatIndex = nextIndex;
+    }
+    return beat;
   }
 
-  arriveAtMartha(): void {
-    this.requireStage("followMartha");
-    this.setStage("marthaDialogue");
-  }
-
-  completeMarthaDialogue(): void {
-    this.requireStage("marthaDialogue");
-    this.setStage("chooseMary");
-  }
-
-  arriveAtMary(): void {
-    this.requireStage("followMary");
-    this.setStage("maryDialogue");
-  }
-
-  completeMaryDialogue(): void {
-    this.requireStage("maryDialogue");
-    this.setStage("chooseGuide");
-  }
-
-  arriveAtTomb(): void {
-    this.requireStage("followGuide");
-    this.setStage("tomb");
-  }
-
-  completeTomb(): void {
-    this.requireStage("tomb");
-    this.setStage("epilogue");
-  }
-
-  completeEpilogue(): void {
-    this.requireStage("epilogue");
-    this.setStage("complete");
+  finalStateFor(beatId: VerseBeatId): VerseBeat["finalState"] {
+    return VERSE_BEAT_BY_ID[beatId].finalState;
   }
 
   resultLabel(): string {
-    if (this.currentScore >= 90) {
-      return "经文脉络清楚";
-    }
-    if (this.currentScore >= 70) {
-      return "已掌握主要事件顺序";
-    }
-    if (this.currentScore >= 50) {
-      return "建议一起回看关键经节";
-    }
-    return "让我们从经文重新整理事件";
-  }
-
-  private neutralMessage(actor: ActorId): string {
-    if (actor === "mourner" || actor === "guide") {
-      return "好些犹太人来安慰马大和马利亚。与他们交谈属于探索，不扣分。";
-    }
-    return "可以观察这位人物，但当前经文线索指向另一位先行动的人。";
-  }
-
-  private setStage(stage: StoryStage): void {
-    this.currentStage = stage;
-    this.wrongCountForStage = 0;
-  }
-
-  private requireStage(expected: StoryStage): void {
-    if (this.currentStage !== expected) {
-      throw new Error(
-        `Cannot advance story from ${this.currentStage}; expected ${expected}.`,
-      );
-    }
+    return this.currentScore >= 90
+      ? "经文脉络清楚"
+      : this.currentScore >= 70
+        ? "已掌握主要事件顺序"
+        : "请按经文次序回看";
   }
 }

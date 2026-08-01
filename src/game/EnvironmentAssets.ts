@@ -43,13 +43,13 @@ export const HOUSE_ART = {
 } as const;
 
 export const INTERIOR_CHARACTER_SIZE = {
-  width: 88,
-  height: 114,
+  width: 96,
+  height: 128,
 } as const;
 
 export const HOUSE_SICK_LAZARUS_SIZE = {
-  width: 205,
-  height: 139,
+  width: 160,
+  height: 108,
 } as const;
 
 export const HOUSE_PLAYER_SPAWN: Point = { x: 390, y: 540 };

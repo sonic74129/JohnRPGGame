@@ -1,30 +1,24 @@
 import Phaser from "phaser";
 
 import { AudioManager } from "../audio/AudioManager";
+import {
+  createActorLabel,
+  type ActorLabelController,
+} from "../ui/ActorLabel";
 import { GameUI } from "../ui/GameUI";
 import { ActorRegistry } from "./ActorRegistry";
-import {
-  AreaRuntime,
-  type AreaConfig,
-  type AreaHost,
-  type AreaId,
-  type AreaResource,
-} from "./AreaRuntime";
+import type { AreaResource } from "./AreaRuntime";
+import { getLatestActorVerseEcho } from "./ActorVerseEcho";
 import { Character } from "./Character";
 import {
   CORE_POSE_SHEETS,
   LAZARUS_SHEET,
   SUPPORTING_ACTION_SHEET,
-  corePoseFrame,
-  corePoseOriginY,
-  supportingActionFrame,
 } from "./CharacterAssets";
 import {
-  FACINGS,
   allCharacterSheets,
   actorSpriteCharacter,
   characterOriginY,
-  hasWalkFrames,
   lazarusFrame,
   lazarusScaleToFit,
   lazarusTextureKey,
@@ -36,10 +30,12 @@ import {
   walkFrames,
   type Facing,
   type SpriteCharacter,
-  type WalkingSpriteCharacter,
 } from "./CharacterSprites";
-import { CutsceneDirector } from "./CutsceneDirector";
-import { DIALOGUES, OBJECTIVES, QUESTIONS } from "./content";
+import {
+  DEFAULT_DISPLAY_SCALE,
+  applyLinearTextureFiltering,
+  resolveDisplayMetrics,
+} from "./DisplayScale";
 import {
   HOUSE_ART,
   HOUSE_EXIT,
@@ -50,76 +46,53 @@ import {
   HOUSE_SICK_LAZARUS_POSITION,
   HOUSE_SICK_LAZARUS_SIZE,
   HOUSE_STORY_FOCUS,
-  INTERIOR_CHARACTER_SIZE,
   type HouseArtPlacement,
 } from "./EnvironmentAssets";
-import { Interaction, type InteractionRules } from "./Interaction";
 import {
-  NavigationGrid,
-  type Point,
-  type Rectangle,
-} from "./NavigationGrid";
-import { NpcPathController, type NpcPathAdapter } from "./NpcPathController";
+  MapSequence,
+  type MapSequenceDefinition,
+  type MapSequenceOperation,
+  type MapSequenceSchema,
+  type MapSequenceStep,
+} from "./MapSequence";
+import { NavigationGrid, type Point, type Rectangle } from "./NavigationGrid";
+import {
+  createPhaserMapSequenceAdapters,
+  type PhaserSequenceHost,
+} from "./PhaserMapSequenceAdapter";
 import { PlayerController } from "./PlayerController";
-import { ProximityTrigger } from "./ProximityTrigger";
-import { partitionTombDialogue } from "./StoryEvents";
+import {
+  ACTOR_LABELS,
+  FIND_JESUS_CONTRACT,
+  JOHN_11_VERSES,
+  RECALL_QUESTIONS,
+  type RecallQuestion,
+  type StoryActorId,
+} from "./ScriptureContent";
 import { StoryEngine } from "./StoryEngine";
-import { StoryJourney } from "./StoryJourney";
+import { TOMB_PROP_ASSETS } from "./TombAssets";
+import type { ActorId, DialogueLine, MusicState } from "./types";
 import {
-  TOMB_PROP_ASSETS,
-  TOMB_PROP_PLACEMENTS,
-  TOMB_STONE_PLACEMENT,
-} from "./TombAssets";
-import { Trigger } from "./Trigger";
-import type {
-  ActorId,
-  DialogueLine,
-  MapPoseCue,
-  MusicState,
-  StoryStage,
-} from "./types";
-import {
-  WORLD_OBJECT_ASSETS,
-  WORLD_STRUCTURE_ART,
-  type WorldArtObject,
-} from "./WorldArt";
-import {
-  WORLD_GROUND_ASSET,
-  WORLD_GROUND_BASE_FRAME_CROP,
-  WORLD_GROUND_CELL_SIZE,
-  WORLD_GROUND_FRAME_CROP,
-  WORLD_GROUND_RENDER_SIZE,
-  WORLD_GROUND_TILES,
-  worldGroundBaseFrame,
-  worldGroundInnerFrame,
-} from "./WorldGround";
+  VERSE_BEATS,
+  type VerseBeat,
+  type VerseBeatId,
+} from "./VerseBeats";
 import { WorldRuntime, type WorldHost } from "./WorldRuntime";
 import {
   WORLD_HEIGHT,
   WORLD_LANDMARKS,
+  WORLD_MAP_FALLBACK_URL,
+  WORLD_MAP_SOURCE_KEY,
+  WORLD_REGIONS,
+  WORLD_ROUTES,
   WORLD_WIDTH,
-  type WorldStructure,
 } from "./WorldLayout";
 
 const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
-const EXTERIOR_CHARACTER_HEIGHT = 78;
-const INTERIOR_CHARACTER_HEIGHT = INTERIOR_CHARACTER_SIZE.height;
+const EXTERIOR_CHARACTER_HEIGHT = DEFAULT_DISPLAY_SCALE.outdoorVisibleHeight;
 
-const ACTORS: Readonly<Record<ActorId, { readonly name: string; readonly color: number }>> = {
-  martha: { name: "马大", color: 0x76508b },
-  mary: { name: "马利亚", color: 0xa44b59 },
-  mourner: { name: "安慰者", color: 0x667079 },
-  "mourner-woman": { name: "女安慰者", color: 0xb28a55 },
-  jesus: { name: "耶稣", color: 0xf2e5bd },
-  guide: { name: "带路的人", color: 0x76654e },
-  "older-witness": { name: "年长见证人", color: 0x647052 },
-  thomas: { name: "多马", color: 0x5a4a40 },
-  "older-disciple": { name: "年长门徒", color: 0x66704b },
-  "younger-disciple": { name: "年轻门徒", color: 0xa86f45 },
-};
-
-const ACTOR_IDS: readonly ActorId[] = [
+const ACTOR_IDS = [
   "martha",
   "mary",
   "mourner",
@@ -130,89 +103,102 @@ const ACTOR_IDS: readonly ActorId[] = [
   "thomas",
   "older-disciple",
   "younger-disciple",
-];
+  "memory-carrier-bread",
+  "memory-carrier-water",
+  "memory-carrier-mud",
+] as const satisfies readonly ActorId[];
 
-const WORLD_ACTORS: Readonly<
-  Record<ActorId, { readonly position: Point; readonly visible?: boolean }>
-> = {
-  martha: { position: { x: 760, y: 1050 } },
-  mary: { position: { x: 860, y: 1000 } },
-  mourner: { position: { x: 970, y: 970 } },
-  "mourner-woman": { position: { x: 1040, y: 1030 } },
-  jesus: { position: WORLD_LANDMARKS.jesusArrival },
-  guide: { position: WORLD_LANDMARKS.tombRoadStart, visible: false },
-  "older-witness": { position: { x: 1110, y: 990 } },
-  thomas: { position: { x: 1190, y: 790 } },
-  "older-disciple": { position: { x: 1260, y: 825 } },
-  "younger-disciple": { position: { x: 1330, y: 860 } },
+const WORLD_ACTOR_POSITIONS: Readonly<Record<ActorId, Point>> = {
+  martha: { x: 650, y: 1120 },
+  mary: { x: 720, y: 1170 },
+  mourner: { x: 900, y: 1020 },
+  "mourner-woman": { x: 970, y: 1080 },
+  guide: { x: 1030, y: 1040 },
+  "older-witness": { x: 1100, y: 1080 },
+  jesus: WORLD_LANDMARKS.jesusCamp,
+  thomas: { x: 2360, y: 1270 },
+  "older-disciple": { x: 2300, y: 1350 },
+  "younger-disciple": { x: 2180, y: 1350 },
+  "memory-carrier-bread": { x: 2100, y: 1160 },
+  "memory-carrier-water": { x: 2260, y: 1130 },
+  "memory-carrier-mud": { x: 2440, y: 1170 },
 };
 
-const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
-  "lazarus-house": {
-    id: "lazarus-house",
-    width: HOUSE_ART.width,
-    height: HOUSE_ART.height,
-    backgroundKey: HOUSE_ART.base.key,
-    backgroundColor: 0x706348,
-    obstacles: HOUSE_OBSTACLES,
-    playerSpawn: HOUSE_PLAYER_SPAWN,
-    actors: [
-      { id: "martha", position: { x: 690, y: 455 } },
-      { id: "mary", position: { x: 705, y: 535 } },
-      { id: "mourner", position: { x: 940, y: 535 } },
-    ],
-  },
-  "bethany-world": {
-    id: "bethany-world",
-    width: WORLD_WIDTH,
-    height: WORLD_HEIGHT,
-    backgroundKey: "world-ground",
-    backgroundColor: 0x8c7956,
-    obstacles: [],
-    playerSpawn: WORLD_LANDMARKS.bethanyEntrance,
-    actors: [],
-  },
-};
+type SequenceActor = ActorId | "player" | "lazarus";
+type EnvironmentState =
+  | "none"
+  | "wait-dusk"
+  | "wait-day"
+  | "stone-open"
+  | "lazarus-emerge";
+type CameraTarget = SequenceActor | Point;
 
-const INTERACTION_RULES: InteractionRules = {
-  jesus: {
-    areas: ["bethany-world"],
-    stages: ["deliverMessage", "chooseGuide"],
-  },
-  martha: {
-    areas: ["bethany-world"],
-    stages: ["chooseMartha", "chooseMary", "followMartha", "chooseGuide"],
-  },
-  mary: {
-    areas: ["bethany-world"],
-    stages: ["chooseMartha", "chooseMary", "followMary", "chooseGuide"],
-  },
-  mourner: {
-    areas: ["bethany-world"],
-    stages: ["chooseMartha", "chooseMary", "chooseGuide"],
-  },
-  guide: {
-    areas: ["bethany-world"],
-    stages: ["chooseGuide", "followGuide"],
-  },
-};
+interface BethanySequenceSchema extends MapSequenceSchema {
+  readonly actor: SequenceActor;
+  readonly point: Point;
+  readonly facing: Facing;
+  readonly ordinaryPose: "idle";
+  readonly specialPose: "none";
+  readonly cameraTarget: CameraTarget;
+  readonly environment: EnvironmentState;
+  readonly dialogue: readonly DialogueLine[];
+  readonly choice: RecallQuestion;
+  readonly music: MusicState;
+  readonly finalState: VerseBeat["finalState"];
+  readonly handoff: VerseBeat["handoff"];
+  readonly finalize: VerseBeatId;
+}
 
 interface ActorVisual {
   readonly container: Phaser.GameObjects.Container;
-  readonly marker: Phaser.GameObjects.Ellipse;
   readonly sprite: Phaser.GameObjects.Sprite;
   readonly character: SpriteCharacter;
+  readonly label: ActorLabelController;
   facing: Facing;
 }
+
+const completedOperation = (): MapSequenceOperation => ({
+  finished: Promise.resolve(),
+  cancel: () => undefined,
+});
+
+const isPoint = (target: CameraTarget): target is Point =>
+  typeof target === "object" && "x" in target && "y" in target;
+
+const dialogueSpeaker = (verse: number): string => {
+  if ([4, 7, 9, 10, 11, 14, 15, 23, 25, 26, 34, 35, 39, 40, 41, 42, 43].includes(verse)) {
+    return "耶稣";
+  }
+  if ([21, 22, 24, 27, 39].includes(verse)) {
+    return "马大";
+  }
+  if ([28].includes(verse)) {
+    return "马大";
+  }
+  if ([32].includes(verse)) {
+    return "马利亚";
+  }
+  if (verse === 16) {
+    return "多马";
+  }
+  if ([8, 12].includes(verse)) {
+    return "门徒";
+  }
+  if ([34, 36, 37].includes(verse)) {
+    return "众人";
+  }
+  if (verse === 3) {
+    return "姐妹二人";
+  }
+  return "经文";
+};
 
 export class BethanyScene extends Phaser.Scene {
   private story = new StoryEngine();
   private actorRegistry = new ActorRegistry();
   private playerController = new PlayerController();
-  private cutscenes = new CutsceneDirector(this.playerController);
-  private npcPaths = new NpcPathController();
   private readonly visuals = new Map<ActorId, ActorVisual>();
-  private readonly storyJourneys = new StoryJourney();
+  private readonly labelTexts = new Map<ActorId, string | null>();
 
   private ui!: GameUI;
   private audio!: AudioManager;
@@ -224,22 +210,23 @@ export class BethanyScene extends Phaser.Scene {
     readonly S: Phaser.Input.Keyboard.Key;
     readonly D: Phaser.Input.Keyboard.Key;
   };
-  private areaRuntime?: AreaRuntime;
   private worldRuntime?: WorldRuntime;
-  private interaction?: Interaction;
+  private sequence?: MapSequence<BethanySequenceSchema>;
   private navigation?: NavigationGrid;
   private movementPath: Point[] = [];
   private pendingActor?: ActorId;
   private nearestActor?: ActorId;
-  private openingTrigger?: ProximityTrigger<StoryStage>;
-  private houseDoor?: Trigger<StoryStage>;
   private started = false;
-  private controlReadyAt = 0;
+  private inWorld = false;
   private paused = false;
+  private sequenceStarting = false;
+  private playerFacing: Facing = "front";
+  private resources: AreaResource[] = [];
+  private decorations: Phaser.GameObjects.GameObject[] = [];
+  private daylightOverlay?: Phaser.GameObjects.Rectangle;
   private stone?: Phaser.GameObjects.Image;
   private lazarus?: Phaser.GameObjects.Sprite;
-  private decorations: Phaser.GameObjects.GameObject[] = [];
-  private playerFacing: Facing = "front";
+  private lazarusLabel?: ActorLabelController;
 
   constructor() {
     super("bethany");
@@ -255,261 +242,10 @@ export class BethanyScene extends Phaser.Scene {
       frameWidth: HOUSE_ART.props.frameWidth,
       frameHeight: HOUSE_ART.props.frameHeight,
     });
+    this.load.image(WORLD_MAP_SOURCE_KEY, WORLD_MAP_FALLBACK_URL);
     for (const asset of Object.values(TOMB_PROP_ASSETS)) {
       this.load.image(asset.key, asset.path);
     }
-    this.load.spritesheet(WORLD_GROUND_ASSET.key, WORLD_GROUND_ASSET.path, {
-      frameWidth: WORLD_GROUND_ASSET.frameWidth,
-      frameHeight: WORLD_GROUND_ASSET.frameHeight,
-    });
-    for (const [key, path] of Object.entries(WORLD_OBJECT_ASSETS)) {
-      this.load.image(key, path);
-    }
-    this.loadCharacterSprites();
-  }
-
-  create(): void {
-    const ui = this.registry.get("ui");
-    const audio = this.registry.get("audio");
-    if (!(ui instanceof GameUI) || !(audio instanceof AudioManager)) {
-      throw new Error("Bethany scene requires initialized UI and audio services.");
-    }
-    this.ui = ui;
-    this.audio = audio;
-    this.resetRuntimeState();
-    this.applyPixelArtFiltering();
-    this.createWalkAnimations();
-    this.cameras.main.setBackgroundColor("#706348");
-    this.createPlayer();
-    this.registerActors();
-    this.areaRuntime = new AreaRuntime(this.createAreaHost(), AREAS);
-    this.worldRuntime = new WorldRuntime(this.createWorldHost());
-    this.interaction = new Interaction(
-      this.actorRegistry,
-      INTERACTION_RULES,
-      INTERACTION_DISTANCE,
-    );
-    this.enterArea("lazarus-house");
-    this.configureInput();
-    this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
-    this.game.events.on("start-story", this.startStory, this);
-    this.registry.set("bethany-ready", true);
-    this.game.events.emit("bethany-ready");
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.registry.set("bethany-ready", false);
-      this.game.events.off("start-story", this.startStory, this);
-      this.areaRuntime?.cleanup();
-      this.worldRuntime?.cleanup();
-      this.clearDecorations();
-    });
-  }
-
-  update(): void {
-    if (!this.canAcceptPlayerInput()) {
-      this.player.setVelocity(0);
-      this.updatePlayerAnimation(0, 0);
-      this.ui.setInteractionPrompt(false);
-      return;
-    }
-
-    this.updateMovement();
-    this.updateInteractionTarget();
-    this.tryOpeningTrigger();
-    this.tryHouseDoor();
-    this.updateDepths();
-  }
-
-  private createAreaHost(): AreaHost {
-    return {
-      setBounds: (width, height) => {
-        this.physics.world.setBounds(0, 0, width, height);
-        this.cameras.main.setBounds(0, 0, width, height);
-      },
-      createBackground: (config) => this.createAreaBackground(config),
-      createObstacle: (obstacle) => this.createObstacle(obstacle),
-      clearActors: () => this.clearActorVisuals(),
-      rebuildNavigation: (config) => {
-        const paddedObstacles = config.obstacles.map((obstacle) => ({
-          x: obstacle.x - 36,
-          y: obstacle.y - 36,
-          width: obstacle.width + 72,
-          height: obstacle.height + 72,
-        }));
-        this.navigation = new NavigationGrid(
-          config.width,
-          config.height,
-          40,
-          paddedObstacles,
-        );
-      },
-    };
-  }
-
-  private createWorldHost(): WorldHost {
-    return {
-      setBounds: (width, height) => {
-        this.physics.world.setBounds(0, 0, width, height);
-        this.cameras.main.setBounds(0, 0, width, height);
-      },
-      createGround: () => this.createWorldGround(),
-      createStructure: (structure) => this.createWorldStructure(structure),
-      createDecoration: (decoration) =>
-        this.createWorldArtObject(decoration),
-      createObstacle: (obstacle) => this.createObstacle(obstacle),
-      setNavigation: (navigation) => {
-        this.navigation = navigation;
-      },
-    };
-  }
-
-  private createWorldGround(): AreaResource {
-    const texture = this.textures.get(WORLD_GROUND_ASSET.key);
-    for (const [crop, frameName] of [
-      [WORLD_GROUND_FRAME_CROP, worldGroundInnerFrame],
-      [WORLD_GROUND_BASE_FRAME_CROP, worldGroundBaseFrame],
-    ] as const) {
-      const innerFrameSize = WORLD_GROUND_ASSET.frameWidth - crop * 2;
-      for (let frame = 0; frame < WORLD_GROUND_ASSET.frameCount; frame += 1) {
-        const name = frameName(frame);
-        if (!texture.has(name)) {
-          texture.add(
-            name,
-            0,
-            (frame % 4) * WORLD_GROUND_ASSET.frameWidth + crop,
-            Math.floor(frame / 4) * WORLD_GROUND_ASSET.frameHeight + crop,
-            innerFrameSize,
-            innerFrameSize,
-          );
-        }
-      }
-    }
-    const ground = this.add.container(0, 0).setDepth(-40);
-    for (const tile of WORLD_GROUND_TILES) {
-      ground.add(
-        this.add
-          .image(
-            tile.column * WORLD_GROUND_CELL_SIZE + WORLD_GROUND_CELL_SIZE / 2,
-            tile.row * WORLD_GROUND_CELL_SIZE + WORLD_GROUND_CELL_SIZE / 2,
-            WORLD_GROUND_ASSET.key,
-            tile.layer === "base"
-              ? worldGroundBaseFrame(tile.frame)
-              : worldGroundInnerFrame(tile.frame),
-          )
-          .setDisplaySize(WORLD_GROUND_RENDER_SIZE, WORLD_GROUND_RENDER_SIZE)
-          .setAngle(tile.angle),
-      );
-    }
-    return { destroy: () => ground.destroy() };
-  }
-
-  private createWorldStructure(structure: WorldStructure): AreaResource {
-    const art = WORLD_STRUCTURE_ART[structure.id];
-    if (!art) {
-      throw new Error(`Missing world art placement for ${structure.id}.`);
-    }
-    return this.createWorldArtObject(art);
-  }
-
-  private createWorldArtObject(art: WorldArtObject): AreaResource {
-    const { bounds } = art;
-    const image = this.add
-      .image(
-        bounds.x + bounds.width / 2,
-        bounds.y + bounds.height / 2,
-        art.texture,
-      )
-      .setDisplaySize(bounds.width, bounds.height)
-      .setDepth(bounds.y + bounds.height);
-    if (art.blendMode === "multiply") {
-      image.setBlendMode(Phaser.BlendModes.MULTIPLY);
-    }
-    return { destroy: () => image.destroy() };
-  }
-
-  private createAreaBackground(config: AreaConfig): AreaResource {
-    const background = this.add
-      .rectangle(
-        config.width / 2,
-        config.height / 2,
-        config.width,
-        config.height,
-        config.backgroundColor,
-      )
-      .setDepth(-30);
-    const art = this.textures.exists(config.backgroundKey)
-      ? this.add
-          .image(config.width / 2, config.height / 2, config.backgroundKey)
-          .setDisplaySize(config.width, config.height)
-          .setAlpha(1)
-          .setDepth(-28)
-      : undefined;
-    const route = art
-      ? undefined
-      : this.add
-          .rectangle(
-            config.width / 2,
-            config.height * 0.68,
-            config.width,
-            150,
-            0xcbb98b,
-            0.5,
-          )
-          .setDepth(-29);
-    return {
-      destroy: () => {
-        background.destroy();
-        route?.destroy();
-        art?.destroy();
-      },
-    };
-  }
-
-  private createObstacle(obstacle: Rectangle): AreaResource {
-    const collisionBody = this.add
-      .rectangle(
-        obstacle.x + obstacle.width / 2,
-        obstacle.y + obstacle.height / 2,
-        obstacle.width,
-        obstacle.height,
-        0x3d3429,
-        0,
-      )
-      .setDepth(-20);
-    this.physics.add.existing(collisionBody, true);
-    const collider = this.physics.add.collider(this.player, collisionBody);
-    return {
-      destroy: () => {
-        collider.destroy();
-        collisionBody.destroy();
-      },
-    };
-  }
-
-  private createPlayer(): void {
-    this.player = this.physics.add.sprite(
-      0,
-      0,
-      spriteTextureKey("messenger"),
-      spriteFrame("messenger", this.playerFacing, "idle"),
-    );
-    this.player
-      .setScale(
-        INTERIOR_CHARACTER_HEIGHT / spriteSheet("messenger").frameHeight,
-      )
-      .setOrigin(0.5, characterOriginY("messenger"));
-    this.player.setCollideWorldBounds(true);
-    this.player.setBodySize(72, 60);
-    this.player.setOffset(44, 150);
-    this.showPlayerIdle();
-  }
-
-  private applyPixelArtFiltering(): void {
-    for (const key of this.textures.getTextureKeys()) {
-      this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
-    }
-  }
-
-  private loadCharacterSprites(): void {
     for (const sheet of [
       ...allCharacterSheets(),
       ...Object.values(CORE_POSE_SHEETS),
@@ -523,355 +259,244 @@ export class BethanyScene extends Phaser.Scene {
     }
   }
 
-  private createWalkAnimations(): void {
-    const characters: readonly WalkingSpriteCharacter[] = [
-      "messenger",
-      "martha",
-      "mary",
-      "jesus",
-    ];
-    for (const character of characters) {
-      for (const facing of FACINGS) {
-        const key = walkAnimationKey(character, facing);
-        if (!this.anims.exists(key)) {
-          this.anims.create({
-            key,
-            frames: [...walkFrames(character, facing)],
-            frameRate: 9,
-            repeat: -1,
-          });
-        }
-      }
+  create(): void {
+    const ui = this.registry.get("ui");
+    const audio = this.registry.get("audio");
+    if (!(ui instanceof GameUI) || !(audio instanceof AudioManager)) {
+      throw new Error("Bethany scene requires initialized UI and audio services.");
     }
-  }
-
-  private updatePlayerAnimation(x: number, y: number): void {
-    this.playerFacing = resolveFacing(x, y, this.playerFacing);
-    if (x === 0 && y === 0) {
-      this.showPlayerIdle();
-      return;
-    }
-    this.player.play(walkAnimationKey("messenger", this.playerFacing), true);
-  }
-
-  private showPlayerIdle(): void {
-    this.player.anims.stop();
-    this.player
-      .setTexture(spriteTextureKey("messenger"))
-      .setFrame(spriteFrame("messenger", this.playerFacing, "idle"));
-  }
-
-  private updateActorAnimation(id: ActorId, x: number, y: number): void {
-    const visual = this.visuals.get(id);
-    if (!visual) {
-      return;
-    }
-    visual.facing = resolveFacing(x, y, visual.facing);
-    if ((x === 0 && y === 0) || !hasWalkFrames(visual.character)) {
-      visual.sprite.anims.stop();
-      visual.sprite
-        .setTexture(spriteTextureKey(visual.character))
-        .setFrame(spriteFrame(visual.character, visual.facing, "idle"));
-      return;
-    }
-    visual.sprite.play(
-      walkAnimationKey(visual.character, visual.facing),
-      true,
+    this.ui = ui;
+    this.audio = audio;
+    applyLinearTextureFiltering({
+      linearMode: Phaser.Textures.FilterMode.LINEAR,
+      textureKeys: this.textures.getTextureKeys(),
+      setFilter: (textureKey, filterMode) =>
+        this.textures.get(textureKey).setFilter(filterMode),
+    });
+    this.createWalkAnimations();
+    this.createPlayer();
+    this.registerActors();
+    this.worldRuntime = new WorldRuntime(this.createWorldHost());
+    this.sequence = new MapSequence(
+      createPhaserMapSequenceAdapters(this.createSequenceHost()),
     );
+    this.enterHouse();
+    this.configureInput();
+    this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+    this.game.events.on("start-story", this.startStory, this);
+    this.registry.set("bethany-ready", true);
+    this.game.events.emit("bethany-ready");
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.registry.set("bethany-ready", false);
+      this.game.events.off("start-story", this.startStory, this);
+      void this.sequence?.dispose();
+      this.worldRuntime?.cleanup();
+      this.clearSceneResources();
+      this.clearActorVisuals();
+    });
   }
 
-  private actorDisplayHeight(id: ActorId): number {
-    return this.actorRegistry.require(id).state.area === "lazarus-house"
-      ? INTERIOR_CHARACTER_HEIGHT
-      : EXTERIOR_CHARACTER_HEIGHT;
-  }
-
-  private restoreActorVisual(id: ActorId): void {
-    const visual = this.visuals.get(id);
-    if (!visual) {
+  update(): void {
+    if (!this.canAcceptPlayerInput()) {
+      this.player.setVelocity(0);
+      this.updatePlayerAnimation(0, 0);
+      this.ui.setInteractionPrompt(false);
       return;
     }
-    const sheet = spriteSheet(visual.character);
-    visual.sprite.anims.stop();
-    visual.sprite
-      .setTexture(sheet.key)
-      .setFrame(spriteFrame(visual.character, visual.facing, "idle"))
-      .setScale(this.actorDisplayHeight(id) / sheet.frameHeight)
-      .setOrigin(0.5, characterOriginY(visual.character));
-    visual.container.setVisible(this.actorRegistry.require(id).state.visible);
+
+    this.updateMovement();
+    this.updateNearestActor();
+    this.tryProximityBeat();
+    this.tryHouseExit();
+    this.updateDepths();
   }
 
-  private resetMapPoses(): void {
-    for (const id of this.visuals.keys()) {
-      this.restoreActorVisual(id);
+  private startStory(): void {
+    if (this.started) {
+      return;
     }
+    this.started = true;
+    this.ui.showGameHud();
+    this.syncHud();
+    this.audio.setState("exploration", 900);
+    this.cameras.main.fadeIn(450, 20, 18, 14);
   }
 
-  private applyMapPoseCues(cues: readonly MapPoseCue[]): void {
-    this.resetMapPoses();
-    for (const cue of cues) {
-      const visual = this.visuals.get(cue.actor);
-      if (!visual) {
-        throw new Error(`Map pose actor ${cue.actor} has no active visual.`);
-      }
-      visual.sprite.anims.stop();
-      if (cue.kind === "core") {
-        const sheet = CORE_POSE_SHEETS[cue.actor];
-        visual.sprite
-          .setTexture(sheet.key)
-          .setFrame(corePoseFrame(cue.actor, cue.pose))
-          .setScale(this.actorDisplayHeight(cue.actor) / sheet.frameHeight)
-          .setOrigin(0.5, corePoseOriginY(cue.actor));
-      } else {
-        visual.sprite
-          .setTexture(SUPPORTING_ACTION_SHEET.key)
-          .setFrame(supportingActionFrame(cue.pose))
-          .setScale(
-            Math.max(this.actorDisplayHeight(cue.actor), 88) /
-              SUPPORTING_ACTION_SHEET.frameHeight,
-          )
-          .setOrigin(
-            0.5,
-            (SUPPORTING_ACTION_SHEET.frameHeight - 8) /
-              SUPPORTING_ACTION_SHEET.frameHeight,
-          );
-        for (const hiddenActor of cue.hideActors ?? []) {
-          const hiddenVisual = this.visuals.get(hiddenActor);
-          if (!hiddenVisual) {
-            throw new Error(
-              `Map pose hidden actor ${hiddenActor} has no active visual.`,
-            );
-          }
-          hiddenVisual.container.setVisible(false);
-        }
-      }
-    }
+  private createPlayer(): void {
+    this.player = this.physics.add.sprite(
+      0,
+      0,
+      spriteTextureKey("messenger"),
+      spriteFrame("messenger", this.playerFacing, "idle"),
+    );
+    this.applyActorScale(this.player, "messenger", "indoor");
+    this.player
+      .setOrigin(0.5, characterOriginY("messenger"))
+      .setCollideWorldBounds(true)
+      .setBodySize(72, 60)
+      .setOffset(44, 150);
   }
 
   private registerActors(): void {
     for (const id of ACTOR_IDS) {
-      const actor = ACTORS[id];
       this.actorRegistry.register(
-        new Character(id, actor.name, "lazarus-house", { x: 0, y: 0 }, false),
+        new Character(
+          id,
+          ACTOR_LABELS[id] ?? FIND_JESUS_CONTRACT.temporaryLabel,
+          "lazarus-house",
+          { x: 0, y: 0 },
+          false,
+        ),
       );
+      this.labelTexts.set(id, ACTOR_LABELS[id]);
     }
   }
 
-  private resetRuntimeState(): void {
-    this.story = new StoryEngine();
-    this.actorRegistry = new ActorRegistry();
-    this.playerController = new PlayerController();
-    this.cutscenes = new CutsceneDirector(this.playerController);
-    this.npcPaths = new NpcPathController();
-    this.visuals.clear();
-    this.storyJourneys.reset();
-    this.areaRuntime = undefined;
-    this.worldRuntime = undefined;
-    this.interaction = undefined;
-    this.navigation = undefined;
-    this.movementPath = [];
-    this.pendingActor = undefined;
-    this.nearestActor = undefined;
-    this.openingTrigger = undefined;
-    this.houseDoor = undefined;
-    this.started = false;
-    this.controlReadyAt = 0;
-    this.paused = false;
-    this.stone = undefined;
-    this.lazarus = undefined;
-    this.decorations = [];
-    this.playerFacing = "front";
-  }
-
-  private enterArea(area: AreaId): void {
-    if (area === "bethany-world") {
-      this.enterWorld();
-      return;
-    }
-    this.clearDecorations();
-    const config = this.areaRuntime?.enter(area);
-    if (!config) {
-      throw new Error(`Area runtime is not available for ${area}.`);
-    }
-    this.actorRegistry.hideAll();
-    for (const placement of config.actors) {
-      this.actorRegistry.move(placement.id, area, placement.position);
-      this.actorRegistry.setVisible(placement.id, placement.visible ?? true);
-      if (placement.visible ?? true) {
-        this.createActorVisual(placement.id);
-      }
-    }
-    this.player.setPosition(config.playerSpawn.x, config.playerSpawn.y);
-    this.player.setScale(
-      INTERIOR_CHARACTER_HEIGHT / spriteSheet("messenger").frameHeight,
+  private enterHouse(): void {
+    this.inWorld = false;
+    this.clearSceneResources();
+    this.clearActorVisuals();
+    this.physics.world.setBounds(0, 0, HOUSE_ART.width, HOUSE_ART.height);
+    this.cameras.main.setBounds(0, 0, HOUSE_ART.width, HOUSE_ART.height);
+    this.createHouseBackground();
+    this.resources.push(...HOUSE_OBSTACLES.map((obstacle) => this.createObstacle(obstacle)));
+    this.navigation = new NavigationGrid(
+      HOUSE_ART.width,
+      HOUSE_ART.height,
+      40,
+      HOUSE_OBSTACLES,
     );
-    this.stopPlayerMovement();
-    this.nearestActor = undefined;
-    if (area === "lazarus-house") {
-      this.createHouseArt();
-      this.createSickLazarus();
-      this.createHouseStoryTrigger();
-    }
+    this.actorRegistry.hideAll();
+    this.placeActor("martha", { x: 690, y: 455 }, true);
+    this.placeActor("mary", { x: 705, y: 535 }, true);
+    this.player.setPosition(HOUSE_PLAYER_SPAWN.x, HOUSE_PLAYER_SPAWN.y);
+    this.applyActorScale(this.player, "messenger", "indoor");
+    this.createSickLazarus();
     this.cameras.main.centerOn(this.player.x, this.player.y);
   }
 
   private enterWorld(): void {
-    this.clearDecorations();
-    this.areaRuntime?.cleanup();
+    this.inWorld = true;
+    this.clearSceneResources();
+    this.clearActorVisuals();
     this.worldRuntime?.activate();
     this.actorRegistry.hideAll();
     for (const id of ACTOR_IDS) {
-      const placement = WORLD_ACTORS[id];
-      this.actorRegistry.move(id, "bethany-world", placement.position);
-      this.actorRegistry.setVisible(id, placement.visible ?? true);
-      if (placement.visible ?? true) {
-        this.createActorVisual(id);
-      }
+      this.placeActor(id, WORLD_ACTOR_POSITIONS[id], true);
     }
     this.player.setPosition(
-      WORLD_LANDMARKS.bethanyEntrance.x + 310,
-      WORLD_LANDMARKS.bethanyEntrance.y + 250,
+      WORLD_LANDMARKS.jesusCamp.x - 440,
+      WORLD_LANDMARKS.jesusCamp.y + 80,
     );
-    this.player.setScale(
-      EXTERIOR_CHARACTER_HEIGHT / spriteSheet("messenger").frameHeight,
-    );
+    this.applyActorScale(this.player, "messenger", "outdoor");
+    this.applyBeatPresentation(this.story.beatId, false);
     this.stopPlayerMovement();
-    this.nearestActor = undefined;
     this.cameras.main.centerOn(this.player.x, this.player.y);
   }
 
-  private currentArea(): AreaId | undefined {
-    if (this.worldRuntime?.active) {
-      return "bethany-world";
-    }
-    return this.areaRuntime?.currentArea;
-  }
-
-  private createActorVisual(id: ActorId): void {
-    const actor = this.actorRegistry.require(id).state;
-    const character = actorSpriteCharacter(id);
-    const facing: Facing = "front";
-    const isInterior = actor.area === "lazarus-house";
-    const height = isInterior
-      ? INTERIOR_CHARACTER_HEIGHT
-      : EXTERIOR_CHARACTER_HEIGHT;
-    const sheet = spriteSheet(character);
-    const sprite = this.add
-      .sprite(
-        0,
-        0,
-        sheet.key,
-        spriteFrame(character, facing, "idle"),
-      )
-      .setScale(height / sheet.frameHeight)
-      .setOrigin(0.5, characterOriginY(character));
-    const width = sprite.displayWidth;
-    const marker = this.add
-      .ellipse(0, 0, Math.max(width * 1.1, 42), height * 0.24)
-      .setStrokeStyle(3, 0xf4c86a, 0.95)
-      .setVisible(false);
-    const shadow = this.add.rectangle(
-      0,
-      0,
-      Math.max(width * 0.73, 24),
-      height * 0.1,
-      0x2b261e,
-      0.35,
-    );
-    const container = this.add.container(actor.position.x, actor.position.y, [
-      marker,
-      shadow,
-      sprite,
-    ]);
-    container.setSize(width + 10, height + 22);
-    container.setInteractive({ useHandCursor: true });
-    container.on(
-      "pointerdown",
-      (
-        _pointer: Phaser.Input.Pointer,
-        _localX: number,
-        _localY: number,
-        event: Phaser.Types.Input.EventData,
-      ) => {
-        event.stopPropagation();
-        this.moveTowardActor(id);
+  private createWorldHost(): WorldHost {
+    return {
+      setBounds: (width, height) => {
+        this.physics.world.setBounds(0, 0, width, height);
+        this.cameras.main.setBounds(0, 0, width, height);
       },
-    );
-    this.visuals.set(id, { container, marker, sprite, character, facing });
+      createWorldSource: () => this.createWorldSource(),
+      createObstacle: (obstacle) => this.createObstacle(obstacle),
+      setNavigation: (navigation) => {
+        this.navigation = navigation;
+      },
+    };
   }
 
-  private clearActorVisuals(): void {
-    for (const visual of this.visuals.values()) {
-      visual.container.destroy();
-    }
-    this.visuals.clear();
-  }
-
-  private createTombElements(): void {
-    const wrappedPose = "wrapped-idle";
-    this.stone = this.add
-      .image(
-        TOMB_STONE_PLACEMENT.x,
-        TOMB_STONE_PLACEMENT.y,
-        TOMB_PROP_ASSETS.stone.key,
-      )
-      .setDisplaySize(
-        TOMB_STONE_PLACEMENT.width,
-        TOMB_STONE_PLACEMENT.height,
-      )
-      .setDepth(TOMB_STONE_PLACEMENT.depth);
-    this.lazarus = this.add
-      .sprite(
-        2010,
-        390,
-        lazarusTextureKey(),
-        lazarusFrame(wrappedPose),
-      )
-      .setScale(
-        lazarusScaleToFit(wrappedPose, { width: 78, height: 72 }),
-      )
-      .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight)
-      .setDepth(390)
-      .setVisible(false);
-    const props = TOMB_PROP_PLACEMENTS.map((placement) => {
-      const image = this.add
-        .image(
-          placement.x,
-          placement.y,
-          TOMB_PROP_ASSETS[placement.id].key,
-        )
-        .setDisplaySize(placement.width, placement.height)
-        .setDepth(placement.depth);
-      if (placement.alpha !== undefined) {
-        image.setAlpha(placement.alpha);
+  private createWorldSource(): AreaResource {
+    const texture = this.textures.get(WORLD_MAP_SOURCE_KEY);
+    const halfWidth = WORLD_WIDTH / 2;
+    const halfHeight = WORLD_HEIGHT / 2;
+    const frames = [
+      { name: "world-nw", x: 0, y: 0 },
+      { name: "world-ne", x: halfWidth, y: 0 },
+      { name: "world-sw", x: 0, y: halfHeight },
+      { name: "world-se", x: halfWidth, y: halfHeight },
+    ] as const;
+    const container = this.add.container(0, 0).setDepth(-50);
+    for (const frame of frames) {
+      if (!texture.has(frame.name)) {
+        texture.add(
+          frame.name,
+          0,
+          frame.x,
+          frame.y,
+          halfWidth,
+          halfHeight,
+        );
       }
-      return image;
-    });
-    this.decorations = [this.stone, this.lazarus, ...props];
+      container.add(
+        this.add
+          .image(
+            frame.x + halfWidth / 2,
+            frame.y + halfHeight / 2,
+            WORLD_MAP_SOURCE_KEY,
+            frame.name,
+          )
+          .setDisplaySize(halfWidth, halfHeight),
+      );
+    }
+    const compound = WORLD_REGIONS.marthaCompound;
+    const courtyard = this.add
+      .rectangle(
+        compound.x + compound.width / 2,
+        compound.y + compound.height / 2,
+        compound.width,
+        compound.height,
+        0x514638,
+        0.16,
+      )
+      .setBlendMode(Phaser.BlendModes.MULTIPLY)
+      .setDepth(-45);
+    const houseShadow = this.add
+      .ellipse(480, 1130, 520, 180, 0x1e1a15, 0.2)
+      .setDepth(-44);
+    this.daylightOverlay = this.add
+      .rectangle(
+        WORLD_WIDTH / 2,
+        WORLD_HEIGHT / 2,
+        WORLD_WIDTH,
+        WORLD_HEIGHT,
+        0x25314c,
+        0,
+      )
+      .setDepth(100000);
+    return {
+      destroy: () => {
+        container.destroy();
+        courtyard.destroy();
+        houseShadow.destroy();
+        this.daylightOverlay?.destroy();
+        this.daylightOverlay = undefined;
+      },
+    };
   }
 
-  private createSickLazarus(): void {
-    const lazarus = this.add
-      .sprite(
-        HOUSE_SICK_LAZARUS_POSITION.x,
-        HOUSE_SICK_LAZARUS_POSITION.y,
-        lazarusTextureKey(),
-        lazarusFrame("sick"),
+  private createHouseBackground(): void {
+    const base = this.add
+      .rectangle(
+        HOUSE_ART.width / 2,
+        HOUSE_ART.height / 2,
+        HOUSE_ART.width,
+        HOUSE_ART.height,
+        0x4f4435,
       )
-      .setScale(
-        lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE),
-      )
-      .setDepth(HOUSE_STORY_FOCUS.y - 1);
-    this.decorations.push(lazarus);
-  }
-
-  private createHouseArt(): void {
+      .setDepth(-50);
+    const art = this.add
+      .image(HOUSE_ART.width / 2, HOUSE_ART.height / 2, HOUSE_ART.base.key)
+      .setDisplaySize(HOUSE_ART.width, HOUSE_ART.height)
+      .setDepth(-48);
+    this.decorations.push(base, art);
     for (const placement of [
       ...HOUSE_FOREGROUND_PLACEMENTS,
       ...HOUSE_PROP_PLACEMENTS,
     ]) {
-      const image = this.createHouseArtPlacement(placement);
-      this.decorations.push(image);
+      this.decorations.push(this.createHouseArtPlacement(placement));
     }
   }
 
@@ -896,23 +521,208 @@ export class BethanyScene extends Phaser.Scene {
       .setDepth(placement.depth);
   }
 
-  private createHouseStoryTrigger(): void {
-    this.openingTrigger = new ProximityTrigger({
-      stage: "opening",
-      position: HOUSE_STORY_FOCUS,
-      radius: 155,
-      handler: () => this.runOpeningEncounter(),
+  private createSickLazarus(): void {
+    this.lazarus = this.add
+      .sprite(
+        HOUSE_SICK_LAZARUS_POSITION.x,
+        HOUSE_SICK_LAZARUS_POSITION.y,
+        lazarusTextureKey(),
+        lazarusFrame("sick"),
+      )
+      .setScale(lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE))
+      .setDepth(HOUSE_STORY_FOCUS.y - 1);
+    this.lazarusLabel = createActorLabel(this, this.lazarus, {
+      text: ACTOR_LABELS.lazarus ?? "拉撒路",
+      resolveVisibility: () => Boolean(this.lazarus?.visible),
     });
+    this.decorations.push(this.lazarus);
   }
 
-  private clearDecorations(): void {
+  private createTombElements(): void {
+    if (this.stone?.active) {
+      return;
+    }
+    const entrance = WORLD_LANDMARKS.tombEntrance;
+    this.stone = this.add
+      .image(entrance.x + 40, entrance.y, TOMB_PROP_ASSETS.stone.key)
+      .setDisplaySize(120, 120)
+      .setDepth(entrance.y + 20);
+    this.lazarus = this.add
+      .sprite(
+        entrance.x,
+        entrance.y + 15,
+        lazarusTextureKey(),
+        lazarusFrame("wrapped-idle"),
+      )
+      .setScale(
+        lazarusScaleToFit("wrapped-idle", {
+          width: EXTERIOR_CHARACTER_HEIGHT,
+          height: EXTERIOR_CHARACTER_HEIGHT,
+        }),
+      )
+      .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight)
+      .setDepth(entrance.y + 10)
+      .setVisible(false);
+    this.lazarusLabel = createActorLabel(this, this.lazarus, {
+      text: ACTOR_LABELS.lazarus ?? "拉撒路",
+      resolveVisibility: () => Boolean(this.lazarus?.visible),
+    });
+    this.decorations.push(this.stone, this.lazarus);
+  }
+
+  private placeActor(id: ActorId, position: Point, visible: boolean): void {
+    const area = this.inWorld ? "bethany-world" : "lazarus-house";
+    this.actorRegistry.move(id, area, position);
+    this.actorRegistry.setVisible(id, visible);
+    if (visible) {
+      this.createActorVisual(id);
+    }
+  }
+
+  private createActorVisual(id: ActorId): void {
+    const actor = this.actorRegistry.require(id).state;
+    const character = actorSpriteCharacter(id);
+    const facing: Facing = "front";
+    const sprite = this.add
+      .sprite(
+        0,
+        0,
+        spriteTextureKey(character),
+        spriteFrame(character, facing, "idle"),
+      )
+      .setOrigin(0.5, characterOriginY(character));
+    this.applyActorScale(
+      sprite,
+      character,
+      this.inWorld ? "outdoor" : "indoor",
+    );
+    const shadow = this.add.ellipse(
+      0,
+      0,
+      Math.max(sprite.displayWidth * 0.72, 24),
+      11,
+      0x1c1814,
+      0.32,
+    );
+    const container = this.add.container(actor.position.x, actor.position.y, [
+      shadow,
+      sprite,
+    ]);
+    container
+      .setSize(sprite.displayWidth + 16, sprite.displayHeight + 24)
+      .setInteractive({ useHandCursor: true })
+      .on(
+        "pointerdown",
+        (
+          _pointer: Phaser.Input.Pointer,
+          _localX: number,
+          _localY: number,
+          event: Phaser.Types.Input.EventData,
+        ) => {
+          event.stopPropagation();
+          this.moveTowardActor(id);
+        },
+      );
+    const label = createActorLabel(this, container, {
+      text: this.labelTexts.get(id) ?? "",
+      resolveVisibility: () =>
+        container.visible && Boolean(this.labelTexts.get(id)),
+    });
+    this.visuals.set(id, { container, sprite, character, label, facing });
+  }
+
+  private applyActorScale(
+    sprite: Phaser.GameObjects.Sprite,
+    character: SpriteCharacter,
+    area: "indoor" | "outdoor",
+  ): void {
+    const sheet = spriteSheet(character);
+    const metrics = resolveDisplayMetrics(DEFAULT_DISPLAY_SCALE, {
+      kind: "base-sheet",
+      area,
+      sourceBounds: { width: sheet.frameWidth, height: sheet.frameHeight },
+    });
+    sprite.setScale(metrics.scale);
+  }
+
+  private applyBeatPresentation(
+    beatId: VerseBeatId,
+    finalState: boolean,
+  ): void {
+    const beat = VERSE_BEATS.find((candidate) => candidate.id === beatId);
+    if (!beat) {
+      throw new Error(`Missing beat ${beatId}.`);
+    }
+    const snapshot =
+      finalState || !beat.duringBeatActors
+        ? beat.finalState.actors
+        : beat.duringBeatActors;
+    for (const id of ACTOR_IDS) {
+      const visible = snapshot.visibleActorIds.includes(id);
+      this.setActorVisible(id, visible);
+      const override = snapshot.labelOverrides?.[id];
+      const label = override === undefined ? ACTOR_LABELS[id] : override;
+      this.setActorLabel(id, label);
+    }
+  }
+
+  private setActorLabel(id: ActorId, label: string | null): void {
+    this.labelTexts.set(id, label);
+    this.visuals.get(id)?.label.updateText(label ?? "");
+  }
+
+  private setActorVisible(id: ActorId, visible: boolean): void {
+    this.actorRegistry.setVisible(id, visible);
+    let visual = this.visuals.get(id);
+    if (visible && !visual) {
+      this.createActorVisual(id);
+      visual = this.visuals.get(id);
+    }
+    visual?.container.setVisible(visible);
+  }
+
+  private clearActorVisuals(): void {
+    for (const visual of this.visuals.values()) {
+      visual.label.destroy();
+      visual.container.destroy();
+    }
+    this.visuals.clear();
+  }
+
+  private clearSceneResources(): void {
+    for (const resource of this.resources) {
+      resource.destroy();
+    }
+    this.resources = [];
     for (const decoration of this.decorations) {
       decoration.destroy();
     }
     this.decorations = [];
-    this.stone = undefined;
+    this.lazarusLabel?.destroy();
+    this.lazarusLabel = undefined;
     this.lazarus = undefined;
-    this.openingTrigger = undefined;
+    this.stone = undefined;
+  }
+
+  private createObstacle(obstacle: Rectangle): AreaResource {
+    const body = this.add
+      .rectangle(
+        obstacle.x + obstacle.width / 2,
+        obstacle.y + obstacle.height / 2,
+        obstacle.width,
+        obstacle.height,
+        0,
+        0,
+      )
+      .setDepth(-20);
+    this.physics.add.existing(body, true);
+    const collider = this.physics.add.collider(this.player, body);
+    return {
+      destroy: () => {
+        collider.destroy();
+        body.destroy();
+      },
+    };
   }
 
   private configureInput(): void {
@@ -928,15 +738,18 @@ export class BethanyScene extends Phaser.Scene {
       D: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     };
     keyboard.on("keydown-SPACE", (event: KeyboardEvent) => {
-      if (event.repeat || this.ui.advanceDialogue() || this.ui.isChoiceOpen()) {
+      if (event.repeat) {
+        return;
+      }
+      if (this.sequence?.isRunning) {
+        this.ui.dismissBlocking();
+        this.sequence.requestSkip();
+        return;
+      }
+      if (this.ui.advanceDialogue() || this.ui.isChoiceOpen()) {
         return;
       }
       this.interactWithNearestActor();
-    });
-    keyboard.on("keydown-ENTER", (event: KeyboardEvent) => {
-      if (!event.repeat && !this.ui.isChoiceOpen()) {
-        this.ui.advanceDialogue();
-      }
     });
     keyboard.on("keydown-ESC", (event: KeyboardEvent) => {
       if (
@@ -957,27 +770,13 @@ export class BethanyScene extends Phaser.Scene {
     });
   }
 
-  private startStory(): void {
-    if (this.started) {
-      return;
-    }
-    this.started = true;
-    this.controlReadyAt = this.time.now + 500;
-    this.stopPlayerMovement();
-    this.ui.showGameHud();
-    this.updateObjective();
-    this.audio.setState("exploration", 1200);
-    this.cameras.main.fadeIn(500, 20, 18, 14);
-    this.ui.showNotice("先走近床边，查看患病的拉撒路。");
-  }
-
   private canAcceptPlayerInput(): boolean {
     return (
       this.started &&
-      this.time.now >= this.controlReadyAt &&
       !this.paused &&
       !this.ui.isBlockingOpen() &&
-      !this.playerController.isLocked
+      !this.playerController.isLocked &&
+      !this.sequenceStarting
     );
   }
 
@@ -992,7 +791,10 @@ export class BethanyScene extends Phaser.Scene {
     if (direction.x !== 0 || direction.y !== 0) {
       this.movementPath = [];
       this.pendingActor = undefined;
-      this.player.setVelocity(direction.x * PLAYER_SPEED, direction.y * PLAYER_SPEED);
+      this.player.setVelocity(
+        direction.x * PLAYER_SPEED,
+        direction.y * PLAYER_SPEED,
+      );
       this.updatePlayerAnimation(direction.x, direction.y);
       return;
     }
@@ -1020,111 +822,21 @@ export class BethanyScene extends Phaser.Scene {
     this.player.setVelocity(0);
     this.updatePlayerAnimation(0, 0);
     if (this.pendingActor) {
-      const context = this.interactionContext();
-      if (!this.interaction?.canApproach(this.pendingActor, context)) {
-        this.pendingActor = undefined;
-        return;
+      const target = this.visuals.get(this.pendingActor)?.container;
+      if (target) {
+        const distance = Phaser.Math.Distance.Between(
+          this.player.x,
+          this.player.y,
+          target.x,
+          target.y,
+        );
+        if (distance <= INTERACTION_DISTANCE) {
+          const actor = this.pendingActor;
+          this.pendingActor = undefined;
+          this.handleActorInteraction(actor);
+        }
       }
-      const target = this.interaction.targetPosition(this.pendingActor);
-      if (target && !this.interaction.canInteract(this.pendingActor, context)) {
-        this.setMovementPath(target);
-      }
     }
-  }
-
-  private updateInteractionTarget(): void {
-    this.nearestActor = this.interaction?.nearest(this.interactionContext());
-    const actor = this.nearestActor
-      ? this.actorRegistry.get(this.nearestActor)?.state
-      : undefined;
-    this.ui.setInteractionPrompt(
-      actor !== undefined,
-      actor ? `SPACE / 点击与${actor.name}互动` : undefined,
-    );
-    if (
-      this.pendingActor &&
-      this.pendingActor === this.nearestActor &&
-      this.movementPath.length === 0
-    ) {
-      const actorId = this.pendingActor;
-      this.pendingActor = undefined;
-      this.handleActorInteraction(actorId);
-    }
-  }
-
-  private interactionContext() {
-    const area = this.currentArea();
-    if (!area) {
-      throw new Error("Cannot interact before entering an area.");
-    }
-    return {
-      area,
-      playerPosition: { x: this.player.x, y: this.player.y },
-      stage: this.story.stage,
-      inputLocked: !this.canAcceptPlayerInput(),
-    };
-  }
-
-  private tryHouseDoor(): void {
-    if (this.areaRuntime?.currentArea !== "lazarus-house") {
-      return;
-    }
-    if (
-      Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        HOUSE_EXIT.x,
-        HOUSE_EXIT.y,
-      ) >
-      82
-    ) {
-      return;
-    }
-    if (!this.houseDoor) {
-      this.houseDoor = new Trigger<StoryStage>({
-        stage: "deliverMessage",
-        handler: () =>
-          this.cutscenes.run(async () => {
-            this.enterWorld();
-            this.cameras.main.fadeIn(350, 20, 18, 14);
-            this.ui.showNotice("沿道路前进，找到耶稣。");
-          }),
-      });
-    }
-    const houseDoor = this.houseDoor;
-    void houseDoor.tryActivate(this.story.stage).catch(() => {
-      this.ui.showNotice("转场未完成，请再次靠近门口。");
-    });
-  }
-
-  private tryOpeningTrigger(): void {
-    const trigger = this.openingTrigger;
-    if (!trigger || this.story.stage !== "opening") {
-      return;
-    }
-    void trigger
-      .tryActivate("opening", { x: this.player.x, y: this.player.y })
-      .catch(() => {
-        this.ui.showNotice("床边剧情未完成，请再次靠近拉撒路。");
-      });
-  }
-
-  private async runOpeningEncounter(): Promise<void> {
-    await this.cutscenes.run(async () => {
-      this.stopPlayerMovement();
-      this.audio.setState("dialogue", 1200);
-      this.cameras.main.stopFollow();
-      this.cameras.main.pan(285, 255, 400, "Sine.easeInOut");
-      await this.showDialogue(DIALOGUES.opening);
-      this.story.completeOpening();
-      this.audio.setState("exploration", 2400);
-      this.updateObjective();
-      this.cameras.main.pan(this.player.x, this.player.y, 350, "Sine.easeInOut");
-      this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
-      this.ui.showNotice(
-        "计分已经开始。走到门口，沿道路找到耶稣，并准确传达口信。",
-      );
-    });
   }
 
   private setMovementPath(target: Point): void {
@@ -1134,674 +846,850 @@ export class BethanyScene extends Phaser.Scene {
     );
     if (!path || path.length === 0) {
       this.movementPath = [];
-      this.ui.showNotice("那里无法到达，请点击道路上的位置。", 1800);
+      this.ui.showTechnicalError("目标点不可达。", "unreachable", 1800);
       return;
     }
     this.movementPath = path;
+  }
+
+  private eligibleActors(): readonly ActorId[] {
+    return ACTOR_IDS.filter((id) => this.visuals.get(id)?.container.visible);
+  }
+
+  private updateNearestActor(): void {
+    let nearest: ActorId | undefined;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (const id of this.eligibleActors()) {
+      const visual = this.visuals.get(id);
+      if (!visual) {
+        continue;
+      }
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        visual.container.x,
+        visual.container.y,
+      );
+      if (distance <= INTERACTION_DISTANCE && distance < nearestDistance) {
+        nearest = id;
+        nearestDistance = distance;
+      }
+    }
+    this.nearestActor = nearest;
+    this.ui.setInteractionPrompt(nearest !== undefined);
   }
 
   private moveTowardActor(id: ActorId): void {
     if (!this.canAcceptPlayerInput()) {
       return;
     }
-    const context = this.interactionContext();
-    if (!this.interaction?.canApproach(id, context)) {
+    const visual = this.visuals.get(id);
+    if (!visual?.container.visible) {
       return;
     }
     this.pendingActor = id;
-    if (this.nearestActor === id) {
+    const distance = Phaser.Math.Distance.Between(
+      this.player.x,
+      this.player.y,
+      visual.container.x,
+      visual.container.y,
+    );
+    if (distance <= INTERACTION_DISTANCE) {
       this.pendingActor = undefined;
       this.handleActorInteraction(id);
       return;
     }
-    const target = this.interaction.targetPosition(id);
-    if (target) {
-      this.setMovementPath(target);
-    }
+    this.setMovementPath({
+      x: visual.container.x,
+      y: visual.container.y + 72,
+    });
   }
 
   private interactWithNearestActor(): void {
-    if (!this.canAcceptPlayerInput() || !this.nearestActor) {
-      return;
+    if (this.canAcceptPlayerInput() && this.nearestActor) {
+      this.handleActorInteraction(this.nearestActor);
     }
-    this.handleActorInteraction(this.nearestActor);
   }
 
   private handleActorInteraction(id: ActorId): void {
     this.stopPlayerMovement();
-    switch (this.story.stage) {
-      case "deliverMessage":
-        if (id === "jesus") {
-          void this.deliverMessage();
-        }
-        return;
-      case "chooseMartha":
-      case "chooseMary":
-      case "chooseGuide":
-        this.handleDecision(id);
-        return;
-      case "followMartha":
-        if (id === "martha") {
-          this.continueStoryJourney(
-            id,
-            "马大仍在前行。请继续跟随，等她停下后再互动。",
-            () => this.runMarthaSequence(),
-          );
-        }
-        return;
-      case "followMary":
-        if (id === "mary") {
-          this.continueStoryJourney(
-            id,
-            "马利亚仍在前行。请继续跟随，等她停下后再互动。",
-            () => this.runMarySequence(),
-          );
-        }
-        return;
-      case "followGuide":
-        if (id === "guide") {
-          this.continueStoryJourney(
-            id,
-            "带路的人仍在前行。请继续跟随，等他停下后再互动。",
-            () => this.runTombSequence(),
-          );
-        }
-        return;
-      default:
-        return;
+    if (this.story.beatId === "find-jesus") {
+      this.handleFindJesus(id);
+      return;
     }
+    if (this.story.canTrigger(id)) {
+      void this.runActiveBeat();
+      return;
+    }
+    this.showActorEcho(id);
   }
 
-  private async deliverMessage(): Promise<void> {
-    await this.cutscenes.run(async () => {
-      this.audio.setState("dialogue", 1800);
-      await this.askQuestion(QUESTIONS.message);
-      this.story.deliverMessage();
-      this.updateObjective();
-      const arrivalLine = DIALOGUES.messageJourney.at(-1);
-      await this.showDialogue(DIALOGUES.messageJourney.slice(0, -1));
-      await this.travelToBethany();
-      if (arrivalLine) {
-        await this.showDialogue([arrivalLine]);
-      }
-      this.moveStoryToVillage();
-      this.story.arriveAtBethany();
-      this.audio.setState("exploration", 2400);
-      this.updateObjective();
-      this.ui.showNotice("耶稣来到伯大尼附近。根据经文判断谁先出去迎接他。");
+  private handleFindJesus(id: ActorId): void {
+    if (
+      id !== "jesus" &&
+      !FIND_JESUS_CONTRACT.clueCarrierIds.includes(
+        id as (typeof FIND_JESUS_CONTRACT.clueCarrierIds)[number],
+      )
+    ) {
+      this.showActorEcho(id);
+      return;
+    }
+    const result = this.story.identifyJesus(id);
+    if (result.kind === "identified") {
+      void this.runActiveBeat();
+      return;
+    }
+    const visual = this.visuals.get(id);
+    if (!visual) {
+      return;
+    }
+    this.ui.showVerseEcho({
+      mode: "player-memory",
+      text: `${result.memory.text}\n\n${result.memory.followUp.text}`,
+      reference: result.memory.references.join("、"),
+      anchor: this.screenAnchor(visual.container),
     });
   }
 
-  private moveStoryToVillage(): void {
-    this.setActorPosition("martha", 760, 1050);
-    this.setActorPosition("mary", 860, 1000);
-    this.setActorPosition("mourner", 970, 970);
-  }
-
-  private async travelToBethany(): Promise<void> {
-    this.audio.setState("exploration", 1800);
-    this.ui.showNotice("两天后，耶稣与报信者一同前往伯大尼。");
-    await Promise.all([
-      this.moveActorAlong(
-        "jesus",
-        [
-          { x: 1860, y: 1270 },
-          { x: 1640, y: 1200 },
-          { x: 1480, y: 1080 },
-        ],
-        () => undefined,
-      ),
-      this.movePlayerAlong([
-        { x: 1820, y: 1340 },
-        { x: 1580, y: 1260 },
-        { x: 1320, y: 1130 },
-      ]),
-    ]);
-  }
-
-  private async movePlayerAlong(points: readonly Point[]): Promise<void> {
-    for (const target of points) {
-      const deltaX = target.x - this.player.x;
-      const deltaY = target.y - this.player.y;
-      this.updatePlayerAnimation(deltaX, deltaY);
-      await new Promise<void>((resolve) => {
-        this.tweens.add({
-          targets: this.player,
-          x: target.x,
-          y: target.y,
-          duration:
-            (Math.hypot(deltaX, deltaY) / PLAYER_SPEED) * 1000,
-          ease: "Linear",
-          onComplete: () => resolve(),
-        });
-      });
-    }
-    this.updatePlayerAnimation(0, 0);
-  }
-
-  private handleDecision(id: ActorId): void {
-    const result = this.story.interact(id);
-    this.ui.setScore(this.story.score);
-    const penaltyText = result.penalty > 0 ? `（经文观察分 -${result.penalty}）` : "";
-    this.ui.showNotice(`${result.message}${penaltyText}`);
-    if (result.revealHint) {
-      this.highlightExpectedActor();
-    }
-    if (result.kind !== "correct") {
+  private showActorEcho(id: ActorId): void {
+    const completedThrough = this.story.completedBeatIds.at(-1);
+    if (!completedThrough) {
       return;
     }
-    this.updateObjective();
-    this.audio.setState("exploration", 2200);
-    switch (this.story.stage) {
-      case "followMartha":
-        void this.startStoryJourney(
-          "martha",
-          [
-            { x: 930, y: 970 },
-            { x: 1180, y: 980 },
-            { x: 1460, y: 1050 },
-          ],
-          "马大已经停下。靠近她继续见证。",
-        );
-        return;
-      case "followMary":
-        void this.startStoryJourney(
-          "mary",
-          [
-            { x: 960, y: 1030 },
-            { x: 1200, y: 1020 },
-            { x: 1480, y: 1080 },
-          ],
-          "马利亚已经来到耶稣那里。靠近她继续见证。",
-        );
-        this.time.delayedCall(650, () => {
-          void this.moveActorAlong(
-            "mourner",
-            [
-              { x: 1010, y: 1100 },
-              { x: 1240, y: 1100 },
-              { x: 1510, y: 1150 },
-            ],
-            () => undefined,
-          );
-        });
-        return;
-      case "followGuide":
-        void this.transitionToTombRoad();
-        return;
-      default:
-        return;
-    }
-  }
-
-  private async moveActorAlong(
-    id: ActorId,
-    points: readonly Point[],
-    onComplete: () => void,
-  ): Promise<void> {
-    const area = this.currentArea();
-    if (!area) {
-      return;
-    }
-    const completed = await this.npcPaths.follow(
-      id,
-      points,
-      this.npcPathAdapter(area),
+    const echo = getLatestActorVerseEcho(
+      id as StoryActorId,
+      completedThrough,
     );
-    if (completed && this.currentArea() === area) {
-      onComplete();
+    const visual = this.visuals.get(id);
+    if (!echo || !visual) {
+      return;
     }
-  }
-
-  private async startStoryJourney(
-    id: ActorId,
-    points: readonly Point[],
-    readyNotice: string,
-  ): Promise<void> {
-    this.storyJourneys.begin(id);
-    await this.moveActorAlong(id, points, () => {
-      if (this.storyJourneys.complete(id)) {
-        this.ui.showNotice(readyNotice);
-      }
+    this.ui.showVerseEcho({
+      mode: "npc-scripture",
+      speaker: ACTOR_LABELS[id] ?? "",
+      text: echo.text,
+      reference: echo.references.join("、"),
+      anchor: this.screenAnchor(visual.container),
     });
   }
 
-  private continueStoryJourney(
-    id: ActorId,
-    movingNotice: string,
-    onReady: () => Promise<void>,
-  ): void {
-    const status = this.storyJourneys.status(id);
-    if (status === "ready") {
-      this.storyJourneys.reset(id);
-      void onReady();
-      return;
-    }
-    if (status === "moving") {
-      this.ui.showNotice(movingNotice, 1800);
-    }
-  }
-
-  private npcPathAdapter(expectedArea: AreaId): NpcPathAdapter {
+  private screenAnchor(object: Phaser.GameObjects.Components.Transform): Point {
+    const canvas = this.game.canvas.getBoundingClientRect();
     return {
-      positionOf: (id) =>
-        this.currentArea() === expectedArea
-          ? this.actorRegistry.get(id)?.state.position
-          : undefined,
-      moveTo: (id, target, durationMs) =>
-        new Promise((resolve) => {
-          const visual = this.visuals.get(id);
-          if (!visual || this.currentArea() !== expectedArea) {
-            resolve();
-            return;
-          }
-          this.updateActorAnimation(
-            id,
-            target.x - visual.container.x,
-            target.y - visual.container.y,
-          );
-          this.tweens.add({
-            targets: visual.container,
-            x: target.x,
-            y: target.y,
-            duration: durationMs,
-            ease: "Linear",
-            onUpdate: () => {
-              if (this.currentArea() === expectedArea) {
-                this.actorRegistry.move(id, expectedArea, {
-                  x: visual.container.x,
-                  y: visual.container.y,
-                });
-              }
-            },
-            onComplete: () => {
-              if (this.currentArea() === expectedArea) {
-                this.actorRegistry.move(id, expectedArea, target);
-                this.updateActorAnimation(id, 0, 0);
-              }
-              resolve();
-            },
-          });
-        }),
+      x: canvas.left + (object.x - this.cameras.main.worldView.x),
+      y: canvas.top + (object.y - this.cameras.main.worldView.y) - 90,
     };
   }
 
-  private async runMarthaSequence(): Promise<void> {
-    await this.cutscenes.run(async () => {
-      this.story.arriveAtMartha();
-      this.audio.setState("dialogue", 1800);
-      this.updateObjective();
-      await this.showDialogue(DIALOGUES.marthaBeforeQuestion);
-      await this.askQuestion(QUESTIONS.marthaResurrection);
-      await this.showDialogue(DIALOGUES.marthaCore);
-      await this.returnMarthaToMary();
-      await this.showDialogue(DIALOGUES.marthaReturns);
-      this.story.completeMarthaDialogue();
-      this.resetForMary();
-      this.audio.setState("exploration", 2400);
-      this.updateObjective();
-    });
+  private tryProximityBeat(): void {
+    if (
+      this.story.beatId === "illness" &&
+      Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        HOUSE_STORY_FOCUS.x,
+        HOUSE_STORY_FOCUS.y,
+      ) <= 155
+    ) {
+      void this.runActiveBeat();
+    }
   }
 
-  private async returnMarthaToMary(): Promise<void> {
-    this.audio.setState("exploration", 1200);
-    this.ui.showNotice("马大回去，暗暗地叫她妹子马利亚。");
-    await this.moveActorAlong(
-      "martha",
-      [
-        { x: 1230, y: 1020 },
-        { x: 980, y: 1000 },
-        { x: 760, y: 1050 },
-      ],
-      () => undefined,
-    );
-    this.audio.setState("dialogue", 1200);
+  private tryHouseExit(): void {
+    if (
+      !this.inWorld &&
+      this.story.beatId === "find-jesus" &&
+      Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        HOUSE_EXIT.x,
+        HOUSE_EXIT.y,
+      ) <= 82
+    ) {
+      this.enterWorld();
+    }
   }
 
-  private async runMarySequence(): Promise<void> {
-    await this.cutscenes.run(async () => {
-      this.story.arriveAtMary();
-      this.audio.setState("dialogue", 1800);
-      this.updateObjective();
-      await this.showDialogue(DIALOGUES.mary);
-      this.story.completeMaryDialogue();
-      this.prepareGuideDecision();
-      this.updateObjective();
-    });
-  }
-
-  private async runTombSequence(): Promise<void> {
-    await this.cutscenes.run(async () => {
-      this.story.arriveAtTomb();
-      this.createTombElements();
-      this.audio.setState("dialogue", 2200);
-      this.updateObjective();
-      const beats = partitionTombDialogue(DIALOGUES.tomb);
-      await this.showDialogue(beats.beforeStone);
-      await this.showDialogue(beats.stoneRemoval);
-      await this.rollTombStone();
-      await this.showDialogue(beats.callLazarus);
-      await this.walkLazarusOut();
-      await this.showDialogue(beats.emergence);
-      await this.restoreLazarus();
-      await this.finishTombSequence();
-    });
-  }
-
-  private resetForMary(): void {
-    this.storyJourneys.reset("mary");
+  private async runActiveBeat(): Promise<void> {
+    if (this.sequenceStarting || this.sequence?.isRunning) {
+      return;
+    }
+    const beat = this.story.beat;
+    this.sequenceStarting = true;
     this.stopPlayerMovement();
-    this.setActorPosition("martha", 760, 1050);
-    this.setActorPosition("mary", 860, 1000);
-    this.setActorPosition("mourner", 970, 970);
-    this.cameras.main.flash(350, 242, 229, 189);
+    try {
+      const definition = this.sequenceDefinition(beat);
+      await this.sequence?.run(definition);
+      if (this.story.isComplete) {
+        this.finishStory();
+        return;
+      }
+      this.syncHud();
+      if (beat.id === "sisters-send" && !this.inWorld) {
+        this.enterWorld();
+      }
+      const next = this.story.beat;
+      if (
+        beat.handoff.mode === "automatic" &&
+        ["automatic", "arrival", "recall-question"].includes(next.trigger.kind)
+      ) {
+        this.sequenceStarting = false;
+        await this.runActiveBeat();
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "未知的演出错误。";
+      this.ui.showTechnicalError(message, "transition");
+    } finally {
+      this.sequenceStarting = false;
+    }
   }
 
-  private stopPlayerMovement(): void {
-    this.player.setVelocity(0);
-    this.movementPath = [];
-    this.pendingActor = undefined;
-    this.updatePlayerAnimation(0, 0);
+  private sequenceDefinition(
+    beat: VerseBeat,
+  ): MapSequenceDefinition<BethanySequenceSchema> {
+    const steps: MapSequenceStep<BethanySequenceSchema>[] = [
+      { kind: "camera-stop-follow" },
+      {
+        kind: "camera-pan",
+        target: this.beatFocus(beat.id),
+        durationMs: 450,
+      },
+      { kind: "music", state: "dialogue", durationMs: 700 },
+    ];
+    if (beat.recallBeforeReveal.kind === "required") {
+      steps.push({
+        kind: "choice",
+        choice: RECALL_QUESTIONS[beat.recallBeforeReveal.questionId],
+      });
+    }
+    steps.push(...this.actionSteps(beat.id));
+    const dialogue = this.dialogueForBeat(beat);
+    if (dialogue.length > 0) {
+      steps.push({ kind: "dialogue", dialogue });
+    }
+    steps.push(
+      { kind: "music", state: "exploration", durationMs: 900 },
+      { kind: "camera-follow", target: "player" },
+    );
+    return {
+      steps,
+      finalState: beat.finalState,
+      handoff: beat.handoff,
+      finalize: beat.id,
+    };
   }
 
-  private prepareGuideDecision(): void {
-    this.setActorVisible("guide", true);
-    this.setActorPosition("guide", 1320, 650);
-    this.setActorPosition("mourner", 1510, 1150);
-    this.setActorPosition("mourner-woman", 1550, 1100);
-    this.setActorPosition("older-witness", 1590, 1040);
-    this.setActorPosition("thomas", 1510, 930);
-    this.setActorPosition("older-disciple", 1450, 880);
-    this.setActorPosition("younger-disciple", 1580, 880);
-    this.setActorPosition("mary", 1480, 1080);
-    this.setActorPosition("martha", 1460, 1050);
-    this.storyJourneys.reset("guide");
+  private actionSteps(
+    beatId: VerseBeatId,
+  ): readonly MapSequenceStep<BethanySequenceSchema>[] {
+    const move = (
+      actor: SequenceActor,
+      points: readonly Point[],
+      durationMs = 700,
+    ): MapSequenceStep<BethanySequenceSchema> => ({
+      kind: "move",
+      actor,
+      points: points.map((point) => ({ point, durationMs })),
+    });
+    switch (beatId) {
+      case "two-day-wait":
+        return [
+          { kind: "environment", state: "wait-dusk", durationMs: 900 },
+          { kind: "camera-hold", durationMs: 700 },
+          { kind: "environment", state: "wait-day", durationMs: 900 },
+        ];
+      case "thomas":
+        return [
+          {
+            kind: "parallel",
+            branches: [
+              [move("jesus", WORLD_ROUTES.campToMeeting.points)],
+              [move("thomas", WORLD_ROUTES.campToMeeting.points)],
+              [move("older-disciple", WORLD_ROUTES.campToMeeting.points)],
+              [move("younger-disciple", WORLD_ROUTES.campToMeeting.points)],
+              [move("player", WORLD_ROUTES.campToMeeting.points)],
+            ],
+          },
+        ];
+      case "martha-goes":
+        return [move("martha", [WORLD_LANDMARKS.bethanyMeeting], 1100)];
+      case "martha-calls":
+        return [move("martha", [WORLD_LANDMARKS.villageCenter], 1100)];
+      case "mary-rises":
+        return [
+          {
+            kind: "parallel",
+            branches: [
+              [move("mary", [WORLD_LANDMARKS.bethanyMeeting], 1200)],
+              [move("mourner", [WORLD_LANDMARKS.bethanyMeeting], 1200)],
+              [
+                move(
+                  "mourner-woman",
+                  [{ x: WORLD_LANDMARKS.bethanyMeeting.x + 60, y: WORLD_LANDMARKS.bethanyMeeting.y + 50 }],
+                  1200,
+                ),
+              ],
+              [
+                move(
+                  "older-witness",
+                  [{ x: WORLD_LANDMARKS.bethanyMeeting.x - 60, y: WORLD_LANDMARKS.bethanyMeeting.y + 50 }],
+                  1200,
+                ),
+              ],
+            ],
+          },
+        ];
+      case "come-and-see":
+        return [
+          {
+            kind: "parallel",
+            branches: [
+              [move("jesus", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("martha", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("mary", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("mourner", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("mourner-woman", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("guide", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("older-witness", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("player", WORLD_ROUTES.villageToTomb.points, 600)],
+            ],
+          },
+        ];
+      case "stone-and-prayer":
+        return [{ kind: "environment", state: "stone-open", durationMs: 1000 }];
+      case "call-and-emergence":
+        return [
+          { kind: "environment", state: "lazarus-emerge", durationMs: 1500 },
+        ];
+      case "responses":
+        return [
+          {
+            kind: "parallel",
+            branches: [
+              [
+                move(
+                  "guide",
+                  [{ x: WORLD_LANDMARKS.tombGarden.x - 300, y: WORLD_LANDMARKS.tombGarden.y + 180 }],
+                  900,
+                ),
+              ],
+              [
+                move(
+                  "older-witness",
+                  [{ x: WORLD_LANDMARKS.tombGarden.x + 300, y: WORLD_LANDMARKS.tombGarden.y + 180 }],
+                  900,
+                ),
+              ],
+            ],
+          },
+        ];
+      default:
+        return [];
+    }
   }
 
-  private async transitionToTombRoad(): Promise<void> {
-    await this.cutscenes.run(async () => {
-      this.ui.showNotice("跟随带路的人，沿路前往坟墓。");
-      const tombRoute = [
-        { x: 1450, y: 620 },
-        { x: 1600, y: 500 },
-        { x: 1800, y: 430 },
-      ] as const;
-      void this.startStoryJourney(
-        "guide",
-        [...tombRoute, { x: 1900, y: 590 }],
-        "带路的人已经到达坟墓。靠近他继续见证。",
-      );
-      void Promise.all([
-        this.moveActorAlong(
-          "jesus",
-          [
-            { x: 1370, y: 900 },
-            { x: 1450, y: 680 },
-            ...tombRoute,
-            { x: 1840, y: 520 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "martha",
-          [
-            { x: 1280, y: 900 },
-            { x: 1400, y: 700 },
-            ...tombRoute,
-            { x: 1760, y: 580 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "mary",
-          [
-            { x: 1320, y: 950 },
-            { x: 1440, y: 730 },
-            ...tombRoute,
-            { x: 1840, y: 620 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "mourner",
-          [
-            { x: 1360, y: 990 },
-            { x: 1480, y: 760 },
-            ...tombRoute,
-            { x: 1700, y: 650 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "mourner-woman",
-          [
-            { x: 1400, y: 1010 },
-            { x: 1500, y: 780 },
-            ...tombRoute,
-            { x: 1740, y: 700 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "older-witness",
-          [
-            { x: 1420, y: 950 },
-            { x: 1510, y: 740 },
-            ...tombRoute,
-            { x: 1680, y: 670 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "thomas",
-          [
-            { x: 1430, y: 900 },
-            { x: 1530, y: 720 },
-            ...tombRoute,
-            { x: 1810, y: 690 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "older-disciple",
-          [
-            { x: 1390, y: 880 },
-            { x: 1490, y: 700 },
-            ...tombRoute,
-            { x: 1710, y: 730 },
-          ],
-          () => undefined,
-        ),
-        this.moveActorAlong(
-          "younger-disciple",
-          [
-            { x: 1440, y: 880 },
-            { x: 1550, y: 710 },
-            ...tombRoute,
-            { x: 1760, y: 750 },
-          ],
-          () => undefined,
-        ),
-      ]);
+  private dialogueForBeat(beat: VerseBeat): readonly DialogueLine[] {
+    return beat.verseKeys.map((key) => {
+      const verse = JOHN_11_VERSES[key];
+      return {
+        speaker: dialogueSpeaker(verse.verse),
+        text: verse.text,
+        reference: verse.reference,
+        kind: "scripture" as const,
+      };
     });
   }
 
-  private setActorPosition(id: ActorId, x: number, y: number): void {
-    const area = this.currentArea();
-    const visual = this.visuals.get(id);
-    if (!area || !visual) {
-      return;
+  private beatFocus(beatId: VerseBeatId): CameraTarget {
+    if (["illness", "sisters-send"].includes(beatId)) {
+      return HOUSE_STORY_FOCUS;
     }
-    this.actorRegistry.move(id, area, { x, y });
-    visual.container.setPosition(x, y);
-    this.updateActorAnimation(id, 0, 0);
+    if (
+      [
+        "find-jesus",
+        "message",
+        "two-day-wait",
+        "return-to-judea",
+        "thomas",
+      ].includes(beatId)
+    ) {
+      return "jesus";
+    }
+    if (
+      [
+        "four-days",
+        "martha-goes",
+        "martha-hope",
+        "resurrection-life",
+        "martha-confession",
+        "martha-calls",
+        "mary-rises",
+        "mary-at-feet",
+        "jesus-weeps",
+      ].includes(beatId)
+    ) {
+      return WORLD_LANDMARKS.bethanyMeeting;
+    }
+    return WORLD_LANDMARKS.tombGarden;
   }
 
-  private setActorVisible(id: ActorId, visible: boolean): void {
-    this.actorRegistry.setVisible(id, visible);
-    if (visible && !this.visuals.has(id)) {
-      this.createActorVisual(id);
-      return;
-    }
-    const visual = this.visuals.get(id);
-    visual?.container.setVisible(visible).setActive(visible);
+  private createSequenceHost(): PhaserSequenceHost<BethanySequenceSchema> {
+    return {
+      moveActor: (actor, point, durationMs) =>
+        this.tweenActor(actor, point, durationMs),
+      setActorFacing: (actor, facing) => this.setSequenceFacing(actor, facing),
+      setActorOrdinaryPose: () => undefined,
+      setActorSpecialPose: () => undefined,
+      setActorVisible: (actor, visible) =>
+        this.setSequenceActorVisible(actor, visible),
+      stopCameraFollow: () => this.cameras.main.stopFollow(),
+      panCamera: (target, durationMs) =>
+        this.panCameraTo(target, durationMs),
+      followCamera: (target) => {
+        if (target === "player") {
+          this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+        }
+      },
+      wait: (durationMs) => this.delayOperation(durationMs),
+      transitionEnvironment: (state, durationMs) =>
+        this.environmentOperation(state, durationMs),
+      showDialogue: (dialogue) => this.dialogueOperation(dialogue),
+      showChoice: (choice) => this.choiceOperation(choice),
+      setMusic: (state, durationMs) => {
+        this.audio.setState(state, durationMs);
+        return completedOperation();
+      },
+      applyFinalState: (state) => this.applySequenceFinalState(state),
+      handoff: () => undefined,
+      finalize: (beatId) => {
+        this.story.completeCurrent(beatId);
+      },
+      acquireInputLock: () => this.playerController.lock(),
+    };
   }
 
-  private requireTombElements(): {
-    readonly stone: Phaser.GameObjects.Image;
-    readonly lazarus: Phaser.GameObjects.Sprite;
-  } {
-    const stone = this.stone;
-    const lazarus = this.lazarus;
-    if (!stone || !lazarus) {
-      throw new Error("The tomb scene is incomplete.");
+  private tweenActor(
+    actor: SequenceActor,
+    point: Point,
+    durationMs: number,
+  ): MapSequenceOperation {
+    const target = this.sequenceTarget(actor);
+    if (!target) {
+      return completedOperation();
     }
-    return { stone, lazarus };
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    const tween = this.tweens.add({
+      targets: target,
+      x: point.x,
+      y: point.y,
+      duration: durationMs,
+      ease: "Sine.easeInOut",
+      onUpdate: () => {
+        if (actor !== "player" && actor !== "lazarus") {
+          this.actorRegistry.move(actor, "bethany-world", {
+            x: target.x,
+            y: target.y,
+          });
+        }
+      },
+      onComplete: () => {
+        settled = true;
+        resolveFinished();
+      },
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          tween.stop();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
   }
 
-  private async rollTombStone(): Promise<void> {
-    const { stone } = this.requireTombElements();
-    this.audio.setState("revelation", 3000);
-    await new Promise<void>((resolve) => {
-      this.tweens.add({
-        targets: stone,
-        x: 2190,
-        duration: 900,
-        ease: "Sine.easeInOut",
-        onComplete: () => {
-          stone.setTexture(TOMB_PROP_ASSETS.stoneRolled.key).setDisplaySize(
-            TOMB_STONE_PLACEMENT.width,
-            TOMB_STONE_PLACEMENT.height,
-          );
+  private panCameraTo(
+    target: CameraTarget,
+    durationMs: number,
+  ): MapSequenceOperation {
+    const point = isPoint(target)
+      ? target
+      : this.sequenceTarget(target) ?? this.player;
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+      this.cameras.main.pan(
+        point.x,
+        point.y,
+        durationMs,
+        "Sine.easeInOut",
+        false,
+        (_camera, progress) => {
+          if (progress === 1 && !settled) {
+            settled = true;
+            resolve();
+          }
+        },
+      );
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          this.cameras.main.panEffect.reset();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private delayOperation(durationMs: number): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    const timer = this.time.delayedCall(durationMs, () => {
+      settled = true;
+      resolveFinished();
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          timer.remove(false);
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private environmentOperation(
+    state: EnvironmentState,
+    durationMs: number,
+  ): MapSequenceOperation {
+    if (state === "stone-open") {
+      this.createTombElements();
+      const stone = this.stone;
+      if (!stone) {
+        return completedOperation();
+      }
+      return this.tweenGameObject(
+        stone,
+        { x: stone.x + 150, angle: 32 },
+        durationMs,
+      );
+    }
+    if (state === "lazarus-emerge") {
+      this.createTombElements();
+      this.lazarus?.setVisible(true);
+      const lazarus = this.lazarus;
+      if (!lazarus) {
+        return completedOperation();
+      }
+      return this.tweenGameObject(
+        lazarus,
+        {
+          x: WORLD_LANDMARKS.tombGarden.x,
+          y: WORLD_LANDMARKS.tombGarden.y + 130,
+        },
+        durationMs,
+      );
+    }
+    if (state === "wait-dusk" || state === "wait-day") {
+      const overlay = this.daylightOverlay;
+      if (!overlay) {
+        return this.delayOperation(durationMs);
+      }
+      return this.tweenGameObject(
+        overlay,
+        { alpha: state === "wait-dusk" ? 0.36 : 0 },
+        durationMs,
+      );
+    }
+    return this.delayOperation(durationMs);
+  }
+
+  private tweenGameObject(
+    target: Phaser.GameObjects.GameObject,
+    values: Record<string, number>,
+    durationMs: number,
+  ): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    const tween = this.tweens.add({
+      targets: target,
+      ...values,
+      duration: durationMs,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        settled = true;
+        resolveFinished();
+      },
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          tween.stop();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private dialogueOperation(
+    dialogue: readonly DialogueLine[],
+  ): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+      this.ui.showDialogue(dialogue, () => {
+        settled = true;
+        resolve();
+      });
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          this.ui.dismissBlocking();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private choiceOperation(choice: RecallQuestion): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+      this.ui.showChoice(
+        {
+          id: choice.id,
+          prompt: choice.prompt,
+          reference: choice.reference,
+          correctOption: choice.correctOption,
+          options: choice.options,
+        },
+        (optionId) => this.story.answerRecall(choice.id, optionId),
+        () => {
+          settled = true;
+          this.ui.setScore(this.story.score);
           resolve();
         },
-      });
+      );
     });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          this.ui.dismissBlocking();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
   }
 
-  private async walkLazarusOut(): Promise<void> {
-    const { lazarus } = this.requireTombElements();
-    lazarus
-      .setTexture(lazarusTextureKey())
-      .setFrame(lazarusFrame("wrapped-step"))
-      .setScale(
-        lazarusScaleToFit("wrapped-step", { width: 78, height: 72 }),
-      )
-      .setVisible(true);
-    await this.tweenLazarusTo(lazarus, 1980, 475, 850);
-    await this.tweenLazarusTo(lazarus, 1930, 545, 850);
+  private applySequenceFinalState(state: VerseBeat["finalState"]): void {
+    const beatId = this.story.beatId;
+    this.applyFinalPositions(beatId);
+    for (const id of ACTOR_IDS) {
+      const visible = state.actors.visibleActorIds.includes(id);
+      this.setActorVisible(id, visible);
+      const override = state.actors.labelOverrides?.[id];
+      this.setActorLabel(
+        id,
+        override === undefined ? ACTOR_LABELS[id] : override,
+      );
+    }
+    if (beatId === "tomb-arrival") {
+      this.createTombElements();
+    }
+    if (beatId === "stone-and-prayer") {
+      this.createTombElements();
+      this.stone?.setPosition(
+        WORLD_LANDMARKS.tombEntrance.x + 190,
+        WORLD_LANDMARKS.tombEntrance.y,
+      );
+    }
+    if (beatId === "call-and-emergence") {
+      this.createTombElements();
+      this.lazarus
+        ?.setVisible(true)
+        .setFrame(lazarusFrame("restored"))
+        .setPosition(
+          WORLD_LANDMARKS.tombGarden.x,
+          WORLD_LANDMARKS.tombGarden.y + 130,
+        );
+    }
   }
 
-  private async restoreLazarus(): Promise<void> {
-    const { lazarus } = this.requireTombElements();
-    lazarus.anims.stop();
-    lazarus
-      .setTexture(lazarusTextureKey())
-      .setFrame(lazarusFrame("restored"))
-      .setScale(lazarusScaleToFit("restored", { width: 84, height: 78 }))
-      .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight);
-    await this.tweenLazarusTo(lazarus, 1880, 565, 650);
+  private applyFinalPositions(beatId: VerseBeatId): void {
+    const meeting = WORLD_LANDMARKS.bethanyMeeting;
+    const tomb = WORLD_LANDMARKS.tombGarden;
+    if (beatId === "four-days") {
+      this.setSequencePosition("jesus", meeting);
+      this.setSequencePosition("thomas", { x: meeting.x + 120, y: meeting.y + 80 });
+      this.setSequencePosition("older-disciple", { x: meeting.x + 180, y: meeting.y + 40 });
+      this.setSequencePosition("younger-disciple", { x: meeting.x + 220, y: meeting.y + 100 });
+      this.setSequencePosition("player", { x: meeting.x - 160, y: meeting.y + 120 });
+    }
+    if (beatId === "martha-goes") {
+      this.setSequencePosition("martha", { x: meeting.x - 80, y: meeting.y + 40 });
+    }
+    if (beatId === "martha-calls") {
+      this.setSequencePosition("martha", WORLD_LANDMARKS.villageCenter);
+    }
+    if (beatId === "mary-rises") {
+      this.setSequencePosition("mary", { x: meeting.x - 80, y: meeting.y + 80 });
+      this.setSequencePosition("mourner", { x: meeting.x - 170, y: meeting.y + 130 });
+      this.setSequencePosition("mourner-woman", { x: meeting.x + 20, y: meeting.y + 140 });
+      this.setSequencePosition("older-witness", { x: meeting.x + 100, y: meeting.y + 120 });
+    }
+    if (["come-and-see", "tomb-arrival"].includes(beatId)) {
+      const actors: readonly SequenceActor[] = [
+        "jesus",
+        "martha",
+        "mary",
+        "mourner",
+        "mourner-woman",
+        "guide",
+        "older-witness",
+        "player",
+      ];
+      actors.forEach((actor, index) =>
+        this.setSequencePosition(actor, {
+          x: tomb.x - 220 + (index % 4) * 100,
+          y: tomb.y + 180 + Math.floor(index / 4) * 90,
+        }),
+      );
+    }
   }
 
-  private tweenLazarusTo(
-    lazarus: Phaser.GameObjects.Sprite,
-    x: number,
-    y: number,
-    duration: number,
-  ): Promise<void> {
-    return new Promise((resolve) => {
-      this.tweens.add({
-        targets: lazarus,
-        x,
-        y,
-        duration,
-        ease: "Sine.easeInOut",
-        onUpdate: () => lazarus.setDepth(lazarus.y),
-        onComplete: () => resolve(),
-      });
-    });
+  private sequenceTarget(
+    actor: SequenceActor,
+  ): Phaser.GameObjects.Components.Transform | undefined {
+    if (actor === "player") {
+      return this.player;
+    }
+    if (actor === "lazarus") {
+      return this.lazarus;
+    }
+    return this.visuals.get(actor)?.container;
   }
 
-  private async finishTombSequence(): Promise<void> {
-    this.story.completeTomb();
-    this.updateObjective();
-    await this.showDialogue(DIALOGUES.epilogue);
-    this.audio.setState("dialogue", 1800);
-    await this.askQuestion(QUESTIONS.aftermath);
-    this.story.completeEpilogue();
-    this.audio.setState("revelation", 3000);
-    this.updateObjective();
+  private setSequencePosition(actor: SequenceActor, position: Point): void {
+    const target = this.sequenceTarget(actor);
+    target?.setPosition(position.x, position.y);
+    if (actor !== "player" && actor !== "lazarus") {
+      this.actorRegistry.move(actor, "bethany-world", position);
+    }
+  }
+
+  private setSequenceFacing(actor: SequenceActor, facing: Facing): void {
+    if (actor === "player") {
+      this.playerFacing = facing;
+      this.player.setFrame(spriteFrame("messenger", facing, "idle"));
+      return;
+    }
+    if (actor === "lazarus") {
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (!visual) {
+      return;
+    }
+    visual.facing = facing;
+    visual.sprite.setFrame(spriteFrame(visual.character, facing, "idle"));
+  }
+
+  private setSequenceActorVisible(
+    actor: SequenceActor,
+    visible: boolean,
+  ): void {
+    if (actor === "player") {
+      this.player.setVisible(visible);
+    } else if (actor === "lazarus") {
+      this.lazarus?.setVisible(visible);
+    } else {
+      this.setActorVisible(actor, visible);
+    }
+  }
+
+  private syncHud(): void {
+    const references = this.story.beat.verseKeys.map(
+      (key) => JOHN_11_VERSES[key].reference,
+    );
+    this.ui.setReference(references.join("、") || "约翰福音");
+    this.ui.setScore(this.story.score);
+  }
+
+  private finishStory(): void {
+    this.stopPlayerMovement();
     this.ui.showResult(
       this.story.score,
       this.story.resultLabel(),
       () => window.location.reload(),
-      () => this.returnToStudy(),
+      () => window.location.reload(),
     );
   }
 
-  private askQuestion(
-    question: (typeof QUESTIONS)[keyof typeof QUESTIONS],
-  ): Promise<void> {
-    return new Promise((resolve) => {
-      this.ui.showChoice(
-        question,
-        (optionId) => {
-          const result = this.story.answerQuestion(
-            question.id,
-            optionId,
-            question.correctOption,
-          );
-          this.ui.setScore(this.story.score);
-          return result;
-        },
-        resolve,
-      );
-    });
+  private createWalkAnimations(): void {
+    const walkingCharacters = [
+      "messenger",
+      "martha",
+      "mary",
+      "jesus",
+    ] as const;
+    for (const character of walkingCharacters) {
+      for (const facing of ["front", "back", "left", "right"] as const) {
+        const key = walkAnimationKey(character, facing);
+        if (!this.anims.exists(key)) {
+          this.anims.create({
+            key,
+            frames: Array.from(walkFrames(character, facing)),
+            frameRate: 8,
+            repeat: -1,
+          });
+        }
+      }
+    }
   }
 
-  private showDialogue(lines: readonly DialogueLine[]): Promise<void> {
-    return new Promise((resolve) => {
-      this.ui.showDialogue(
-        lines,
-        () => {
-          this.resetMapPoses();
-          resolve();
-        },
-        (line) => {
-          this.applyMapPoseCues(line.mapPoses ?? []);
-          if (line.music) {
-            this.audio.setState(
-              line.music,
-              this.musicTransitionDuration(line.music),
-            );
-          }
-        },
-      );
-    });
-  }
-
-  private highlightExpectedActor(): void {
-    const expected: Partial<Record<StoryStage, ActorId>> = {
-      chooseMartha: "martha",
-      chooseMary: "mary",
-      chooseGuide: "guide",
-    };
-    const id = expected[this.story.stage];
-    const visual = id ? this.visuals.get(id) : undefined;
-    if (!visual) {
+  private updatePlayerAnimation(x: number, y: number): void {
+    const facing = resolveFacing(x, y, this.playerFacing);
+    this.playerFacing = facing;
+    if (x === 0 && y === 0) {
+      this.player.stop();
+      this.player.setFrame(spriteFrame("messenger", facing, "idle"));
       return;
     }
-    visual.marker.setVisible(true).setAlpha(1).setScale(1);
-    this.tweens.add({
-      targets: visual.marker,
-      alpha: 0.25,
-      scaleX: 1.5,
-      scaleY: 1.5,
-      duration: 700,
-      yoyo: true,
-      repeat: 4,
-      onComplete: () => visual.marker.setVisible(false),
-    });
+    this.player.play(walkAnimationKey("messenger", facing), true);
+  }
+
+  private stopPlayerMovement(): void {
+    this.movementPath = [];
+    this.pendingActor = undefined;
+    this.player.setVelocity(0);
+    this.updatePlayerAnimation(0, 0);
   }
 
   private updateDepths(): void {
@@ -1809,23 +1697,8 @@ export class BethanyScene extends Phaser.Scene {
     for (const visual of this.visuals.values()) {
       visual.container.setDepth(visual.container.y);
     }
-  }
-
-  private updateObjective(): void {
-    this.ui.setObjective(OBJECTIVES[this.story.stage]);
-    this.ui.setScore(this.story.score);
-  }
-
-  private musicTransitionDuration(state: MusicState): number {
-    switch (state) {
-      case "revelation":
-        return 3400;
-      case "silence":
-        return 1800;
-      case "exploration":
-        return 2400;
-      case "dialogue":
-        return 1800;
+    if (this.lazarus?.visible) {
+      this.lazarus.setDepth(this.lazarus.y);
     }
   }
 
@@ -1835,50 +1708,19 @@ export class BethanyScene extends Phaser.Scene {
       return;
     }
     this.paused = true;
-    this.player.setVelocity(0);
-    this.updatePlayerAnimation(0, 0);
-    for (const visual of this.visuals.values()) {
-      visual.sprite.anims.pause();
-    }
     this.physics.world.pause();
-    this.tweens.pauseAll();
     this.audio.pause("game");
     this.ui.showPause(
       () => this.resumeGame(),
       () => window.location.reload(),
-      () => this.returnToStudy(),
+      () => window.location.reload(),
     );
   }
 
   private resumeGame(): void {
     this.paused = false;
     this.physics.world.resume();
-    this.tweens.resumeAll();
-    for (const visual of this.visuals.values()) {
-      visual.sprite.anims.resume();
-    }
     this.audio.resume("game");
     this.ui.hidePause();
-    document.getElementById("game-root")?.focus();
-  }
-
-  private returnToStudy(): void {
-    this.audio.stop();
-    const returnPath = new URLSearchParams(window.location.search).get("return");
-    if (returnPath) {
-      const destination = new URL(returnPath, window.location.href);
-      if (destination.origin === window.location.origin) {
-        window.location.assign(destination.href);
-        return;
-      }
-    }
-    if (document.referrer) {
-      const referrer = new URL(document.referrer);
-      if (referrer.origin === window.location.origin) {
-        window.history.back();
-        return;
-      }
-    }
-    window.location.reload();
   }
 }

@@ -15,7 +15,10 @@ export type ActorId =
   | "older-witness"
   | "thomas"
   | "older-disciple"
-  | "younger-disciple";
+  | "younger-disciple"
+  | "memory-carrier-bread"
+  | "memory-carrier-water"
+  | "memory-carrier-mud";
 
 type CoreMapPoseCue = {
   [Character in CorePoseCharacter]: {

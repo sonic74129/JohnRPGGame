@@ -2,6 +2,7 @@ import Phaser from "phaser";
 
 import { AudioManager } from "./audio/AudioManager";
 import { BethanyScene } from "./game/BethanyScene";
+import { LINEAR_RENDER_CONFIG } from "./game/DisplayScale";
 import { GameUI } from "./ui/GameUI";
 import "./styles.css";
 
@@ -24,11 +25,7 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  render: {
-    antialias: false,
-    pixelArt: true,
-    roundPixels: true,
-  },
+  render: LINEAR_RENDER_CONFIG,
   scene: [BethanyScene],
   callbacks: {
     preBoot: (bootingGame) => {
@@ -67,9 +64,12 @@ ui.bindStart(async (fullscreen) => {
   ]);
 
   if (!audioUnlocked) {
-    ui.showNotice("浏览器未能启动音乐；游戏仍可继续。");
+    ui.showTechnicalError("浏览器未能启动音乐；游戏仍可继续。", "browser");
   } else if (!fullscreenEntered) {
-    ui.showNotice("浏览器未能进入全屏，游戏仍可正常进行。");
+    ui.showTechnicalError(
+      "浏览器未能进入全屏，游戏仍可正常进行。",
+      "browser",
+    );
   }
 
   await sceneReady;

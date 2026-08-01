@@ -1,7 +1,6 @@
 import type {
   ChoiceQuestion,
   DialogueLine,
-  Objective,
   QuestionResult,
 } from "../game/types";
 import {
@@ -120,8 +119,8 @@ export class GameUI {
     this.hud.classList.remove("is-hidden");
   }
 
-  setObjective(objective: Objective): void {
-    this.objectiveReference.textContent = objective.reference;
+  setReference(reference: string): void {
+    this.objectiveReference.textContent = reference;
   }
 
   setScore(value: number): void {
@@ -287,6 +286,18 @@ export class GameUI {
     this.verseEcho.classList.add("is-hidden");
   }
 
+  dismissBlocking(): void {
+    if (this.dialogueTimer !== undefined) {
+      window.clearTimeout(this.dialogueTimer);
+      this.dialogueTimer = undefined;
+    }
+    this.dialogue.classList.add("is-hidden");
+    this.choiceScreen.classList.add("is-hidden");
+    this.dialogueComplete = undefined;
+    this.dialogueLineChanged = undefined;
+    this.dialogueLocked = false;
+  }
+
   showPause(
     resume: VoidCallback,
     restart: VoidCallback,
@@ -315,10 +326,6 @@ export class GameUI {
     this.interactionPrompt.classList.add("is-hidden");
     this.element("final-score").textContent = String(score);
     this.element("result-title").textContent = title;
-    this.element("result-summary").textContent =
-      score >= 90
-        ? "小组清楚掌握了马大、马利亚和众人前往坟墓的经文次序。"
-        : "分数只反映本次经文观察，不代表任何人的信心或属灵程度。";
     this.resultScreen.classList.remove("is-hidden");
     this.button("result-restart").onclick = onRestart;
     this.button("result-exit").onclick = onExit;

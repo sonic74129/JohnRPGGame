@@ -43,7 +43,12 @@ const WALKING_CHARACTERS: readonly WalkingSpriteCharacter[] = [
 export const actorSpriteCharacter = (id: ActorId): SpriteCharacter => {
   switch (id) {
     case "mourner":
+    case "memory-carrier-bread":
       return "mourner-man";
+    case "memory-carrier-water":
+      return "guide";
+    case "memory-carrier-mud":
+      return "older-witness";
     case "martha":
     case "mary":
     case "jesus":
