@@ -5,10 +5,6 @@
   "usage": "JohnRPGGame project artwork",
   "containsEmbeddedText": false,
   "files": {
-    "opening-sickroom.png": "Pixel-art opening cinematic",
-    "journey-to-jesus.png": "Pixel-art messenger journey scene",
-    "bethany-village.png": "Pixel-art Bethany exploration background",
-    "tomb-garden.png": "Pixel-art tomb exploration background",
     "map-house-interior-clean.png": "Playable house interior without baked characters",
     "map-road-to-jesus-clean.png": "Playable road environment without baked characters",
     "map-village-edge-clean.png": "Playable Bethany village-edge environment",
@@ -18,10 +14,6 @@
     "portrait-mary.png": "Three-panel semi-realistic Mary portrait sheet",
     "portrait-jesus.png": "Three-panel semi-realistic Jesus portrait sheet",
     "portrait-witnesses.png": "Three-panel semi-realistic messenger, Thomas, and witness sheet",
-    "story-martha-meets-jesus.png": "Martha meets Jesus outside Bethany",
-    "story-jesus-weeps.png": "Jesus grieves with Mary and the mourners",
-    "story-lazarus-comes-out.png": "Lazarus emerges from the open tomb",
-    "story-ending-reflection.png": "Witnesses reflect and depart at dusk",
     "world/tileset-bethany-ground.png": "Unified 4 by 4 Bethany ground and road tileset",
     "world/tileset-bethany-ground.json": "Ground tile names and indices",
     "world/objects-bethany-world.json": "Unified editable world-object manifest"
