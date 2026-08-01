@@ -27,6 +27,7 @@ const areas: Readonly<Record<AreaId, AreaConfig>> = {
   "lazarus-house": area("lazarus-house"),
   "road-to-jesus": area("road-to-jesus"),
   "bethany-village": area("bethany-village"),
+  "road-to-tomb": area("road-to-tomb"),
   "tomb-garden": area("tomb-garden"),
 };
 
@@ -58,5 +59,24 @@ describe("AreaRuntime", () => {
     ]);
     expect(rebuilt).toEqual(["lazarus-house", "road-to-jesus"]);
     expect(runtime.currentArea).toBe("road-to-jesus");
+  });
+
+  it("enters the road-to-tomb area as a first-class area", () => {
+    const destroyed: string[] = [];
+    const rebuilt: AreaId[] = [];
+    const host: AreaHost = {
+      setBounds: () => undefined,
+      createBackground: (config) => resource(destroyed, `background:${config.id}`),
+      createObstacle: () => resource(destroyed, "obstacle"),
+      clearActors: () => undefined,
+      rebuildNavigation: (config) => rebuilt.push(config.id),
+    };
+    const runtime = new AreaRuntime(host, areas);
+
+    const config = runtime.enter("road-to-tomb");
+
+    expect(config.id).toBe("road-to-tomb");
+    expect(runtime.currentArea).toBe("road-to-tomb");
+    expect(rebuilt).toEqual(["road-to-tomb"]);
   });
 });

@@ -80,7 +80,7 @@
     "category": "environment",
     "width": 1360,
     "height": 768,
-    "prompt": "Production-ready 32-bit pixel art RPG map background, exact 16:9 composition, three-quarter top-down perspective matching a respectful historical Bible game. First-century rock-cut tomb in a limestone hillside outside Bethany, dark open cave entrance at upper right, broad gathering space in the foreground, olive trees, sparse plants and rocky ground, solemn late-afternoon light. The movable entrance stone must be completely absent so it can be added as a separate game sprite. No people, no body, no burial cloth, no horror, no supernatural glow, no text, no UI, no border."
+    "prompt": "Production-ready 32-bit pixel art RPG map background, exact 16:9 composition, three-quarter top-down perspective matching a respectful historical Bible game. A quiet first-century hillside garden outside Bethany with a simple open rock-cut stone chamber entrance at upper right, broad gathering space in the foreground, olive trees, sparse plants and rocky ground, solemn late-afternoon light. Leave the entrance fully open and omit its movable round stone so the stone can be added separately in the game. Empty peaceful environment, no people, no figures, no cloth, no dramatic effects, no text, no UI, no border."
   },
   {
     "filename": "sprite-messenger-source.png",

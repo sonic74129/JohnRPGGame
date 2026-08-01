@@ -42,4 +42,37 @@ describe("Interaction", () => {
       }),
     ).toBeUndefined();
   });
+
+  it("only makes the guide interactive on the road to the tomb", () => {
+    const actors = new ActorRegistry();
+    actors.register(
+      new Character("guide", "带路的人", "road-to-tomb", { x: 200, y: 200 }),
+    );
+    actors.register(
+      new Character("jesus", "耶稣", "road-to-tomb", { x: 205, y: 200 }),
+    );
+    const interaction = new Interaction(
+      actors,
+      {
+        guide: {
+          areas: ["bethany-village", "road-to-tomb"],
+          stages: ["chooseGuide", "followGuide"],
+        },
+      },
+      50,
+    );
+    const context: InteractionContext = {
+      area: "road-to-tomb",
+      playerPosition: { x: 220, y: 200 },
+      stage: "followGuide",
+      inputLocked: false,
+    };
+
+    expect(interaction.nearest(context)).toBe("guide");
+    expect(interaction.canInteract("guide", context)).toBe(true);
+    expect(interaction.canApproach("jesus", context)).toBe(false);
+    expect(
+      interaction.canInteract("guide", { ...context, stage: "chooseGuide" }),
+    ).toBe(true);
+  });
 });

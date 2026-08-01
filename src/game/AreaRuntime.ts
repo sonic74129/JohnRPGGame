@@ -5,6 +5,7 @@ export type AreaId =
   | "lazarus-house"
   | "road-to-jesus"
   | "bethany-village"
+  | "road-to-tomb"
   | "tomb-garden";
 
 export interface AreaActorPlacement {

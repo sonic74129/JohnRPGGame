@@ -84,59 +84,79 @@ const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
   },
   "road-to-jesus": {
     id: "road-to-jesus",
-    width: 1700,
-    height: 900,
-    backgroundKey: "art-journey",
+    width: 1360,
+    height: 768,
+    backgroundKey: "art-road-to-jesus",
     backgroundColor: 0x74684c,
     obstacles: [
-      { x: 0, y: 0, width: 1700, height: 85 },
-      { x: 0, y: 0, width: 75, height: 900 },
-      { x: 1625, y: 0, width: 75, height: 900 },
-      { x: 250, y: 140, width: 270, height: 180 },
-      { x: 1120, y: 120, width: 300, height: 190 },
+      { x: 0, y: 0, width: 1360, height: 55 },
+      { x: 0, y: 0, width: 55, height: 768 },
+      { x: 1305, y: 0, width: 55, height: 768 },
+      { x: 0, y: 713, width: 1360, height: 55 },
     ],
-    playerSpawn: { x: 170, y: 680 },
-    actors: [{ id: "jesus", position: { x: 1280, y: 540 } }],
+    playerSpawn: { x: 145, y: 650 },
+    actors: [{ id: "jesus", position: { x: 1120, y: 245 } }],
   },
   "bethany-village": {
     id: "bethany-village",
-    width: 1900,
-    height: 900,
-    backgroundKey: "art-bethany",
+    width: 1360,
+    height: 768,
+    backgroundKey: "art-bethany-village",
     backgroundColor: 0x74684c,
     obstacles: [
-      { x: 0, y: 0, width: 1900, height: 85 },
-      { x: 0, y: 0, width: 75, height: 900 },
-      { x: 1825, y: 0, width: 75, height: 900 },
-      { x: 150, y: 110, width: 420, height: 260 },
-      { x: 840, y: 115, width: 260, height: 220 },
+      { x: 0, y: 0, width: 1360, height: 55 },
+      { x: 0, y: 0, width: 55, height: 768 },
+      { x: 1305, y: 0, width: 55, height: 768 },
+      { x: 0, y: 713, width: 1360, height: 55 },
     ],
-    playerSpawn: { x: 560, y: 680 },
+    playerSpawn: { x: 425, y: 625 },
     actors: [
-      { id: "martha", position: { x: 520, y: 525 } },
-      { id: "mary", position: { x: 405, y: 565 } },
-      { id: "mourner", position: { x: 650, y: 575 } },
-      { id: "jesus", position: { x: 1510, y: 520 } },
-      { id: "guide", position: { x: 1600, y: 600 }, visible: false },
+      { id: "martha", position: { x: 400, y: 475 } },
+      { id: "mary", position: { x: 315, y: 535 } },
+      { id: "mourner", position: { x: 570, y: 560 } },
+      { id: "jesus", position: { x: 1080, y: 450 } },
+      { id: "guide", position: { x: 1120, y: 520 }, visible: false },
+    ],
+  },
+  "road-to-tomb": {
+    id: "road-to-tomb",
+    width: 1360,
+    height: 768,
+    backgroundKey: "art-road-to-tomb",
+    backgroundColor: 0x665b46,
+    obstacles: [
+      { x: 0, y: 0, width: 1360, height: 55 },
+      { x: 0, y: 0, width: 55, height: 768 },
+      { x: 1305, y: 0, width: 55, height: 768 },
+      { x: 0, y: 713, width: 1360, height: 55 },
+    ],
+    playerSpawn: { x: 125, y: 675 },
+    actors: [
+      { id: "guide", position: { x: 220, y: 610 } },
+      { id: "jesus", position: { x: 160, y: 570 } },
+      { id: "martha", position: { x: 285, y: 665 } },
+      { id: "mary", position: { x: 350, y: 625 } },
+      { id: "mourner", position: { x: 420, y: 675 } },
     ],
   },
   "tomb-garden": {
     id: "tomb-garden",
-    width: 1100,
-    height: 780,
+    width: 1360,
+    height: 768,
     backgroundKey: "art-tomb",
     backgroundColor: 0x625b4a,
     obstacles: [
-      { x: 0, y: 0, width: 1100, height: 70 },
-      { x: 0, y: 0, width: 65, height: 780 },
-      { x: 1035, y: 0, width: 65, height: 780 },
+      { x: 0, y: 0, width: 1360, height: 55 },
+      { x: 0, y: 0, width: 55, height: 768 },
+      { x: 1305, y: 0, width: 55, height: 768 },
+      { x: 0, y: 713, width: 1360, height: 55 },
     ],
-    playerSpawn: { x: 470, y: 610 },
+    playerSpawn: { x: 520, y: 610 },
     actors: [
-      { id: "jesus", position: { x: 760, y: 430 } },
-      { id: "martha", position: { x: 680, y: 520 } },
-      { id: "mary", position: { x: 780, y: 570 } },
-      { id: "mourner", position: { x: 620, y: 600 } },
+      { id: "jesus", position: { x: 1015, y: 355 } },
+      { id: "martha", position: { x: 900, y: 480 } },
+      { id: "mary", position: { x: 1015, y: 540 } },
+      { id: "mourner", position: { x: 820, y: 580 } },
     ],
   },
 };
@@ -159,7 +179,7 @@ const INTERACTION_RULES: InteractionRules = {
     stages: ["chooseMartha", "chooseMary", "chooseGuide"],
   },
   guide: {
-    areas: ["bethany-village"],
+    areas: ["bethany-village", "road-to-tomb"],
     stages: ["chooseGuide", "followGuide"],
   },
 };
@@ -211,9 +231,10 @@ export class BethanyScene extends Phaser.Scene {
 
   preload(): void {
     this.load.image("art-house", "assets/art/map-house-interior-clean.png");
-    this.load.image("art-bethany", "assets/art/bethany-village.png");
-    this.load.image("art-journey", "assets/art/journey-to-jesus.png");
-    this.load.image("art-tomb", "assets/art/tomb-garden.png");
+    this.load.image("art-road-to-jesus", "assets/art/map-road-to-jesus-clean.png");
+    this.load.image("art-bethany-village", "assets/art/map-village-edge-clean.png");
+    this.load.image("art-road-to-tomb", "assets/art/map-road-to-tomb-clean.png");
+    this.load.image("art-tomb", "assets/art/map-tomb-clean.png");
     this.loadCharacterSprites();
     this.load.image(
       lazarusTextureKey("wrapped-idle"),
@@ -301,20 +322,29 @@ export class BethanyScene extends Phaser.Scene {
         config.backgroundColor,
       )
       .setDepth(-30);
-    const route = this.add
-      .rectangle(config.width / 2, config.height * 0.68, config.width, 150, 0xcbb98b, 0.5)
-      .setDepth(-29);
     const art = this.textures.exists(config.backgroundKey)
       ? this.add
           .image(config.width / 2, config.height / 2, config.backgroundKey)
           .setDisplaySize(config.width, config.height)
-          .setAlpha(config.id === "lazarus-house" ? 0.82 : 0.48)
+          .setAlpha(1)
           .setDepth(-28)
       : undefined;
+    const route = art
+      ? undefined
+      : this.add
+          .rectangle(
+            config.width / 2,
+            config.height * 0.68,
+            config.width,
+            150,
+            0xcbb98b,
+            0.5,
+          )
+          .setDepth(-29);
     return {
       destroy: () => {
         background.destroy();
-        route.destroy();
+        route?.destroy();
         art?.destroy();
       },
     };
@@ -538,18 +568,18 @@ export class BethanyScene extends Phaser.Scene {
 
   private createTombElements(): void {
     const entrance = this.add
-      .ellipse(865, 365, 210, 145, 0x1c1b18)
+      .ellipse(1115, 275, 210, 145, 0x1c1b18)
       .setStrokeStyle(12, 0x514839)
       .setDepth(-10);
     this.stone = this.add
-      .ellipse(825, 405, 145, 165, 0x736b5e)
+      .ellipse(1060, 325, 145, 165, 0x736b5e)
       .setStrokeStyle(7, 0x403b34)
       .setDepth(405);
     this.lazarus = this.add
-      .sprite(880, 480, lazarusTextureKey("wrapped-idle"))
+      .sprite(1130, 390, lazarusTextureKey("wrapped-idle"))
       .setDisplaySize(102, 95)
       .setOrigin(0.5, CHARACTER_ORIGIN_Y)
-      .setDepth(480)
+      .setDepth(390)
       .setVisible(false);
     this.decorations = [entrance, this.stone, this.lazarus];
   }
@@ -850,9 +880,9 @@ export class BethanyScene extends Phaser.Scene {
         void this.moveActorAlong(
           "martha",
           [
-            { x: 880, y: 610 },
-            { x: 1190, y: 630 },
-            { x: 1400, y: 540 },
+            { x: 610, y: 560 },
+            { x: 850, y: 520 },
+            { x: 1080, y: 450 },
           ],
           () => this.completedJourneys.add("martha"),
         );
@@ -861,9 +891,9 @@ export class BethanyScene extends Phaser.Scene {
         void this.moveActorAlong(
           "mary",
           [
-            { x: 820, y: 620 },
-            { x: 1160, y: 635 },
-            { x: 1400, y: 555 },
+            { x: 570, y: 590 },
+            { x: 825, y: 550 },
+            { x: 1080, y: 470 },
           ],
           () => this.completedJourneys.add("mary"),
         );
@@ -871,24 +901,16 @@ export class BethanyScene extends Phaser.Scene {
           void this.moveActorAlong(
             "mourner",
             [
-              { x: 810, y: 690 },
-              { x: 1160, y: 690 },
-              { x: 1450, y: 640 },
+              { x: 570, y: 650 },
+              { x: 830, y: 610 },
+              { x: 1100, y: 535 },
             ],
             () => undefined,
           );
         });
         return;
       case "followGuide":
-        void this.moveActorAlong(
-          "guide",
-          [
-            { x: 1640, y: 590 },
-            { x: 1710, y: 545 },
-            { x: 1770, y: 510 },
-          ],
-          () => this.completedJourneys.add("guide"),
-        );
+        void this.transitionToTombRoad();
         return;
       default:
         return;
@@ -900,20 +922,30 @@ export class BethanyScene extends Phaser.Scene {
     points: readonly Point[],
     onComplete: () => void,
   ): Promise<void> {
-    const completed = await this.npcPaths.follow(id, points, this.npcPathAdapter());
-    if (completed) {
+    const area = this.areaRuntime?.currentArea;
+    if (!area) {
+      return;
+    }
+    const completed = await this.npcPaths.follow(
+      id,
+      points,
+      this.npcPathAdapter(area),
+    );
+    if (completed && this.areaRuntime?.currentArea === area) {
       onComplete();
     }
   }
 
-  private npcPathAdapter(): NpcPathAdapter {
+  private npcPathAdapter(expectedArea: AreaId): NpcPathAdapter {
     return {
-      positionOf: (id) => this.actorRegistry.get(id)?.state.position,
+      positionOf: (id) =>
+        this.areaRuntime?.currentArea === expectedArea
+          ? this.actorRegistry.get(id)?.state.position
+          : undefined,
       moveTo: (id, target, durationMs) =>
         new Promise((resolve) => {
           const visual = this.visuals.get(id);
-          const area = this.areaRuntime?.currentArea;
-          if (!visual || !area) {
+          if (!visual || this.areaRuntime?.currentArea !== expectedArea) {
             resolve();
             return;
           }
@@ -929,14 +961,18 @@ export class BethanyScene extends Phaser.Scene {
             duration: durationMs,
             ease: "Linear",
             onUpdate: () => {
-              this.actorRegistry.move(id, area, {
-                x: visual.container.x,
-                y: visual.container.y,
-              });
+              if (this.areaRuntime?.currentArea === expectedArea) {
+                this.actorRegistry.move(id, expectedArea, {
+                  x: visual.container.x,
+                  y: visual.container.y,
+                });
+              }
             },
             onComplete: () => {
-              this.actorRegistry.move(id, area, target);
-              this.updateActorAnimation(id, 0, 0);
+              if (this.areaRuntime?.currentArea === expectedArea) {
+                this.actorRegistry.move(id, expectedArea, target);
+                this.updateActorAnimation(id, 0, 0);
+              }
               resolve();
             },
           });
@@ -986,10 +1022,10 @@ export class BethanyScene extends Phaser.Scene {
   private resetForMary(): void {
     this.completedJourneys.delete("mary");
     this.stopPlayerMovement();
-    this.setActorPosition("martha", 515, 525);
-    this.setActorPosition("mary", 405, 565);
-    this.setActorPosition("mourner", 650, 575);
-    this.player.setPosition(600, 685);
+    this.setActorPosition("martha", 400, 475);
+    this.setActorPosition("mary", 315, 535);
+    this.setActorPosition("mourner", 570, 560);
+    this.player.setPosition(425, 625);
     this.cameras.main.centerOn(this.player.x, this.player.y);
     this.cameras.main.flash(350, 242, 229, 189);
   }
@@ -1003,11 +1039,50 @@ export class BethanyScene extends Phaser.Scene {
 
   private prepareGuideDecision(): void {
     this.setActorVisible("guide", true);
-    this.setActorPosition("guide", 1590, 620);
-    this.setActorPosition("mourner", 1490, 655);
-    this.setActorPosition("mary", 1410, 555);
-    this.setActorPosition("martha", 1460, 500);
+    this.setActorPosition("guide", 1120, 520);
+    this.setActorPosition("mourner", 970, 590);
+    this.setActorPosition("mary", 910, 520);
+    this.setActorPosition("martha", 955, 460);
     this.completedJourneys.delete("guide");
+  }
+
+  private async transitionToTombRoad(): Promise<void> {
+    await this.cutscenes.run(async () => {
+      await this.fadeOut(280);
+      this.enterArea("road-to-tomb");
+      await this.fadeIn(280);
+      this.ui.showNotice("跟随带路的人，沿路前往坟墓。");
+      void this.moveActorAlong(
+        "guide",
+        [
+          { x: 430, y: 570 },
+          { x: 650, y: 470 },
+          { x: 875, y: 365 },
+          { x: 1130, y: 240 },
+        ],
+        () => this.completedJourneys.add("guide"),
+      );
+    });
+  }
+
+  private fadeOut(duration: number): Promise<void> {
+    return new Promise((resolve) => {
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+        () => resolve(),
+      );
+      this.cameras.main.fadeOut(duration, 20, 18, 14);
+    });
+  }
+
+  private fadeIn(duration: number): Promise<void> {
+    return new Promise((resolve) => {
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE,
+        () => resolve(),
+      );
+      this.cameras.main.fadeIn(duration, 20, 18, 14);
+    });
   }
 
   private setActorPosition(id: ActorId, x: number, y: number): void {
@@ -1051,7 +1126,7 @@ export class BethanyScene extends Phaser.Scene {
     await new Promise<void>((resolve) => {
       this.tweens.add({
         targets: lazarus,
-        y: 430,
+        y: 350,
         duration: 800,
         ease: "Sine.easeOut",
         onComplete: () => resolve(),
