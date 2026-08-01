@@ -58,9 +58,18 @@ import { StoryJourney } from "./StoryJourney";
 import { Trigger } from "./Trigger";
 import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
 import {
+  WORLD_OBJECT_ASSETS,
   WORLD_STRUCTURE_ART,
   type WorldArtObject,
 } from "./WorldArt";
+import {
+  WORLD_GROUND_ASSET,
+  WORLD_GROUND_CELL_SIZE,
+  WORLD_GROUND_FRAME_CROP,
+  WORLD_GROUND_RENDER_SIZE,
+  WORLD_GROUND_TILES,
+  worldGroundInnerFrame,
+} from "./WorldGround";
 import { WorldRuntime, type WorldHost } from "./WorldRuntime";
 import {
   WORLD_HEIGHT,
@@ -296,63 +305,13 @@ export class BethanyScene extends Phaser.Scene {
       "prop-tomb-stone",
       "assets/art/props/tomb-stone-rolled.png",
     );
-    this.load.image(
-      "world-ground",
-      "assets/art/world/bethany-world-ground.png",
-    );
-    this.load.image(
-      "world-market-canopy",
-      "assets/art/world/objects/market-canopy.png",
-    );
-    this.load.image(
-      "world-market-table",
-      "assets/art/world/objects/market-table.png",
-    );
-    this.load.image(
-      "world-martha-house",
-      "assets/art/world/objects/martha-house-base.png",
-    );
-    this.load.image(
-      "world-village-house-a",
-      "assets/art/world/objects/village-house-a.png",
-    );
-    this.load.image(
-      "world-village-house-b",
-      "assets/art/world/objects/village-house-b.png",
-    );
-    this.load.image(
-      "world-village-well",
-      "assets/art/world/objects/village-well.png",
-    );
-    this.load.image(
-      "world-tomb-entrance",
-      "assets/art/world/objects/tomb-entrance.png",
-    );
-    this.load.image("world-wall", "assets/art/world/objects/world-wall.png");
-    this.load.image(
-      "world-wall-corner",
-      "assets/art/world/objects/world-wall-corner.png",
-    );
-    this.load.image(
-      "world-wall-end",
-      "assets/art/world/objects/world-wall-end.png",
-    );
-    this.load.image(
-      "world-cliff-edge",
-      "assets/art/world/objects/world-cliff-edge.png",
-    );
-    this.load.image(
-      "world-olive-tree",
-      "assets/art/world/objects/world-olive-tree.png",
-    );
-    this.load.image(
-      "world-road-marker",
-      "assets/art/world/objects/world-road-marker.png",
-    );
-    this.load.image(
-      "world-rock-ledge",
-      "assets/art/world/objects/world-rock-ledge.png",
-    );
+    this.load.spritesheet(WORLD_GROUND_ASSET.key, WORLD_GROUND_ASSET.path, {
+      frameWidth: WORLD_GROUND_ASSET.frameWidth,
+      frameHeight: WORLD_GROUND_ASSET.frameHeight,
+    });
+    for (const [key, path] of Object.entries(WORLD_OBJECT_ASSETS)) {
+      this.load.image(key, path);
+    }
     this.loadCharacterSprites();
     for (const pose of LAZARUS_POSES) {
       this.load.image(lazarusTextureKey(pose), lazarusAssetPath(pose));
@@ -454,13 +413,38 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private createWorldGround(): AreaResource {
-    const ground = this.add
-      .image(
-        WORLD_WIDTH / 2,
-        WORLD_HEIGHT / 2,
-        "world-ground",
-      )
-      .setDepth(-40);
+    const texture = this.textures.get(WORLD_GROUND_ASSET.key);
+    const innerFrameSize =
+      WORLD_GROUND_ASSET.frameWidth - WORLD_GROUND_FRAME_CROP * 2;
+    for (let frame = 0; frame < WORLD_GROUND_ASSET.frameCount; frame += 1) {
+      const frameName = worldGroundInnerFrame(frame);
+      if (!texture.has(frameName)) {
+        texture.add(
+          frameName,
+          0,
+          (frame % 4) * WORLD_GROUND_ASSET.frameWidth +
+            WORLD_GROUND_FRAME_CROP,
+          Math.floor(frame / 4) * WORLD_GROUND_ASSET.frameHeight +
+            WORLD_GROUND_FRAME_CROP,
+          innerFrameSize,
+          innerFrameSize,
+        );
+      }
+    }
+    const ground = this.add.container(0, 0).setDepth(-40);
+    for (const tile of WORLD_GROUND_TILES) {
+      ground.add(
+        this.add
+          .image(
+            tile.column * WORLD_GROUND_CELL_SIZE + WORLD_GROUND_CELL_SIZE / 2,
+            tile.row * WORLD_GROUND_CELL_SIZE + WORLD_GROUND_CELL_SIZE / 2,
+            WORLD_GROUND_ASSET.key,
+            worldGroundInnerFrame(tile.frame),
+          )
+          .setDisplaySize(WORLD_GROUND_RENDER_SIZE, WORLD_GROUND_RENDER_SIZE)
+          .setAngle(tile.angle),
+      );
+    }
     return { destroy: () => ground.destroy() };
   }
 
@@ -482,6 +466,9 @@ export class BethanyScene extends Phaser.Scene {
       )
       .setDisplaySize(bounds.width, bounds.height)
       .setDepth(bounds.y + bounds.height);
+    if (art.blendMode === "multiply") {
+      image.setBlendMode(Phaser.BlendModes.MULTIPLY);
+    }
     return { destroy: () => image.destroy() };
   }
 

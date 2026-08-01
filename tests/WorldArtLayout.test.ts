@@ -42,4 +42,12 @@ describe("WorldArt", () => {
       ),
     );
   });
+
+  it("uses multiply blending only for the approved olive-tree asset", () => {
+    const blended = WORLD_DECORATIONS.filter(({ blendMode }) => blendMode);
+    expect(blended.length).toBeGreaterThan(0);
+    expect(blended.every(({ texture }) => texture === "world-olive-tree")).toBe(
+      true,
+    );
+  });
 });

@@ -5,6 +5,7 @@ export type WorldTexture =
   | "world-market-canopy"
   | "world-market-table"
   | "world-martha-house"
+  | "world-martha-house-roof"
   | "world-tomb-entrance"
   | "world-village-house-a"
   | "world-village-house-b"
@@ -17,11 +18,31 @@ export type WorldTexture =
   | "world-wall-end"
   | "world-wall";
 
+export const WORLD_OBJECT_ASSETS: Readonly<Record<WorldTexture, string>> = {
+  "world-door-threshold": "assets/art/world/objects/door-threshold.png",
+  "world-market-canopy": "assets/art/world/objects/market-canopy.png",
+  "world-market-table": "assets/art/world/objects/market-table.png",
+  "world-martha-house": "assets/art/world/objects/martha-house-base.png",
+  "world-martha-house-roof": "assets/art/world/objects/martha-house-roof.png",
+  "world-tomb-entrance": "assets/art/world/objects/tomb-entrance.png",
+  "world-village-house-a": "assets/art/world/objects/village-house-a.png",
+  "world-village-house-b": "assets/art/world/objects/village-house-b.png",
+  "world-village-well": "assets/art/world/objects/village-well.png",
+  "world-cliff-edge": "assets/art/world/objects/world-cliff-edge.png",
+  "world-olive-tree": "assets/art/world/objects/world-olive-tree.png",
+  "world-road-marker": "assets/art/world/objects/world-road-marker.png",
+  "world-rock-ledge": "assets/art/world/objects/world-rock-ledge.png",
+  "world-wall-corner": "assets/art/world/objects/world-wall-corner.png",
+  "world-wall-end": "assets/art/world/objects/world-wall-end.png",
+  "world-wall": "assets/art/world/objects/world-wall.png",
+};
+
 export interface WorldArtObject {
   readonly id: string;
   readonly texture: WorldTexture;
   readonly bounds: Rectangle;
   readonly collision?: Rectangle;
+  readonly blendMode?: "multiply";
 }
 
 export const WORLD_STRUCTURE_ART: Readonly<Record<string, WorldArtObject>> = {
@@ -64,6 +85,16 @@ export const WORLD_STRUCTURE_ART: Readonly<Record<string, WorldArtObject>> = {
 
 export const WORLD_DECORATIONS: readonly WorldArtObject[] = [
   {
+    id: "martha-house-roof",
+    texture: "world-martha-house-roof",
+    bounds: { x: 327, y: 690, width: 306, height: 238 },
+  },
+  {
+    id: "house-door-threshold",
+    texture: "world-door-threshold",
+    bounds: { x: 435, y: 1028, width: 90, height: 98 },
+  },
+  {
     id: "market-canopy",
     texture: "world-market-canopy",
     bounds: { x: 820, y: 650, width: 165, height: 162 },
@@ -85,42 +116,49 @@ export const WORLD_DECORATIONS: readonly WorldArtObject[] = [
     texture: "world-olive-tree",
     bounds: { x: 120, y: 790, width: 150, height: 158 },
     collision: { x: 170, y: 885, width: 52, height: 42 },
+    blendMode: "multiply",
   },
   {
     id: "house-tree-east",
     texture: "world-olive-tree",
     bounds: { x: 650, y: 700, width: 150, height: 158 },
     collision: { x: 700, y: 795, width: 52, height: 42 },
+    blendMode: "multiply",
   },
   {
     id: "entrance-tree-west",
     texture: "world-olive-tree",
     bounds: { x: 1190, y: 1120, width: 150, height: 158 },
     collision: { x: 1240, y: 1215, width: 52, height: 42 },
+    blendMode: "multiply",
   },
   {
     id: "entrance-tree-east",
     texture: "world-olive-tree",
     bounds: { x: 1510, y: 1210, width: 150, height: 158 },
     collision: { x: 1560, y: 1305, width: 52, height: 42 },
+    blendMode: "multiply",
   },
   {
     id: "arrival-tree-north",
     texture: "world-olive-tree",
     bounds: { x: 1900, y: 1040, width: 150, height: 158 },
     collision: { x: 1950, y: 1135, width: 52, height: 42 },
+    blendMode: "multiply",
   },
   {
     id: "arrival-tree-east",
     texture: "world-olive-tree",
     bounds: { x: 2140, y: 900, width: 150, height: 158 },
     collision: { x: 2190, y: 995, width: 52, height: 42 },
+    blendMode: "multiply",
   },
   {
     id: "tomb-tree",
     texture: "world-olive-tree",
     bounds: { x: 2130, y: 470, width: 150, height: 158 },
     collision: { x: 2180, y: 565, width: 52, height: 42 },
+    blendMode: "multiply",
   },
   {
     id: "house-wall",
