@@ -3,6 +3,7 @@ import type { ActorId } from "./types";
 
 export type AreaId =
   | "lazarus-house"
+  | "bethany-world"
   | "road-to-jesus"
   | "bethany-village"
   | "road-to-tomb"

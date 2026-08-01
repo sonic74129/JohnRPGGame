@@ -25,6 +25,7 @@ const area = (id: AreaId): AreaConfig => ({
 
 const areas: Readonly<Record<AreaId, AreaConfig>> = {
   "lazarus-house": area("lazarus-house"),
+  "bethany-world": area("bethany-world"),
   "road-to-jesus": area("road-to-jesus"),
   "bethany-village": area("bethany-village"),
   "road-to-tomb": area("road-to-tomb"),

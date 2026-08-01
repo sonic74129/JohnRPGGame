@@ -39,6 +39,14 @@ import { PlayerController } from "./PlayerController";
 import { StoryEngine } from "./StoryEngine";
 import { Trigger } from "./Trigger";
 import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
+import { WorldRuntime, type WorldHost } from "./WorldRuntime";
+import {
+  WORLD_HEIGHT,
+  WORLD_LANDMARKS,
+  WORLD_WIDTH,
+  type WorldRoute,
+  type WorldStructure,
+} from "./WorldLayout";
 
 const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
@@ -62,6 +70,16 @@ const ACTOR_IDS: readonly ActorId[] = [
   "guide",
 ];
 
+const WORLD_ACTORS: Readonly<
+  Record<ActorId, { readonly position: Point; readonly visible?: boolean }>
+> = {
+  martha: { position: { x: 760, y: 1050 } },
+  mary: { position: { x: 860, y: 1000 } },
+  mourner: { position: { x: 970, y: 970 } },
+  jesus: { position: WORLD_LANDMARKS.jesusArrival },
+  guide: { position: WORLD_LANDMARKS.tombRoadStart, visible: false },
+};
+
 const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
   "lazarus-house": {
     id: "lazarus-house",
@@ -81,6 +99,16 @@ const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
       { id: "mary", position: { x: 610, y: 420 } },
       { id: "mourner", position: { x: 760, y: 520 } },
     ],
+  },
+  "bethany-world": {
+    id: "bethany-world",
+    width: WORLD_WIDTH,
+    height: WORLD_HEIGHT,
+    backgroundKey: "world-earth-a",
+    backgroundColor: 0x8c7956,
+    obstacles: [],
+    playerSpawn: WORLD_LANDMARKS.bethanyEntrance,
+    actors: [],
   },
   "road-to-jesus": {
     id: "road-to-jesus",
@@ -163,23 +191,23 @@ const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
 
 const INTERACTION_RULES: InteractionRules = {
   jesus: {
-    areas: ["road-to-jesus", "bethany-village"],
+    areas: ["bethany-world"],
     stages: ["deliverMessage", "chooseGuide"],
   },
   martha: {
-    areas: ["bethany-village"],
+    areas: ["bethany-world"],
     stages: ["chooseMartha", "chooseMary", "followMartha", "chooseGuide"],
   },
   mary: {
-    areas: ["bethany-village"],
+    areas: ["bethany-world"],
     stages: ["chooseMartha", "chooseMary", "followMary", "chooseGuide"],
   },
   mourner: {
-    areas: ["bethany-village"],
+    areas: ["bethany-world"],
     stages: ["chooseMartha", "chooseMary", "chooseGuide"],
   },
   guide: {
-    areas: ["bethany-village", "road-to-tomb"],
+    areas: ["bethany-world"],
     stages: ["chooseGuide", "followGuide"],
   },
 };
@@ -212,6 +240,7 @@ export class BethanyScene extends Phaser.Scene {
     readonly D: Phaser.Input.Keyboard.Key;
   };
   private areaRuntime?: AreaRuntime;
+  private worldRuntime?: WorldRuntime;
   private interaction?: Interaction;
   private navigation?: NavigationGrid;
   private movementPath: Point[] = [];
@@ -239,6 +268,32 @@ export class BethanyScene extends Phaser.Scene {
       "prop-tomb-stone",
       "assets/art/props/tomb-stone-rolled.png",
     );
+    this.load.image("world-earth-a", "assets/art/world/tiles/earth-a.png");
+    this.load.image(
+      "world-martha-house",
+      "assets/art/world/objects/martha-house-base.png",
+    );
+    this.load.image(
+      "world-martha-house-roof",
+      "assets/art/world/objects/martha-house-roof.png",
+    );
+    this.load.image(
+      "world-village-house-a",
+      "assets/art/world/objects/village-house-a.png",
+    );
+    this.load.image(
+      "world-village-house-b",
+      "assets/art/world/objects/village-house-b.png",
+    );
+    this.load.image(
+      "world-village-well",
+      "assets/art/world/objects/village-well.png",
+    );
+    this.load.image(
+      "world-tomb-entrance",
+      "assets/art/world/objects/tomb-entrance.png",
+    );
+    this.load.image("world-wall", "assets/art/world/objects/world-wall.png");
     this.loadCharacterSprites();
     this.load.image(
       lazarusTextureKey("wrapped-idle"),
@@ -260,6 +315,7 @@ export class BethanyScene extends Phaser.Scene {
     this.createPlayer();
     this.registerActors();
     this.areaRuntime = new AreaRuntime(this.createAreaHost(), AREAS);
+    this.worldRuntime = new WorldRuntime(this.createWorldHost());
     this.interaction = new Interaction(
       this.actorRegistry,
       INTERACTION_RULES,
@@ -275,6 +331,7 @@ export class BethanyScene extends Phaser.Scene {
       this.registry.set("bethany-ready", false);
       this.game.events.off("start-story", this.startStory, this);
       this.areaRuntime?.cleanup();
+      this.worldRuntime?.cleanup();
       this.clearDecorations();
     });
   }
@@ -315,6 +372,91 @@ export class BethanyScene extends Phaser.Scene {
           40,
           paddedObstacles,
         );
+      },
+    };
+  }
+
+  private createWorldHost(): WorldHost {
+    return {
+      setBounds: (width, height) => {
+        this.physics.world.setBounds(0, 0, width, height);
+        this.cameras.main.setBounds(0, 0, width, height);
+      },
+      createGround: () => this.createWorldGround(),
+      createRoute: (route) => this.createWorldRoute(route),
+      createStructure: (structure) => this.createWorldStructure(structure),
+      createObstacle: (obstacle) => this.createObstacle(obstacle),
+      setNavigation: (navigation) => {
+        this.navigation = navigation;
+      },
+    };
+  }
+
+  private createWorldGround(): AreaResource {
+    const ground = this.add
+      .tileSprite(
+        WORLD_WIDTH / 2,
+        WORLD_HEIGHT / 2,
+        WORLD_WIDTH,
+        WORLD_HEIGHT,
+        "world-earth-a",
+      )
+      .setDepth(-40);
+    return { destroy: () => ground.destroy() };
+  }
+
+  private createWorldRoute(route: WorldRoute): AreaResource {
+    const graphics = this.add.graphics().setDepth(-35);
+    graphics.lineStyle(
+      route.width,
+      route.id === "tomb" || route.id === "jerusalem" ? 0xb7aa89 : 0x9d8157,
+      1,
+    );
+    graphics.beginPath();
+    route.points.forEach((point, index) => {
+      if (index === 0) {
+        graphics.moveTo(point.x, point.y);
+      } else {
+        graphics.lineTo(point.x, point.y);
+      }
+    });
+    graphics.strokePath();
+    return { destroy: () => graphics.destroy() };
+  }
+
+  private createWorldStructure(structure: WorldStructure): AreaResource {
+    const textureByStructure: Readonly<Record<string, string>> = {
+      "martha-house": "world-martha-house",
+      "village-house-west": "world-village-house-a",
+      "village-house-east": "world-village-house-b",
+      "village-house-south": "world-village-house-a",
+      "village-well": "world-village-well",
+      "tomb-hillside": "world-tomb-entrance",
+      "jerusalem-gate": "world-wall",
+    };
+    const texture = textureByStructure[structure.id];
+    if (!texture) {
+      throw new Error(`Missing world texture for ${structure.id}.`);
+    }
+    const image = this.add
+      .image(
+        structure.bounds.x + structure.bounds.width / 2,
+        structure.bounds.y + structure.bounds.height / 2,
+        texture,
+      )
+      .setDisplaySize(structure.bounds.width, structure.bounds.height)
+      .setDepth(-25);
+    const roof =
+      structure.id === "martha-house"
+        ? this.add
+            .image(image.x, image.y - 48, "world-martha-house-roof")
+            .setDisplaySize(structure.bounds.width, structure.bounds.height)
+            .setDepth(1000)
+        : undefined;
+    return {
+      destroy: () => {
+        roof?.destroy();
+        image.destroy();
       },
     };
   }
@@ -494,6 +636,7 @@ export class BethanyScene extends Phaser.Scene {
     this.visuals.clear();
     this.completedJourneys.clear();
     this.areaRuntime = undefined;
+    this.worldRuntime = undefined;
     this.interaction = undefined;
     this.navigation = undefined;
     this.movementPath = [];
@@ -509,6 +652,10 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private enterArea(area: AreaId): void {
+    if (area === "bethany-world") {
+      this.enterWorld();
+      return;
+    }
     this.clearDecorations();
     const config = this.areaRuntime?.enter(area);
     if (!config) {
@@ -529,6 +676,35 @@ export class BethanyScene extends Phaser.Scene {
       this.createTombElements();
     }
     this.cameras.main.centerOn(this.player.x, this.player.y);
+  }
+
+  private enterWorld(): void {
+    this.clearDecorations();
+    this.areaRuntime?.cleanup();
+    this.worldRuntime?.activate();
+    this.actorRegistry.hideAll();
+    for (const id of ACTOR_IDS) {
+      const placement = WORLD_ACTORS[id];
+      this.actorRegistry.move(id, "bethany-world", placement.position);
+      this.actorRegistry.setVisible(id, placement.visible ?? true);
+      if (placement.visible ?? true) {
+        this.createActorVisual(id);
+      }
+    }
+    this.player.setPosition(
+      WORLD_LANDMARKS.bethanyEntrance.x + 310,
+      WORLD_LANDMARKS.bethanyEntrance.y + 250,
+    );
+    this.stopPlayerMovement();
+    this.nearestActor = undefined;
+    this.cameras.main.centerOn(this.player.x, this.player.y);
+  }
+
+  private currentArea(): AreaId | undefined {
+    if (this.worldRuntime?.active) {
+      return "bethany-world";
+    }
+    return this.areaRuntime?.currentArea;
   }
 
   private createActorVisual(id: ActorId): void {
@@ -575,15 +751,15 @@ export class BethanyScene extends Phaser.Scene {
 
   private createTombElements(): void {
     const entrance = this.add
-      .ellipse(1115, 275, 210, 145, 0x1c1b18)
+      .ellipse(1990, 350, 210, 145, 0x1c1b18)
       .setStrokeStyle(12, 0x514839)
       .setDepth(-10);
     this.stone = this.add
-      .image(1060, 340, "prop-tomb-stone")
+      .image(1940, 415, "prop-tomb-stone")
       .setDisplaySize(190, 125)
       .setDepth(405);
     this.lazarus = this.add
-      .sprite(1130, 390, lazarusTextureKey("wrapped-idle"))
+      .sprite(2010, 465, lazarusTextureKey("wrapped-idle"))
       .setDisplaySize(102, 95)
       .setOrigin(0.5, CHARACTER_ORIGIN_Y)
       .setDepth(390)
@@ -742,7 +918,7 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private interactionContext() {
-    const area = this.areaRuntime?.currentArea;
+    const area = this.currentArea();
     if (!area) {
       throw new Error("Cannot interact before entering an area.");
     }
@@ -769,7 +945,7 @@ export class BethanyScene extends Phaser.Scene {
         stage: "deliverMessage",
         handler: () =>
           this.cutscenes.run(async () => {
-            this.enterArea("road-to-jesus");
+          this.enterWorld();
             this.cameras.main.fadeIn(350, 20, 18, 14);
             this.ui.showNotice("沿道路前进，找到耶稣。");
           }),
@@ -861,12 +1037,21 @@ export class BethanyScene extends Phaser.Scene {
       this.story.deliverMessage();
       this.updateObjective();
       await this.showDialogue(DIALOGUES.messageJourney);
-      this.enterArea("bethany-village");
+      this.moveStoryToVillage();
       this.story.arriveAtBethany();
       this.audio.setState("exploration", 2400);
       this.updateObjective();
       this.ui.showNotice("耶稣来到伯大尼附近。根据经文判断谁先出去迎接他。");
     });
+  }
+
+  private moveStoryToVillage(): void {
+    this.setActorPosition("martha", 760, 1050);
+    this.setActorPosition("mary", 860, 1000);
+    this.setActorPosition("mourner", 970, 970);
+    this.setActorPosition("jesus", 1480, 1080);
+    this.player.setPosition(1320, 1130);
+    this.cameras.main.centerOn(this.player.x, this.player.y);
   }
 
   private handleDecision(id: ActorId): void {
@@ -887,9 +1072,9 @@ export class BethanyScene extends Phaser.Scene {
         void this.moveActorAlong(
           "martha",
           [
-            { x: 610, y: 560 },
-            { x: 850, y: 520 },
-            { x: 1080, y: 450 },
+            { x: 930, y: 970 },
+            { x: 1180, y: 980 },
+            { x: 1460, y: 1050 },
           ],
           () => this.completedJourneys.add("martha"),
         );
@@ -898,9 +1083,9 @@ export class BethanyScene extends Phaser.Scene {
         void this.moveActorAlong(
           "mary",
           [
-            { x: 570, y: 590 },
-            { x: 825, y: 550 },
-            { x: 1080, y: 470 },
+            { x: 960, y: 1030 },
+            { x: 1200, y: 1020 },
+            { x: 1480, y: 1080 },
           ],
           () => this.completedJourneys.add("mary"),
         );
@@ -908,9 +1093,9 @@ export class BethanyScene extends Phaser.Scene {
           void this.moveActorAlong(
             "mourner",
             [
-              { x: 570, y: 650 },
-              { x: 830, y: 610 },
-              { x: 1100, y: 535 },
+              { x: 1010, y: 1100 },
+              { x: 1240, y: 1100 },
+              { x: 1510, y: 1150 },
             ],
             () => undefined,
           );
@@ -929,7 +1114,7 @@ export class BethanyScene extends Phaser.Scene {
     points: readonly Point[],
     onComplete: () => void,
   ): Promise<void> {
-    const area = this.areaRuntime?.currentArea;
+    const area = this.currentArea();
     if (!area) {
       return;
     }
@@ -938,7 +1123,7 @@ export class BethanyScene extends Phaser.Scene {
       points,
       this.npcPathAdapter(area),
     );
-    if (completed && this.areaRuntime?.currentArea === area) {
+    if (completed && this.currentArea() === area) {
       onComplete();
     }
   }
@@ -946,13 +1131,13 @@ export class BethanyScene extends Phaser.Scene {
   private npcPathAdapter(expectedArea: AreaId): NpcPathAdapter {
     return {
       positionOf: (id) =>
-        this.areaRuntime?.currentArea === expectedArea
+        this.currentArea() === expectedArea
           ? this.actorRegistry.get(id)?.state.position
           : undefined,
       moveTo: (id, target, durationMs) =>
         new Promise((resolve) => {
           const visual = this.visuals.get(id);
-          if (!visual || this.areaRuntime?.currentArea !== expectedArea) {
+          if (!visual || this.currentArea() !== expectedArea) {
             resolve();
             return;
           }
@@ -968,7 +1153,7 @@ export class BethanyScene extends Phaser.Scene {
             duration: durationMs,
             ease: "Linear",
             onUpdate: () => {
-              if (this.areaRuntime?.currentArea === expectedArea) {
+              if (this.currentArea() === expectedArea) {
                 this.actorRegistry.move(id, expectedArea, {
                   x: visual.container.x,
                   y: visual.container.y,
@@ -976,7 +1161,7 @@ export class BethanyScene extends Phaser.Scene {
               }
             },
             onComplete: () => {
-              if (this.areaRuntime?.currentArea === expectedArea) {
+              if (this.currentArea() === expectedArea) {
                 this.actorRegistry.move(id, expectedArea, target);
                 this.updateActorAnimation(id, 0, 0);
               }
@@ -1018,7 +1203,8 @@ export class BethanyScene extends Phaser.Scene {
   private async runTombSequence(): Promise<void> {
     await this.cutscenes.run(async () => {
       this.story.arriveAtTomb();
-      this.enterArea("tomb-garden");
+      this.positionTombParty();
+      this.createTombElements();
       this.audio.setState("dialogue", 2200);
       this.updateObjective();
       await this.showDialogue(DIALOGUES.tomb);
@@ -1026,13 +1212,23 @@ export class BethanyScene extends Phaser.Scene {
     });
   }
 
+  private positionTombParty(): void {
+    this.setActorPosition("jesus", 1840, 520);
+    this.setActorPosition("martha", 1760, 580);
+    this.setActorPosition("mary", 1840, 620);
+    this.setActorPosition("mourner", 1700, 650);
+    this.setActorPosition("guide", 1900, 590);
+    this.player.setPosition(1760, 700);
+    this.cameras.main.centerOn(this.player.x, this.player.y);
+  }
+
   private resetForMary(): void {
     this.completedJourneys.delete("mary");
     this.stopPlayerMovement();
-    this.setActorPosition("martha", 400, 475);
-    this.setActorPosition("mary", 315, 535);
-    this.setActorPosition("mourner", 570, 560);
-    this.player.setPosition(425, 625);
+    this.setActorPosition("martha", 760, 1050);
+    this.setActorPosition("mary", 860, 1000);
+    this.setActorPosition("mourner", 970, 970);
+    this.player.setPosition(1320, 1130);
     this.cameras.main.centerOn(this.player.x, this.player.y);
     this.cameras.main.flash(350, 242, 229, 189);
   }
@@ -1046,54 +1242,31 @@ export class BethanyScene extends Phaser.Scene {
 
   private prepareGuideDecision(): void {
     this.setActorVisible("guide", true);
-    this.setActorPosition("guide", 1120, 520);
-    this.setActorPosition("mourner", 970, 590);
-    this.setActorPosition("mary", 910, 520);
-    this.setActorPosition("martha", 955, 460);
+    this.setActorPosition("guide", 1320, 650);
+    this.setActorPosition("mourner", 1510, 1150);
+    this.setActorPosition("mary", 1480, 1080);
+    this.setActorPosition("martha", 1460, 1050);
     this.completedJourneys.delete("guide");
   }
 
   private async transitionToTombRoad(): Promise<void> {
     await this.cutscenes.run(async () => {
-      await this.fadeOut(280);
-      this.enterArea("road-to-tomb");
-      await this.fadeIn(280);
       this.ui.showNotice("跟随带路的人，沿路前往坟墓。");
       void this.moveActorAlong(
         "guide",
         [
-          { x: 430, y: 570 },
-          { x: 650, y: 470 },
-          { x: 875, y: 365 },
-          { x: 1130, y: 240 },
+          { x: 1450, y: 620 },
+          { x: 1600, y: 500 },
+          { x: 1800, y: 430 },
+          WORLD_LANDMARKS.tombEntrance,
         ],
         () => this.completedJourneys.add("guide"),
       );
     });
   }
 
-  private fadeOut(duration: number): Promise<void> {
-    return new Promise((resolve) => {
-      this.cameras.main.once(
-        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
-        () => resolve(),
-      );
-      this.cameras.main.fadeOut(duration, 20, 18, 14);
-    });
-  }
-
-  private fadeIn(duration: number): Promise<void> {
-    return new Promise((resolve) => {
-      this.cameras.main.once(
-        Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE,
-        () => resolve(),
-      );
-      this.cameras.main.fadeIn(duration, 20, 18, 14);
-    });
-  }
-
   private setActorPosition(id: ActorId, x: number, y: number): void {
-    const area = this.areaRuntime?.currentArea;
+    const area = this.currentArea();
     const visual = this.visuals.get(id);
     if (!area || !visual) {
       return;
@@ -1123,7 +1296,7 @@ export class BethanyScene extends Phaser.Scene {
     await new Promise<void>((resolve) => {
       this.tweens.add({
         targets: stone,
-        x: 660,
+        x: 1770,
         duration: 900,
         ease: "Sine.easeInOut",
         onComplete: () => resolve(),
@@ -1133,7 +1306,7 @@ export class BethanyScene extends Phaser.Scene {
     await new Promise<void>((resolve) => {
       this.tweens.add({
         targets: lazarus,
-        y: 350,
+        y: 425,
         duration: 800,
         ease: "Sine.easeOut",
         onComplete: () => resolve(),
