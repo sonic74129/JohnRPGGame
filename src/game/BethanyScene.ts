@@ -1416,7 +1416,7 @@ export class BethanyScene extends Phaser.Scene {
         this.panCameraTo(target, durationMs),
       followCamera: (target) => {
         if (target === "player") {
-          this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+          this.followPlayerCamera();
         }
       },
       wait: (durationMs) => this.delayOperation(durationMs),
@@ -1719,6 +1719,7 @@ export class BethanyScene extends Phaser.Scene {
           WORLD_LANDMARKS.tombGarden.y + 130,
         );
     }
+    this.followPlayerCamera();
   }
 
   private applyFinalPositions(beatId: VerseBeatId): void {
@@ -2036,6 +2037,10 @@ export class BethanyScene extends Phaser.Scene {
     if (this.lazarus?.visible) {
       this.lazarus.setDepth(this.lazarus.y);
     }
+  }
+
+  private followPlayerCamera(): void {
+    this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
   }
 
   private togglePause(): void {

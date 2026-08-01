@@ -33,6 +33,15 @@ describe("unified runtime integration", () => {
     );
   });
 
+  it("restores player camera follow through the shared final state", () => {
+    expect(sceneSource).toMatch(
+      /applySequenceFinalState[\s\S]{0,1800}this\.followPlayerCamera\(\)/,
+    );
+    expect(sceneSource).toContain(
+      "this.cameras.main.startFollow(this.player, true, 0.09, 0.09)",
+    );
+  });
+
   it("keeps the result free of authored recap and objective guidance", () => {
     expect(html).not.toContain('id="result-summary"');
     expect(html).not.toContain("discussion-question");
