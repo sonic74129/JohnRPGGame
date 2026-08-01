@@ -40,6 +40,8 @@ export const ACTOR_LABEL_LIFECYCLE = {
   sceneShutdown: "shutdown",
 } as const;
 
+export const ACTOR_LABEL_DEFAULT_RESOLUTION = 1;
+
 export const resolveActorLabelPosition = (
   bounds: ActorVisibleBounds,
   gap = 8,
@@ -58,7 +60,7 @@ export const createActorLabel = (
   },
   options: ActorLabelOptions,
 ): ActorLabelController => {
-  const resolution = options.resolution ?? 0;
+  const resolution = options.resolution ?? ACTOR_LABEL_DEFAULT_RESOLUTION;
   const label = scene.add
     .text(0, 0, options.text, ACTOR_LABEL_STYLE)
     .setOrigin(0.5, 1)

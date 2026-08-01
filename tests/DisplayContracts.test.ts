@@ -10,6 +10,7 @@ import {
   resolveTargetVisibleHeight,
 } from "../src/game/DisplayScale";
 import {
+  ACTOR_LABEL_DEFAULT_RESOLUTION,
   ACTOR_LABEL_LIFECYCLE,
   ACTOR_LABEL_STYLE,
   resolveActorLabelPosition,
@@ -96,6 +97,7 @@ describe("display scale contract", () => {
 
 describe("actor label contract", () => {
   it("places high-contrast labels above visible content bounds", () => {
+    expect(ACTOR_LABEL_DEFAULT_RESOLUTION).toBe(1);
     expect(
       resolveActorLabelPosition({ x: 20, y: 40, width: 60, height: 100 }, 8),
     ).toEqual({ x: 50, y: 32 });
