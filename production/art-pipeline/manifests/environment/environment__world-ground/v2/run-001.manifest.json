@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "environment.world-ground",
+    "family": "environment",
+    "purpose": "Source atlas for seamless dry earth, road, limestone path, sparse grass and rocky-ground pieces used to build one continuous runtime Bethany world.",
+    "runtime": true,
+    "output": "source",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "resume",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:46:07.779Z",
+    "updatedAt": "2026-08-01T15:56:54.396Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/environment/environment__world-ground/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/environment/environment__world-ground/v2/run-001",
+    "selectedSource": "production/art-source/environment/environment__world-ground/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/environment/environment__world-ground/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/environment/environment__world-ground/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__world-ground/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:47:52.899Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 2,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__world-ground/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:52:23.601Z",
+      "lastFailure": null,
+      "failures": [
+        {
+          "at": "2026-08-01T15:51:12.484Z",
+          "attempt": 1,
+          "reason": "Image generation failed for environment.world-ground: 429 {\"error\":{\"code\":\"RateLimitReached\",\"message\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\",\"details\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\"}}"
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/environment/environment__world-ground/v2/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/environment/environment__world-ground/v2/run-001-selected.png",
+    "reason": "Approved strict 4x4 ground-only atlas: regular extraction grid, reusable edge-matching earth/road/limestone/grass transitions, approved warm Bethany palette and hand-painted style, and no buildings, trees, props, people, text, UI, frame, or watermark.",
+    "selectedAt": "2026-08-01T15:56:54.396Z"
+  },
+  "recovery": {
+    "resumeCount": 1,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fantastic-fishstick/production/art-source/environment/environment__world-ground/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fantastic-fishstick/public/assets/art/environment/environment__world-ground/v2/run-001/environment__world-ground.png"
+    ],
+    "startedAt": "2026-08-01T15:56:54.488756Z",
+    "completedAt": "2026-08-01T15:56:54.839052Z",
+    "failureReason": null
+  }
+}
