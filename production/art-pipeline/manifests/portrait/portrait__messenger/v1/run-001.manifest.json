@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.messenger",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of the messenger listening carefully and ready to carry the sisters' words.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.messenger"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:43:35.075Z",
+    "updatedAt": "2026-08-01T16:49:11.966Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__messenger/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__messenger/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__messenger/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__messenger/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__messenger/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__messenger/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:44:12.794Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__messenger/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:45:59.813Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 2,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__messenger/v1/run-001/candidate-02.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__messenger/v1/run-001-selected.png",
+    "reason": "Candidate 02 scored 88/100: identity 18, emotion 17, style 18, UI 18, cleanliness 17. Clear upper-left Mediterranean key light beam on the limestone wall matches the locked masters, exact map identity (blue-gray tunic, sand mantle, satchel strap edge, curly hair, short beard), tighter centered chest-up composition with a thoughtful attentive expression that reads as careful listening. Candidate 01 scored 85/100: also a solid pass, but its ambient flatter lighting and a small incidental plant sprig in the corner scored slightly lower on style and cleanliness.",
+    "selectedAt": "2026-08-01T16:49:11.966Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__messenger/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__messenger/v1/run-001/portrait__messenger.png"
+    ],
+    "startedAt": "2026-08-01T16:49:27.469295Z",
+    "completedAt": "2026-08-01T16:49:28.110554Z",
+    "failureReason": null
+  }
+}
