@@ -5,11 +5,22 @@ export type WalkingSpriteCharacter = "messenger" | "martha" | "mary" | "jesus";
 export type IdleSpriteCharacter = "mourner-man" | "guide";
 export type SpriteCharacter = WalkingSpriteCharacter | IdleSpriteCharacter;
 export type SpritePose = "idle" | "step-left" | "step-right";
-export type LazarusPose =
-  | "sick"
-  | "wrapped-idle"
-  | "wrapped-step"
-  | "restored";
+export const LAZARUS_POSES = [
+  "sick",
+  "wrapped-idle",
+  "wrapped-step",
+  "restored",
+] as const;
+export type LazarusPose = (typeof LAZARUS_POSES)[number];
+
+const LAZARUS_DISPLAY_SIZES: Readonly<
+  Record<LazarusPose, { readonly width: number; readonly height: number }>
+> = {
+  sick: { width: 280, height: 190 },
+  "wrapped-idle": { width: 78, height: 72 },
+  "wrapped-step": { width: 78, height: 72 },
+  restored: { width: 84, height: 78 },
+};
 
 const WALKING_CHARACTERS: readonly WalkingSpriteCharacter[] = [
   "messenger",
@@ -39,6 +50,11 @@ export const lazarusTextureKey = (pose: LazarusPose): string =>
 
 export const lazarusAssetPath = (pose: LazarusPose): string =>
   `assets/art/sprites/lazarus/${pose}.png`;
+
+export const lazarusDisplaySize = (
+  pose: LazarusPose,
+): { readonly width: number; readonly height: number } =>
+  LAZARUS_DISPLAY_SIZES[pose];
 
 export const walkAnimationKey = (
   character: WalkingSpriteCharacter,

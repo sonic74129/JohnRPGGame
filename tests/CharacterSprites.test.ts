@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  LAZARUS_POSES,
   hasWalkFrames,
   lazarusAssetPath,
+  lazarusDisplaySize,
   lazarusTextureKey,
   resolveFacing,
   spriteTextureKey,
@@ -35,10 +37,32 @@ describe("character sprite helpers", () => {
   });
 
   it("resolves every Lazarus event pose through one asset contract", () => {
+    expect(LAZARUS_POSES).toEqual([
+      "sick",
+      "wrapped-idle",
+      "wrapped-step",
+      "restored",
+    ]);
     expect(lazarusTextureKey("sick")).toBe("sprite-lazarus-sick");
     expect(lazarusAssetPath("wrapped-step")).toBe(
       "assets/art/sprites/lazarus/wrapped-step.png",
     );
     expect(lazarusTextureKey("restored")).toBe("sprite-lazarus-restored");
+  });
+
+  it("keeps Lazarus display sizes proportional to their source canvases", () => {
+    expect(lazarusDisplaySize("sick")).toEqual({ width: 280, height: 190 });
+    expect(lazarusDisplaySize("wrapped-idle")).toEqual({
+      width: 78,
+      height: 72,
+    });
+    expect(lazarusDisplaySize("wrapped-step")).toEqual({
+      width: 78,
+      height: 72,
+    });
+    expect(lazarusDisplaySize("restored")).toEqual({
+      width: 84,
+      height: 78,
+    });
   });
 });

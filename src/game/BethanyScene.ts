@@ -13,9 +13,11 @@ import {
 import { Character } from "./Character";
 import {
   FACINGS,
+  LAZARUS_POSES,
   actorSpriteCharacter,
   hasWalkFrames,
   lazarusAssetPath,
+  lazarusDisplaySize,
   lazarusTextureKey,
   resolveFacing,
   spriteAssetPath,
@@ -338,18 +340,9 @@ export class BethanyScene extends Phaser.Scene {
       "assets/art/world/objects/world-rock-ledge.png",
     );
     this.loadCharacterSprites();
-    this.load.image(
-      lazarusTextureKey("wrapped-idle"),
-      lazarusAssetPath("wrapped-idle"),
-    );
-    this.load.image(
-      lazarusTextureKey("wrapped-step"),
-      lazarusAssetPath("wrapped-step"),
-    );
-    this.load.image(
-      lazarusTextureKey("restored"),
-      lazarusAssetPath("restored"),
-    );
+    for (const pose of LAZARUS_POSES) {
+      this.load.image(lazarusTextureKey(pose), lazarusAssetPath(pose));
+    }
   }
 
   create(): void {
@@ -704,6 +697,7 @@ export class BethanyScene extends Phaser.Scene {
     if (area === "tomb-garden") {
       this.createTombElements();
     } else if (area === "lazarus-house") {
+      this.createSickLazarus();
       this.createHouseStoryTrigger();
     }
     this.cameras.main.centerOn(this.player.x, this.player.y);
@@ -799,6 +793,7 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private createTombElements(): void {
+    const wrappedSize = lazarusDisplaySize("wrapped-idle");
     const entrance = this.add
       .ellipse(1990, 350, 210, 145, 0x1c1b18)
       .setStrokeStyle(12, 0x514839)
@@ -809,11 +804,20 @@ export class BethanyScene extends Phaser.Scene {
       .setDepth(405);
     this.lazarus = this.add
       .sprite(2010, 390, lazarusTextureKey("wrapped-idle"))
-      .setDisplaySize(78, 72)
+      .setDisplaySize(wrappedSize.width, wrappedSize.height)
       .setOrigin(0.5, CHARACTER_ORIGIN_Y)
       .setDepth(390)
       .setVisible(false);
     this.decorations = [entrance, this.stone, this.lazarus];
+  }
+
+  private createSickLazarus(): void {
+    const size = lazarusDisplaySize("sick");
+    const lazarus = this.add
+      .image(270, 310, lazarusTextureKey("sick"))
+      .setDisplaySize(size.width, size.height)
+      .setDepth(-18);
+    this.decorations.push(lazarus);
   }
 
   private createHouseStoryTrigger(): void {
@@ -1544,13 +1548,11 @@ export class BethanyScene extends Phaser.Scene {
 
   private async restoreLazarus(): Promise<void> {
     const { lazarus } = this.requireTombElements();
+    const restoredSize = lazarusDisplaySize("restored");
     lazarus.anims.stop();
     lazarus
       .setTexture(lazarusTextureKey("restored"))
-      .setDisplaySize(
-        EXTERIOR_CHARACTER_WIDTH,
-        EXTERIOR_CHARACTER_HEIGHT,
-      )
+      .setDisplaySize(restoredSize.width, restoredSize.height)
       .setOrigin(0.5, CHARACTER_ORIGIN_Y);
     await this.tweenLazarusTo(lazarus, 1880, 565, 650);
   }
