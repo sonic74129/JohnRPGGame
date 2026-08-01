@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "environment.world-objects",
+    "family": "environment",
+    "purpose": "Source atlas of reusable Bethany buildings, landmarks, walls, terrain edges and vegetation for the continuous runtime exterior world.",
+    "runtime": true,
+    "output": "source",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world",
+      "master.tomb-garden"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:09:26.790Z",
+    "updatedAt": "2026-08-01T16:15:40.062Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/environment/environment__world-objects/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/environment/environment__world-objects/v2/run-001",
+    "selectedSource": "production/art-source/environment/environment__world-objects/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/environment/environment__world-objects/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/environment/environment__world-objects/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__world-objects/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:11:09.884Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__world-objects/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:14:10.656Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/environment/environment__world-objects/v2/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/environment/environment__world-objects/v2/run-001-selected.png",
+    "reason": "Exact ordered 4x4 atlas; all sixteen objects pass style, camera, completeness, extraction, no-people, no-text, no-modern and no-fantasy checks; Martha base and roof are separate.",
+    "selectedAt": "2026-08-01T16:15:40.061Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "review",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-potential-invention/production/art-pipeline/candidates/environment/environment__world-objects/v2/run-001/candidate-01.png",
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-potential-invention/production/art-pipeline/candidates/environment/environment__world-objects/v2/run-001/candidate-02.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-potential-invention/production/art-pipeline/review/environment/environment__world-objects/v2/run-001-contact-sheet.jpg"
+    ],
+    "startedAt": "2026-08-01T16:14:53.639079Z",
+    "completedAt": "2026-08-01T16:14:53.707443Z",
+    "failureReason": null
+  }
+}
