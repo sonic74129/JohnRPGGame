@@ -37,6 +37,7 @@ import {
 import { NpcPathController, type NpcPathAdapter } from "./NpcPathController";
 import { PlayerController } from "./PlayerController";
 import { ProximityTrigger } from "./ProximityTrigger";
+import { partitionTombDialogue } from "./StoryEvents";
 import { StoryEngine } from "./StoryEngine";
 import { Trigger } from "./Trigger";
 import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
@@ -339,6 +340,14 @@ export class BethanyScene extends Phaser.Scene {
       lazarusAssetPath("wrapped-idle"),
     );
     this.load.image(
+      "sprite-lazarus-wrapped-step",
+      "assets/art/sprites/lazarus/wrapped-step.png",
+    );
+    this.load.image(
+      "sprite-lazarus-restored",
+      "assets/art/sprites/lazarus/restored.png",
+    );
+    this.load.image(
       "sprite-lazarus-sick",
       "assets/art/sprites/lazarus/sick.png",
     );
@@ -595,6 +604,18 @@ export class BethanyScene extends Phaser.Scene {
           });
         }
       }
+      if (!this.anims.exists("walk-lazarus-wrapped")) {
+        this.anims.create({
+          key: "walk-lazarus-wrapped",
+          frames: [
+            { key: lazarusTextureKey("wrapped-idle") },
+            { key: "sprite-lazarus-wrapped-step" },
+            { key: lazarusTextureKey("wrapped-idle") },
+          ],
+          frameRate: 5,
+          repeat: -1,
+        });
+      }
     }
   }
 
@@ -778,7 +799,7 @@ export class BethanyScene extends Phaser.Scene {
       .setDisplaySize(140, 92)
       .setDepth(405);
     this.lazarus = this.add
-      .sprite(2010, 465, lazarusTextureKey("wrapped-idle"))
+      .sprite(2010, 390, lazarusTextureKey("wrapped-idle"))
       .setDisplaySize(78, 72)
       .setOrigin(0.5, CHARACTER_ORIGIN_Y)
       .setDepth(390)
@@ -1325,8 +1346,15 @@ export class BethanyScene extends Phaser.Scene {
       this.createTombElements();
       this.audio.setState("dialogue", 2200);
       this.updateObjective();
-      await this.showDialogue(DIALOGUES.tomb);
-      await this.revealLazarus();
+      const beats = partitionTombDialogue(DIALOGUES.tomb);
+      await this.showDialogue(beats.beforeStone);
+      await this.showDialogue(beats.stoneRemoval);
+      await this.rollTombStone();
+      await this.showDialogue(beats.callLazarus);
+      await this.walkLazarusOut();
+      await this.showDialogue(beats.emergence);
+      await this.restoreLazarus();
+      await this.finishTombSequence();
     });
   }
 
@@ -1434,32 +1462,72 @@ export class BethanyScene extends Phaser.Scene {
     visual?.container.setVisible(visible).setActive(visible);
   }
 
-  private async revealLazarus(): Promise<void> {
+  private requireTombElements(): {
+    readonly stone: Phaser.GameObjects.Image;
+    readonly lazarus: Phaser.GameObjects.Sprite;
+  } {
     const stone = this.stone;
     const lazarus = this.lazarus;
     if (!stone || !lazarus) {
       throw new Error("The tomb scene is incomplete.");
     }
+    return { stone, lazarus };
+  }
+
+  private async rollTombStone(): Promise<void> {
+    const { stone } = this.requireTombElements();
     this.audio.setState("revelation", 3000);
     await new Promise<void>((resolve) => {
       this.tweens.add({
         targets: stone,
-        x: 1770,
+        x: 2190,
         duration: 900,
         ease: "Sine.easeInOut",
         onComplete: () => resolve(),
       });
     });
+  }
+
+  private async walkLazarusOut(): Promise<void> {
+    const { lazarus } = this.requireTombElements();
     lazarus.setVisible(true);
-    await new Promise<void>((resolve) => {
+    lazarus.play("walk-lazarus-wrapped");
+    await this.tweenLazarusTo(lazarus, 1980, 475, 850);
+    await this.tweenLazarusTo(lazarus, 1930, 545, 850);
+    lazarus.anims.stop();
+    lazarus.setTexture(lazarusTextureKey("wrapped-idle"));
+  }
+
+  private async restoreLazarus(): Promise<void> {
+    const { lazarus } = this.requireTombElements();
+    lazarus.anims.stop();
+    lazarus
+      .setTexture("sprite-lazarus-restored")
+      .setDisplaySize(60, 78)
+      .setOrigin(0.5, CHARACTER_ORIGIN_Y);
+    await this.tweenLazarusTo(lazarus, 1880, 565, 650);
+  }
+
+  private tweenLazarusTo(
+    lazarus: Phaser.GameObjects.Sprite,
+    x: number,
+    y: number,
+    duration: number,
+  ): Promise<void> {
+    return new Promise((resolve) => {
       this.tweens.add({
         targets: lazarus,
-        y: 425,
-        duration: 800,
-        ease: "Sine.easeOut",
+        x,
+        y,
+        duration,
+        ease: "Sine.easeInOut",
+        onUpdate: () => lazarus.setDepth(lazarus.y),
         onComplete: () => resolve(),
       });
     });
+  }
+
+  private async finishTombSequence(): Promise<void> {
     this.story.completeTomb();
     this.updateObjective();
     await this.showDialogue(DIALOGUES.epilogue);
