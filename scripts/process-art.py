@@ -1,0 +1,226 @@
+from pathlib import Path
+from typing import Iterable
+
+from PIL import Image, ImageDraw
+
+
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = ROOT / "production" / "art-source"
+OUTPUT = ROOT / "public" / "assets" / "art"
+SPRITES = OUTPUT / "sprites"
+PROPS = OUTPUT / "props"
+
+DIRECTIONS = ("front", "back", "left", "right")
+STEPS = ("idle", "step-left", "step-right")
+
+
+def crop_cell(image: Image.Image, columns: int, rows: int, column: int, row: int) -> Image.Image:
+    left = round(column * image.width / columns)
+    right = round((column + 1) * image.width / columns)
+    top = round(row * image.height / rows)
+    bottom = round((row + 1) * image.height / rows)
+    return image.crop((left, top, right, bottom)).convert("RGBA")
+
+
+def remove_connected_background(image: Image.Image, threshold: int = 90) -> Image.Image:
+    result = image.copy()
+    draw = ImageDraw.Draw(result)
+    transparent = (0, 0, 0, 0)
+    corners = (
+        (0, 0),
+        (result.width - 1, 0),
+        (0, result.height - 1),
+        (result.width - 1, result.height - 1),
+    )
+    for corner in corners:
+        ImageDraw.floodfill(result, corner, transparent, thresh=threshold)
+    return result
+
+
+def normalize_sprite(image: Image.Image, size: tuple[int, int] = (160, 208)) -> Image.Image:
+    cleaned = remove_connected_background(image)
+    alpha_box = cleaned.getchannel("A").getbbox()
+    if alpha_box is None:
+        raise ValueError("No foreground remained after background removal.")
+
+    trimmed = cleaned.crop(alpha_box)
+    available_width = size[0] - 12
+    available_height = size[1] - 8
+    scale = min(
+        available_width / trimmed.width,
+        available_height / trimmed.height,
+    )
+    resized = trimmed.resize(
+        (
+            max(1, round(trimmed.width * scale)),
+            max(1, round(trimmed.height * scale)),
+        ),
+        Image.Resampling.NEAREST,
+    )
+    canvas = Image.new("RGBA", size, transparent_color())
+    canvas.alpha_composite(
+        resized,
+        ((size[0] - resized.width) // 2, size[1] - resized.height),
+    )
+    return canvas
+
+
+def transparent_color() -> tuple[int, int, int, int]:
+    return (0, 0, 0, 0)
+
+
+def save_sprite(image: Image.Image, character: str, frame: str) -> None:
+    directory = SPRITES / character
+    directory.mkdir(parents=True, exist_ok=True)
+    image.save(directory / f"{frame}.png", optimize=True)
+
+
+def process_directional_sheet(
+    filename: str,
+    character_columns: Iterable[tuple[str, int]],
+    columns: int,
+) -> None:
+    image = Image.open(SOURCE / filename)
+    for character, start_column in character_columns:
+        for row, direction in enumerate(DIRECTIONS):
+            for step, motion in enumerate(STEPS):
+                frame = normalize_sprite(
+                    crop_cell(image, columns, 4, start_column + step, row)
+                )
+                save_sprite(frame, character, f"{direction}-{motion}")
+
+
+def process_reference_sheet(
+    filename: str,
+    characters: tuple[str, ...],
+) -> None:
+    image = Image.open(SOURCE / filename)
+    source_directions = ("front", "back", "left")
+    for column, character in enumerate(characters):
+        for row, direction in enumerate(source_directions):
+            frame = normalize_sprite(
+                crop_cell(image, len(characters), 3, column, row)
+            )
+            save_sprite(frame, character, f"{direction}-idle")
+            if direction == "left":
+                save_sprite(
+                    frame.transpose(Image.Transpose.FLIP_LEFT_RIGHT),
+                    character,
+                    "right-idle",
+                )
+
+
+def process_lazarus() -> None:
+    image = Image.open(SOURCE / "sprite-lazarus-source.png")
+    frames = ("sick", "wrapped-idle", "wrapped-step", "restored")
+    for column, name in enumerate(frames):
+        frame = normalize_sprite(crop_cell(image, 4, 1, column, 0), (224, 208))
+        save_sprite(frame, "lazarus", name)
+
+
+def process_prop_sheet(
+    filename: str,
+    columns: int,
+    rows: int,
+    names: tuple[str, ...],
+) -> None:
+    image = Image.open(SOURCE / filename)
+    if len(names) != columns * rows:
+        raise ValueError(f"{filename} names do not match its grid.")
+
+    PROPS.mkdir(parents=True, exist_ok=True)
+    for index, name in enumerate(names):
+        cell = crop_cell(image, columns, rows, index % columns, index // columns)
+        cleaned = remove_connected_background(cell)
+        alpha_box = cleaned.getchannel("A").getbbox()
+        if alpha_box is None:
+            raise ValueError(f"No foreground found for {filename}:{name}.")
+        cleaned.crop(alpha_box).save(PROPS / f"{name}.png", optimize=True)
+
+
+def main() -> None:
+    process_directional_sheet(
+        "sprite-messenger-source.png",
+        (("messenger", 0),),
+        3,
+    )
+    process_directional_sheet(
+        "sprite-sisters-source.png",
+        (("martha", 0), ("mary", 3)),
+        6,
+    )
+    process_directional_sheet(
+        "sprite-jesus-source.png",
+        (("jesus", 0),),
+        3,
+    )
+    process_reference_sheet(
+        "sprite-disciples-source.png",
+        ("thomas", "disciple-older", "disciple-younger"),
+    )
+    process_reference_sheet(
+        "sprite-witnesses-source.png",
+        ("mourner-man", "mourner-woman", "guide", "witness-older"),
+    )
+    process_lazarus()
+
+    process_prop_sheet(
+        "props-house-source.png",
+        4,
+        3,
+        (
+            "house-bed",
+            "house-lamp",
+            "house-water-bowl",
+            "house-table",
+            "house-stool-a",
+            "house-stool-b",
+            "house-linen",
+            "house-storage-jar",
+            "house-basket",
+            "house-door",
+            "house-shelf",
+            "messenger-satchel",
+        ),
+    )
+    process_prop_sheet(
+        "props-village-road-source.png",
+        4,
+        3,
+        (
+            "village-jar-a",
+            "village-jar-b",
+            "village-wall",
+            "village-wall-corner",
+            "olive-tree",
+            "olive-sapling",
+            "dry-shrub",
+            "grass-clump",
+            "stone-pile",
+            "wood-fence",
+            "road-basket",
+            "road-marker",
+        ),
+    )
+    process_prop_sheet(
+        "props-tomb-source.png",
+        4,
+        2,
+        (
+            "tomb-stone",
+            "tomb-stone-rolled",
+            "tomb-cave-lip",
+            "burial-cloth-folded",
+            "burial-cloth-strips",
+            "tomb-dust",
+            "tomb-rubble",
+            "tomb-plant",
+        ),
+    )
+
+    print(f"Processed sprites into {SPRITES}")
+    print(f"Processed props into {PROPS}")
+
+
+if __name__ == "__main__":
+    main()
