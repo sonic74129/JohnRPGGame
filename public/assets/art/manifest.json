@@ -1,0 +1,17 @@
+{
+  "generator": "Microsoft MAI-Image-2.5-Pro",
+  "modelVersion": "2026-06-19",
+  "generatedAt": "2026-08-01",
+  "usage": "JohnRPGGame project artwork",
+  "containsEmbeddedText": false,
+  "files": {
+    "opening-sickroom.png": "Pixel-art opening cinematic",
+    "journey-to-jesus.png": "Pixel-art messenger journey scene",
+    "bethany-village.png": "Pixel-art Bethany exploration background",
+    "tomb-garden.png": "Pixel-art tomb exploration background",
+    "portrait-martha.png": "Three-panel semi-realistic Martha portrait sheet",
+    "portrait-mary.png": "Three-panel semi-realistic Mary portrait sheet",
+    "portrait-jesus.png": "Three-panel semi-realistic Jesus portrait sheet",
+    "portrait-witnesses.png": "Three-panel semi-realistic messenger, Thomas, and witness sheet"
+  }
+}

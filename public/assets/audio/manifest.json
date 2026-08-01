@@ -1,0 +1,25 @@
+{
+  "source": "User-provided music",
+  "sampleRate": 48000,
+  "channels": 2,
+  "tracks": {
+    "theme-1-morning-loop.mp3": {
+      "title": "Morning in the Pixel Village",
+      "role": "Exploration",
+      "loop": true,
+      "durationSeconds": 195.833
+    },
+    "theme-2-between-lines-loop.mp3": {
+      "title": "Between the Lines",
+      "role": "Dialogue",
+      "loop": true,
+      "durationSeconds": 242.826
+    },
+    "theme-3-quiet-before-dawn.mp3": {
+      "title": "The Quiet Before Dawn",
+      "role": "Revelation and reflection",
+      "loop": false,
+      "durationSeconds": 321.864
+    }
+  }
+}

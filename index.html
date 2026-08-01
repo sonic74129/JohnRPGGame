@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>伯大尼见证者</title>
+  </head>
+  <body>
+    <main id="app" aria-label="伯大尼见证者游戏">
+      <div id="game-root" tabindex="0" aria-label="游戏画面"></div>
+      <div id="scene-art" class="scene-art is-hidden" aria-hidden="true"></div>
+
+      <header id="hud" class="hud is-hidden" aria-live="polite">
+        <section class="objective-panel">
+          <span class="eyebrow">当前经文线索</span>
+          <strong id="objective">等待开始</strong>
+          <span id="objective-reference" class="reference"></span>
+        </section>
+        <div class="hud-actions">
+          <section class="score-panel" aria-label="经文观察分">
+            <span class="eyebrow">经文观察分</span>
+            <strong><span id="score">100</span> / 100</strong>
+          </section>
+        </div>
+      </header>
+
+      <button
+        id="music-toggle"
+        class="music-toggle music-toggle--floating"
+        type="button"
+        aria-label="切换叙事音乐"
+        aria-pressed="false"
+      >
+        音乐：开
+      </button>
+
+      <div id="interaction-prompt" class="interaction-prompt is-hidden">
+        SPACE / 点击人物
+      </div>
+
+      <section
+        id="dialogue"
+        class="dialogue is-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialogue-speaker"
+      >
+        <div id="dialogue-portrait" class="dialogue-portrait is-hidden" aria-hidden="true"></div>
+        <div class="dialogue-content">
+          <div class="dialogue-heading">
+            <span id="dialogue-kind" class="content-kind"></span>
+            <span id="dialogue-reference" class="reference"></span>
+          </div>
+          <h2 id="dialogue-speaker"></h2>
+          <p id="dialogue-text"></p>
+          <button id="dialogue-next" type="button">继续　SPACE</button>
+        </div>
+      </section>
+
+      <div id="notice" class="notice is-hidden" role="status" aria-live="assertive"></div>
+
+      <section id="choice-screen" class="choice-screen is-hidden" role="dialog" aria-modal="true">
+        <div class="choice-card">
+          <p class="eyebrow">经文观察 · 选择后才会进入剧情</p>
+          <h2 id="choice-question"></h2>
+          <p id="choice-reference" class="reference"></p>
+          <div id="choice-options" class="choice-options"></div>
+          <p id="choice-feedback" class="choice-feedback" role="status" aria-live="assertive"></p>
+        </div>
+      </section>
+
+      <section id="start-screen" class="modal-screen">
+        <div class="modal-card start-card">
+          <p class="eyebrow">约翰福音第 11 章 · 小组探索游戏</p>
+          <h1>伯大尼见证者</h1>
+          <p>
+            序章中，小组先作为经文没有记名的报信者去找耶稣；之后再根据经文决定下一步跟随谁。
+            一位成员负责操作，其他成员一起观察和讨论。
+          </p>
+          <div class="control-grid" aria-label="操作说明">
+            <div><strong>↑ ↓ ← →</strong><span>移动</span></div>
+            <div><strong>点击地面</strong><span>自动行走</span></div>
+            <div><strong>SPACE</strong><span>互动／继续</span></div>
+            <div><strong>ESC</strong><span>主持人菜单</span></div>
+          </div>
+          <p class="audio-note">音乐会在开始后播放，可随时使用右上角按钮关闭。</p>
+          <p class="prototype-warning">
+            经文采用和合本简体原型文本，正式使用前须由教会逐字审核。情境重现对白会与经文原句明确区分。
+          </p>
+          <div class="button-row">
+            <button id="start-game" class="primary" type="button">开始游戏</button>
+            <button id="start-fullscreen" type="button">全屏开始</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="pause-screen" class="modal-screen is-hidden" role="dialog" aria-modal="true">
+        <div class="modal-card">
+          <p class="eyebrow">主持人菜单</p>
+          <h2>游戏已暂停</h2>
+          <div class="button-stack">
+            <button id="resume-game" class="primary" type="button">继续游戏</button>
+            <button id="restart-game" type="button">重新开始</button>
+            <button id="exit-game" type="button">离开游戏</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="result-screen" class="modal-screen is-hidden" role="dialog" aria-modal="true">
+        <div class="modal-card result-card">
+          <p class="eyebrow">本组完成了伯大尼的见证旅程</p>
+          <h2 id="result-title">经文脉络清楚</h2>
+          <div class="final-score"><span id="final-score">100</span><small>/ 100</small></div>
+          <p id="result-summary"></p>
+          <blockquote>
+            “复活在我，生命也在我……你信这话么？”
+            <cite>约翰福音 11:25–26｜和合本</cite>
+          </blockquote>
+          <p class="discussion-question">
+            讨论：神迹还没有发生，耶稣为什么先问：“你信这话么？”
+          </p>
+          <div class="button-row">
+            <button id="result-restart" type="button">再玩一次</button>
+            <button id="result-exit" class="primary" type="button">返回查经</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
