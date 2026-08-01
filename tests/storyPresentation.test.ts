@@ -1,20 +1,21 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
-import { DIALOGUES } from "../src/game/content";
+import { JOHN_11_VERSES } from "../src/game/ScriptureContent";
 
-describe("in-world story presentation", () => {
-  it("keeps scene illustrations out of playable dialogue data", () => {
-    const lines = Object.values(DIALOGUES).flat();
+const sceneSource = readFileSync("src/game/BethanyScene.ts", "utf8");
 
-    expect(lines.length).toBeGreaterThan(0);
-    expect(lines.every((line) => !Object.hasOwn(line, "art"))).toBe(true);
+describe("Scripture-only live story presentation", () => {
+  it("renders the new Scripture contracts instead of legacy content.ts", () => {
+    expect(Object.values(JOHN_11_VERSES)).toHaveLength(46);
+    expect(sceneSource).toContain("JOHN_11_VERSES");
+    expect(sceneSource).not.toMatch(/from "\.\/content"/);
   });
 
-  it("retains portraits as compact dialogue context", () => {
-    expect(
-      Object.values(DIALOGUES)
-        .flat()
-        .some((line) => line.portrait !== undefined),
-    ).toBe(true);
+  it("keeps invented stage guidance unreachable", () => {
+    expect(sceneSource).not.toMatch(
+      /followGuide|older-witness-rising|mourner-kneeling-grief|报信的人|两天后，耶稣与报信者/,
+    );
   });
 });

@@ -1,126 +1,73 @@
 import { describe, expect, it } from "vitest";
 
+import { FIND_JESUS_CONTRACT } from "../src/game/ScriptureContent";
 import { StoryEngine } from "../src/game/StoryEngine";
+import { VERSE_BEAT_IDS } from "../src/game/VerseBeats";
 
-describe("StoryEngine", () => {
-  it("follows the John 11 sequence from Martha to Mary to the tomb guide", () => {
+describe("StoryEngine verse-beat runtime", () => {
+  it("advances through all 22 VerseBeats in exact order", () => {
     const story = new StoryEngine();
+    const visited: string[] = [];
 
-    story.completeOpening();
-    expect(story.stage).toBe("deliverMessage");
-    expect(story.score).toBe(100);
+    for (const beatId of VERSE_BEAT_IDS) {
+      expect(story.beatId).toBe(beatId);
+      visited.push(story.completeCurrent(beatId).id);
+    }
 
-    story.deliverMessage();
-    expect(story.stage).toBe("journey");
-    story.arriveAtBethany();
-    expect(story.stage).toBe("chooseMartha");
-
-    expect(story.interact("martha").kind).toBe("correct");
-    expect(story.stage).toBe("followMartha");
-
-    story.arriveAtMartha();
-    story.completeMarthaDialogue();
-    expect(story.stage).toBe("chooseMary");
-
-    expect(story.interact("mary").kind).toBe("correct");
-    story.arriveAtMary();
-    story.completeMaryDialogue();
-    expect(story.stage).toBe("chooseGuide");
-
-    expect(story.interact("guide").kind).toBe("correct");
-    story.arriveAtTomb();
-    story.completeTomb();
-    story.completeEpilogue();
-
-    expect(story.stage).toBe("complete");
-    expect(story.score).toBe(100);
+    expect(visited).toEqual(VERSE_BEAT_IDS);
+    expect(story.completedBeatIds).toEqual(VERSE_BEAT_IDS);
+    expect(story.isComplete).toBe(true);
   });
 
-  it("deducts points only once for the same explicit wrong choice", () => {
+  it("rejects out-of-order completion without changing the active beat", () => {
     const story = new StoryEngine();
-    story.completeOpening();
-    story.deliverMessage();
-    story.arriveAtBethany();
 
-    const firstAttempt = story.interact("mary");
-    const repeatedAttempt = story.interact("mary");
-
-    expect(firstAttempt.kind).toBe("wrong");
-    expect(firstAttempt.penalty).toBe(5);
-    expect(repeatedAttempt.penalty).toBe(0);
-    expect(repeatedAttempt.revealHint).toBe(true);
-    expect(story.score).toBe(95);
-    expect(story.stage).toBe("chooseMartha");
+    expect(() => story.completeCurrent("message")).toThrow(
+      "Cannot complete message; active beat is illness.",
+    );
+    expect(story.beatId).toBe("illness");
   });
 
-  it("does not deduct points for optional exploration", () => {
+  it("uses the contract trigger actors for manual interactions", () => {
     const story = new StoryEngine();
-    story.completeOpening();
-    story.deliverMessage();
-    story.arriveAtBethany();
+    story.completeCurrent("illness");
 
-    const result = story.interact("mourner");
+    expect(story.canTrigger("martha")).toBe(true);
+    expect(story.canTrigger("mary")).toBe(true);
+    expect(story.canTrigger("jesus")).toBe(false);
+  });
 
-    expect(result.kind).toBe("neutral");
-    expect(result.penalty).toBe(0);
+  it("keeps all findJesus mistakes at zero penalty", () => {
+    const story = new StoryEngine();
+    story.completeCurrent("illness");
+    story.completeCurrent("sisters-send");
+
+    for (const carrierId of FIND_JESUS_CONTRACT.clueCarrierIds) {
+      const result = story.identifyJesus(carrierId);
+      expect(result.kind).toBe("memory");
+      expect(result.penalty).toBe(0);
+      if (result.kind === "memory") {
+        expect(result.memory.followUp.text).toBe("不是我要找的人。");
+      }
+    }
     expect(story.score).toBe(100);
+    expect(story.identifyJesus("jesus")).toEqual({
+      kind: "identified",
+      actorId: "jesus",
+      penalty: 0,
+    });
   });
 
-  it("scores Scripture questions from the opening message onward", () => {
+  it("deducts a recall mistake only once", () => {
     const story = new StoryEngine();
 
-    const wrong = story.answerQuestion(
-      "message",
-      "comeHeal",
-      "belovedIsSick",
-    );
-    const repeated = story.answerQuestion(
-      "message",
-      "comeHeal",
-      "belovedIsSick",
-    );
-    const correct = story.answerQuestion(
-      "message",
-      "belovedIsSick",
-      "belovedIsSick",
-    );
+    const first = story.answerRecall("message", "come-heal");
+    const repeated = story.answerRecall("message", "come-heal");
+    const correct = story.answerRecall("message", "beloved-is-sick");
 
-    expect(wrong.penalty).toBe(5);
+    expect(first.penalty).toBe(5);
     expect(repeated.penalty).toBe(0);
     expect(correct.correct).toBe(true);
     expect(story.score).toBe(95);
-  });
-
-  it("never blocks progression after wrong choices", () => {
-    const story = new StoryEngine();
-    story.completeOpening();
-    story.deliverMessage();
-    story.arriveAtBethany();
-    story.interact("mary");
-
-    const correction = story.interact("martha");
-
-    expect(correction.kind).toBe("correct");
-    expect(story.stage).toBe("followMartha");
-    expect(story.score).toBe(95);
-  });
-
-  it("labels the result without assigning a faith rank", () => {
-    const story = new StoryEngine();
-    story.completeOpening();
-    story.deliverMessage();
-    story.arriveAtBethany();
-    story.interact("mary");
-
-    expect(story.resultLabel()).toBe("经文脉络清楚");
-  });
-
-  it("rejects out-of-order progression without changing stage", () => {
-    const story = new StoryEngine();
-
-    expect(() => story.arriveAtBethany()).toThrow(
-      "Cannot advance story from opening; expected journey.",
-    );
-    expect(story.stage).toBe("opening");
   });
 });
