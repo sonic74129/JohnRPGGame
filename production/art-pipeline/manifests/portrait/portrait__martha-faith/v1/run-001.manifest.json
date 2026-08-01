@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.martha-faith",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Martha speaking with calm grounded conviction.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.martha"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "resume",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:50:44.523Z",
+    "updatedAt": "2026-08-01T16:03:02.743Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__martha-faith/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__martha-faith/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__martha-faith/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__martha-faith/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__martha-faith/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 2,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__martha-faith/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:57:57.577Z",
+      "lastFailure": null,
+      "failures": [
+        {
+          "at": "2026-08-01T15:54:04.617Z",
+          "attempt": 1,
+          "reason": "Image generation failed for portrait.martha-faith: 429 {\"error\":{\"code\":\"RateLimitReached\",\"message\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\",\"details\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\"}}"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__martha-faith/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:01:53.068Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__martha-faith/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__martha-faith/v1/run-001-selected.png",
+    "reason": "Candidate 01 scored 89/100: centered eye-level gaze directly at viewer, calm settled smile reads as grounded conviction without triumph, exact map identity (plum mantle, olive/sand underlayer, loose dark wavy hair), clean simple limestone backdrop with upper-left Mediterranean light, and clear small-UI readability. Candidate 02 rejected: off-center leaning pose, gaze diverted upward-away breaking direct dialogue-window readability (UI score 12/20 below threshold), and a busier corridor background.",
+    "selectedAt": "2026-08-01T16:03:02.742Z"
+  },
+  "recovery": {
+    "resumeCount": 1,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__martha-faith/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__martha-faith/v1/run-001/portrait__martha-faith.png"
+    ],
+    "startedAt": "2026-08-01T16:03:09.894765Z",
+    "completedAt": "2026-08-01T16:03:10.629790Z",
+    "failureReason": null
+  }
+}
