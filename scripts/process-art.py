@@ -43,6 +43,23 @@ def remove_connected_background(image: Image.Image, threshold: int = 90) -> Imag
     return result
 
 
+def remove_magenta_key(image: Image.Image) -> Image.Image:
+    result = image.copy()
+    pixels = result.load()
+    for y in range(result.height):
+        for x in range(result.width):
+            red, green, blue, alpha = pixels[x, y]
+            if (
+                alpha > 0
+                and red > 130
+                and blue > 65
+                and green < 50
+                and abs(red - blue) < 110
+            ):
+                pixels[x, y] = transparent_color()
+    return result
+
+
 def normalize_sprite(image: Image.Image, size: tuple[int, int] = (160, 208)) -> Image.Image:
     cleaned = remove_connected_background(image)
     alpha_box = cleaned.getchannel("A").getbbox()
@@ -152,7 +169,7 @@ def process_prop_sheet(
     PROPS.mkdir(parents=True, exist_ok=True)
     for index, name in enumerate(names):
         cell = crop_cell(image, columns, rows, index % columns, index // columns)
-        cleaned = remove_connected_background(cell)
+        cleaned = remove_magenta_key(remove_connected_background(cell))
         alpha_box = cleaned.getchannel("A").getbbox()
         if alpha_box is None:
             raise ValueError(f"No foreground found for {filename}:{name}.")

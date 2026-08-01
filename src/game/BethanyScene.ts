@@ -220,7 +220,7 @@ export class BethanyScene extends Phaser.Scene {
   private houseDoor?: Trigger<StoryStage>;
   private started = false;
   private paused = false;
-  private stone?: Phaser.GameObjects.Ellipse;
+  private stone?: Phaser.GameObjects.Image;
   private lazarus?: Phaser.GameObjects.Sprite;
   private decorations: Phaser.GameObjects.GameObject[] = [];
   private playerFacing: Facing = "front";
@@ -235,6 +235,10 @@ export class BethanyScene extends Phaser.Scene {
     this.load.image("art-bethany-village", "assets/art/map-village-edge-clean.png");
     this.load.image("art-road-to-tomb", "assets/art/map-road-to-tomb-clean.png");
     this.load.image("art-tomb", "assets/art/map-tomb-clean.png");
+    this.load.image(
+      "prop-tomb-stone",
+      "assets/art/props/tomb-stone-rolled.png",
+    );
     this.loadCharacterSprites();
     this.load.image(
       lazarusTextureKey("wrapped-idle"),
@@ -572,8 +576,8 @@ export class BethanyScene extends Phaser.Scene {
       .setStrokeStyle(12, 0x514839)
       .setDepth(-10);
     this.stone = this.add
-      .ellipse(1060, 325, 145, 165, 0x736b5e)
-      .setStrokeStyle(7, 0x403b34)
+      .image(1060, 340, "prop-tomb-stone")
+      .setDisplaySize(190, 125)
       .setDepth(405);
     this.lazarus = this.add
       .sprite(1130, 390, lazarusTextureKey("wrapped-idle"))
