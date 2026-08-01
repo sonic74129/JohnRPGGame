@@ -1283,12 +1283,28 @@ export class BethanyScene extends Phaser.Scene {
       await this.showDialogue(DIALOGUES.marthaBeforeQuestion);
       await this.askQuestion(QUESTIONS.marthaResurrection);
       await this.showDialogue(DIALOGUES.marthaCore);
+      await this.returnMarthaToMary();
       await this.showDialogue(DIALOGUES.marthaReturns);
       this.story.completeMarthaDialogue();
       this.resetForMary();
       this.audio.setState("exploration", 2400);
       this.updateObjective();
     });
+  }
+
+  private async returnMarthaToMary(): Promise<void> {
+    this.audio.setState("exploration", 1200);
+    this.ui.showNotice("马大回去，暗暗地叫她妹子马利亚。");
+    await this.moveActorAlong(
+      "martha",
+      [
+        { x: 1230, y: 1020 },
+        { x: 980, y: 1000 },
+        { x: 760, y: 1050 },
+      ],
+      () => undefined,
+    );
+    this.audio.setState("dialogue", 1200);
   }
 
   private async runMarySequence(): Promise<void> {
@@ -1331,8 +1347,6 @@ export class BethanyScene extends Phaser.Scene {
     this.setActorPosition("martha", 760, 1050);
     this.setActorPosition("mary", 860, 1000);
     this.setActorPosition("mourner", 970, 970);
-    this.player.setPosition(1320, 1130);
-    this.cameras.main.centerOn(this.player.x, this.player.y);
     this.cameras.main.flash(350, 242, 229, 189);
   }
 
