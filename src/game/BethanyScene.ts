@@ -6,6 +6,12 @@ import {
   type ActorLabelController,
 } from "../ui/ActorLabel";
 import { GameUI } from "../ui/GameUI";
+import {
+  resolveBaseActorPresentation,
+  resolveSpecialActorPresentation,
+  type ActorPosePresentation,
+  type SequenceSpecialPose,
+} from "./ActorPosePresentation";
 import { ActorRegistry } from "./ActorRegistry";
 import type { AreaResource } from "./AreaRuntime";
 import { getLatestActorVerseEcho } from "./ActorVerseEcho";
@@ -19,6 +25,7 @@ import {
   allCharacterSheets,
   actorSpriteCharacter,
   characterOriginY,
+  hasWalkFrames,
   lazarusFrame,
   lazarusScaleToFit,
   lazarusTextureKey,
@@ -136,7 +143,7 @@ const WORLD_ACTOR_POSITIONS: Readonly<Record<ActorId, Point>> = {
   "memory-carrier-mud": { x: 2440, y: 1170 },
 };
 
-type SequenceActor = ActorId | "player" | "lazarus";
+type SequenceActor = ActorId | "player" | "lazarus" | "stone-group";
 type EnvironmentState =
   | "none"
   | "wait-dusk"
@@ -150,7 +157,7 @@ interface BethanySequenceSchema extends MapSequenceSchema {
   readonly point: Point;
   readonly facing: Facing;
   readonly ordinaryPose: "idle";
-  readonly specialPose: "none";
+  readonly specialPose: SequenceSpecialPose;
   readonly cameraTarget: CameraTarget;
   readonly environment: EnvironmentState;
   readonly dialogue: readonly DialogueLine[];
@@ -165,6 +172,7 @@ interface ActorVisual {
   readonly container: Phaser.GameObjects.Container;
   readonly sprite: Phaser.GameObjects.Sprite;
   readonly character: SpriteCharacter;
+  readonly shadow: Phaser.GameObjects.Ellipse;
   readonly label: ActorLabelController;
   facing: Facing;
 }
@@ -240,6 +248,7 @@ export class BethanyScene extends Phaser.Scene {
   private decorations: Phaser.GameObjects.GameObject[] = [];
   private daylightOverlay?: Phaser.GameObjects.Rectangle;
   private stone?: Phaser.GameObjects.Image;
+  private stoneGroupPose?: Phaser.GameObjects.Sprite;
   private lazarus?: Phaser.GameObjects.Sprite;
   private lazarusLabel?: ActorLabelController;
 
@@ -648,10 +657,18 @@ export class BethanyScene extends Phaser.Scene {
       );
     const label = createActorLabel(this, container, {
       text: this.labelTexts.get(id) ?? "",
+      resolveVisibleBounds: () => sprite.getBounds(),
       resolveVisibility: () =>
         container.visible && Boolean(this.labelTexts.get(id)),
     });
-    this.visuals.set(id, { container, sprite, character, label, facing });
+    this.visuals.set(id, {
+      container,
+      sprite,
+      character,
+      shadow,
+      label,
+      facing,
+    });
   }
 
   private createMemoryClueFrames(): void {
@@ -756,6 +773,8 @@ export class BethanyScene extends Phaser.Scene {
     this.lazarusLabel = undefined;
     this.lazarus = undefined;
     this.stone = undefined;
+    this.stoneGroupPose?.destroy();
+    this.stoneGroupPose = undefined;
   }
 
   private createObstacle(obstacle: Rectangle): AreaResource {
@@ -1181,6 +1200,18 @@ export class BethanyScene extends Phaser.Scene {
           { kind: "camera-hold", durationMs: 700 },
           { kind: "environment", state: "wait-day", durationMs: 900 },
         ];
+      case "message":
+        return [
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "listening",
+            },
+          },
+        ];
       case "thomas":
         return [
           {
@@ -1193,13 +1224,40 @@ export class BethanyScene extends Phaser.Scene {
               [move("player", WORLD_ROUTES.campToMeeting.points)],
             ],
           },
+          { kind: "facing", actor: "thomas", facing: "left" },
+          {
+            kind: "special-pose",
+            actor: "thomas",
+            pose: { kind: "supporting", pose: "thomas-listening" },
+          },
         ];
       case "martha-goes":
         return [move("martha", [WORLD_LANDMARKS.bethanyMeeting], 1100)];
       case "martha-calls":
-        return [move("martha", [WORLD_LANDMARKS.villageCenter], 1100)];
+        return [
+          move("martha", [WORLD_LANDMARKS.villageCenter], 1100),
+          {
+            kind: "special-pose",
+            actor: "martha",
+            pose: {
+              kind: "core",
+              character: "martha",
+              pose: "quiet-call",
+            },
+          },
+        ];
       case "mary-rises":
         return [
+          {
+            kind: "special-pose",
+            actor: "mary",
+            pose: {
+              kind: "core",
+              character: "mary",
+              pose: "urgent-rise",
+            },
+          },
+          { kind: "wait", durationMs: 400 },
           {
             kind: "parallel",
             branches: [
@@ -1222,6 +1280,41 @@ export class BethanyScene extends Phaser.Scene {
             ],
           },
         ];
+      case "mary-at-feet":
+        return [
+          { kind: "facing", actor: "mary", facing: "right" },
+          { kind: "facing", actor: "jesus", facing: "left" },
+          {
+            kind: "special-pose",
+            actor: "mary",
+            pose: {
+              kind: "core",
+              character: "mary",
+              pose: "kneeling-grief",
+            },
+          },
+        ];
+      case "jesus-weeps":
+        return [
+          {
+            kind: "special-pose",
+            actor: "mary",
+            pose: {
+              kind: "core",
+              character: "mary",
+              pose: "quiet-weeping",
+            },
+          },
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "visible-grief",
+            },
+          },
+        ];
       case "come-and-see":
         return [
           {
@@ -1239,9 +1332,34 @@ export class BethanyScene extends Phaser.Scene {
           },
         ];
       case "stone-and-prayer":
-        return [{ kind: "environment", state: "stone-open", durationMs: 1000 }];
+        return [
+          {
+            kind: "special-pose",
+            actor: "stone-group",
+            pose: { kind: "supporting", pose: "stone-moving" },
+          },
+          { kind: "environment", state: "stone-open", durationMs: 1000 },
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "restrained-prayer",
+            },
+          },
+        ];
       case "call-and-emergence":
         return [
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "authoritative-call",
+            },
+          },
           { kind: "environment", state: "lazarus-emerge", durationMs: 1500 },
         ];
       case "responses":
@@ -1322,8 +1440,9 @@ export class BethanyScene extends Phaser.Scene {
       moveActor: (actor, point, durationMs) =>
         this.tweenActor(actor, point, durationMs),
       setActorFacing: (actor, facing) => this.setSequenceFacing(actor, facing),
-      setActorOrdinaryPose: () => undefined,
-      setActorSpecialPose: () => undefined,
+      setActorOrdinaryPose: (actor) => this.restoreSequenceActorIdle(actor),
+      setActorSpecialPose: (actor, pose) =>
+        this.setSequenceSpecialPose(actor, pose),
       setActorVisible: (actor, visible) =>
         this.setSequenceActorVisible(actor, visible),
       stopCameraFollow: () => this.cameras.main.stopFollow(),
@@ -1361,6 +1480,7 @@ export class BethanyScene extends Phaser.Scene {
     if (!target) {
       return completedOperation();
     }
+    this.startSequenceActorWalk(actor, point);
     let settled = false;
     let resolveFinished = (): void => undefined;
     const finished = new Promise<void>((resolve) => {
@@ -1373,7 +1493,11 @@ export class BethanyScene extends Phaser.Scene {
       duration: durationMs,
       ease: "Sine.easeInOut",
       onUpdate: () => {
-        if (actor !== "player" && actor !== "lazarus") {
+        if (
+          actor !== "player" &&
+          actor !== "lazarus" &&
+          actor !== "stone-group"
+        ) {
           this.actorRegistry.move(actor, "bethany-world", {
             x: target.x,
             y: target.y,
@@ -1381,6 +1505,7 @@ export class BethanyScene extends Phaser.Scene {
         }
       },
       onComplete: () => {
+        this.restoreSequenceActorIdle(actor);
         settled = true;
         resolveFinished();
       },
@@ -1390,6 +1515,7 @@ export class BethanyScene extends Phaser.Scene {
       cancel: () => {
         if (!settled) {
           tween.stop();
+          this.restoreSequenceActorIdle(actor);
           settled = true;
           resolveFinished();
         }
@@ -1593,6 +1719,7 @@ export class BethanyScene extends Phaser.Scene {
 
   private applySequenceFinalState(state: VerseBeat["finalState"]): void {
     const beatId = this.story.beatId;
+    this.restoreAllSequenceActors();
     this.applyFinalPositions(beatId);
     if (beatId === "two-day-wait") {
       this.daylightOverlay?.setAlpha(0);
@@ -1679,13 +1806,20 @@ export class BethanyScene extends Phaser.Scene {
     if (actor === "lazarus") {
       return this.lazarus;
     }
+    if (actor === "stone-group") {
+      return this.stoneGroupPose;
+    }
     return this.visuals.get(actor)?.container;
   }
 
   private setSequencePosition(actor: SequenceActor, position: Point): void {
     const target = this.sequenceTarget(actor);
     target?.setPosition(position.x, position.y);
-    if (actor !== "player" && actor !== "lazarus") {
+    if (
+      actor !== "player" &&
+      actor !== "lazarus" &&
+      actor !== "stone-group"
+    ) {
       this.actorRegistry.move(actor, "bethany-world", position);
     }
   }
@@ -1693,10 +1827,10 @@ export class BethanyScene extends Phaser.Scene {
   private setSequenceFacing(actor: SequenceActor, facing: Facing): void {
     if (actor === "player") {
       this.playerFacing = facing;
-      this.player.setFrame(spriteFrame("messenger", facing, "idle"));
+      this.restoreSequenceActorIdle("player");
       return;
     }
-    if (actor === "lazarus") {
+    if (actor === "lazarus" || actor === "stone-group") {
       return;
     }
     const visual = this.visuals.get(actor);
@@ -1704,7 +1838,10 @@ export class BethanyScene extends Phaser.Scene {
       return;
     }
     visual.facing = facing;
-    visual.sprite.setFrame(spriteFrame(visual.character, facing, "idle"));
+    this.applyActorPresentation(
+      visual,
+      resolveBaseActorPresentation(visual.character, facing),
+    );
   }
 
   private setSequenceActorVisible(
@@ -1715,9 +1852,138 @@ export class BethanyScene extends Phaser.Scene {
       this.player.setVisible(visible);
     } else if (actor === "lazarus") {
       this.lazarus?.setVisible(visible);
+    } else if (actor === "stone-group") {
+      this.stoneGroupPose?.setVisible(visible);
     } else {
       this.setActorVisible(actor, visible);
     }
+  }
+
+  private setSequenceSpecialPose(
+    actor: SequenceActor,
+    pose: SequenceSpecialPose,
+  ): void {
+    if (actor === "stone-group") {
+      if (pose.kind !== "supporting") {
+        throw new Error("The stone group requires a supporting action pose.");
+      }
+      const presentation = resolveSpecialActorPresentation("mourner-man", pose);
+      const entrance = WORLD_LANDMARKS.tombEntrance;
+      this.stoneGroupPose?.destroy();
+      this.stoneGroupPose = this.add.sprite(
+        entrance.x - 35,
+        entrance.y + 75,
+        presentation.textureKey,
+        presentation.frame,
+      );
+      this.applySpritePresentation(this.stoneGroupPose, presentation);
+      this.stoneGroupPose.setDepth(entrance.y + 25);
+      return;
+    }
+    if (actor === "player" || actor === "lazarus") {
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (!visual) {
+      return;
+    }
+    this.applyActorPresentation(
+      visual,
+      resolveSpecialActorPresentation(visual.character, pose),
+    );
+  }
+
+  private applyActorPresentation(
+    visual: ActorVisual,
+    presentation: ActorPosePresentation,
+  ): void {
+    this.applySpritePresentation(visual.sprite, presentation);
+    visual.container.setSize(
+      visual.sprite.displayWidth + 16,
+      visual.sprite.displayHeight + 24,
+    );
+    visual.shadow.setSize(
+      Math.max(visual.sprite.displayWidth * 0.72, 24),
+      11,
+    );
+    visual.label.sync();
+  }
+
+  private applySpritePresentation(
+    sprite: Phaser.GameObjects.Sprite,
+    presentation: ActorPosePresentation,
+  ): void {
+    const metrics = resolveDisplayMetrics(DEFAULT_DISPLAY_SCALE, {
+      kind: presentation.scaleKind,
+      area: this.inWorld ? "outdoor" : "indoor",
+      sourceBounds: presentation.sourceBounds,
+    });
+    sprite
+      .stop()
+      .setTexture(presentation.textureKey, presentation.frame)
+      .setOrigin(0.5, presentation.originY)
+      .setScale(metrics.scale);
+  }
+
+  private startSequenceActorWalk(
+    actor: SequenceActor,
+    destination: Point,
+  ): void {
+    const target = this.sequenceTarget(actor);
+    if (!target || actor === "lazarus" || actor === "stone-group") {
+      return;
+    }
+    const previous =
+      actor === "player"
+        ? this.playerFacing
+        : this.visuals.get(actor)?.facing ?? "front";
+    const facing = resolveFacing(
+      destination.x - target.x,
+      destination.y - target.y,
+      previous,
+    );
+    this.setSequenceFacing(actor, facing);
+    if (actor === "player") {
+      this.player.play(walkAnimationKey("messenger", facing), true);
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (visual && hasWalkFrames(visual.character)) {
+      visual.sprite.play(walkAnimationKey(visual.character, facing), true);
+    }
+  }
+
+  private restoreSequenceActorIdle(actor: SequenceActor): void {
+    if (actor === "stone-group") {
+      this.stoneGroupPose?.destroy();
+      this.stoneGroupPose = undefined;
+      return;
+    }
+    if (actor === "player") {
+      this.applySpritePresentation(
+        this.player,
+        resolveBaseActorPresentation("messenger", this.playerFacing),
+      );
+      return;
+    }
+    if (actor === "lazarus") {
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (visual) {
+      this.applyActorPresentation(
+        visual,
+        resolveBaseActorPresentation(visual.character, visual.facing),
+      );
+    }
+  }
+
+  private restoreAllSequenceActors(): void {
+    this.restoreSequenceActorIdle("player");
+    for (const actor of ACTOR_IDS) {
+      this.restoreSequenceActorIdle(actor);
+    }
+    this.restoreSequenceActorIdle("stone-group");
   }
 
   private syncHud(): void {
