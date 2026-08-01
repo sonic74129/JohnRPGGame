@@ -44,6 +44,10 @@ export class NavigationGrid {
 
     const startKey = this.key(startCell);
     const targetKey = this.key(targetCell);
+    if (startKey === targetKey) {
+      return [this.toWorld(targetCell)];
+    }
+
     const open: OpenCell[] = [
       {
         ...startCell,
@@ -123,7 +127,8 @@ export class NavigationGrid {
       return origin;
     }
 
-    for (let radius = 1; radius <= 8; radius += 1) {
+    const maxRadius = Math.max(this.columns, this.rows);
+    for (let radius = 1; radius <= maxRadius; radius += 1) {
       for (let row = origin.row - radius; row <= origin.row + radius; row += 1) {
         for (
           let column = origin.column - radius;

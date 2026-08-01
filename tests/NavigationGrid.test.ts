@@ -31,4 +31,30 @@ describe("NavigationGrid", () => {
         destination.y <= 200,
     ).toBe(false);
   });
+
+  it("returns a valid route when start and target share a cell", () => {
+    const grid = new NavigationGrid(320, 320, 40, []);
+
+    expect(grid.findPath({ x: 10, y: 10 }, { x: 30, y: 30 })).toEqual([
+      { x: 20, y: 20 },
+    ]);
+  });
+
+  it("finds walkable ground beyond eight cells from a blocked target", () => {
+    const grid = new NavigationGrid(1000, 1000, 40, [
+      { x: 120, y: 120, width: 720, height: 720 },
+    ]);
+
+    const path = grid.findPath({ x: 20, y: 20 }, { x: 500, y: 500 });
+    const destination = path.at(-1);
+
+    expect(destination).toBeDefined();
+    expect(
+      destination &&
+        destination.x >= 120 &&
+        destination.x <= 840 &&
+        destination.y >= 120 &&
+        destination.y <= 840,
+    ).toBe(false);
+  });
 });
