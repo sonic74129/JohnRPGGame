@@ -38,7 +38,7 @@ const ALLOWED_FAMILIES = new Set([
 ]);
 const ALLOWED_OUTPUTS = new Set(["reference", "source", "runtime"]);
 const LOCKED_MODEL = "MAI-Image-2.5-Pro@2026-06-19";
-const EXPECTED_PROMPT_COUNT = 32;
+const EXPECTED_PROMPT_COUNT = 33;
 
 type JsonObject = Record<string, unknown>;
 
@@ -213,6 +213,35 @@ describe("MAI prompt registry", () => {
       entries.some((entry) => /story|illustration/i.test(entry.family)),
     ).toBe(false);
     expect(entries.some((entry) => retiredIds.includes(entry.id))).toBe(false);
+  });
+
+  it("freezes the unified world map prompt to the approved profile-B contract", () => {
+    const worldMap = entries.find((entry) => entry.id === "environment.world-map");
+    expect(worldMap).toMatchObject({
+      family: "environment",
+      runtime: true,
+      model: LOCKED_MODEL,
+      width: 2720,
+      height: 1536,
+      basePromptVersion: "v1",
+      promptVersion: "v1",
+      candidateCount: 3,
+      output: "source",
+    });
+    expect(worldMap?.prompt).toContain(
+      "Martha's house is approximately 400 pixels wide and 250 pixels high.",
+    );
+    expect(worldMap?.prompt).toContain(
+      "Village houses are 260-340 pixels wide and 215-235 pixels high.",
+    );
+    expect(worldMap?.prompt).toContain(
+      "Assume approved runtime people are 90 pixels tall.",
+    );
+    expect(worldMap?.prompt).toContain(
+      "Sunlight comes from upper left; soft shadows fall consistently toward lower right.",
+    );
+    expect(worldMap?.prompt).toContain("No repeated 128-pixel tile pattern.");
+    expect(worldMap?.prompt).not.toMatch(/\[[^\]]+\]/);
   });
 
   it("records the mandatory single-variable v2+ revision rule", () => {

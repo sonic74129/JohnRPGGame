@@ -38,7 +38,7 @@ describe("recoverable art registry", () => {
   it("merges the locked split registry and selects one family", async () => {
     const registry = await loadPromptRegistry();
 
-    expect(registry.entries).toHaveLength(32);
+    expect(registry.entries).toHaveLength(33);
     expect(selectPrompts(registry.entries, { family: "master" })).toHaveLength(3);
     expect(
       selectPrompts(registry.entries, {
