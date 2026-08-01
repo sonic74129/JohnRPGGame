@@ -6,6 +6,7 @@
   "scripts": {
     "art:generate": "node scripts/generate-art.mjs",
     "art:process": "python3 scripts/process-art.py",
+    "art:world": "python3 scripts/build-world-ground.py",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run"

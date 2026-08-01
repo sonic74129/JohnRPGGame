@@ -3,6 +3,7 @@ import {
   type Point,
   type Rectangle,
 } from "./NavigationGrid";
+import { WORLD_ART_OBSTACLES } from "./WorldArt";
 
 export const WORLD_TILE_SIZE = 32;
 export const WORLD_COLUMNS = 72;
@@ -102,44 +103,44 @@ export const WORLD_STRUCTURES: readonly WorldStructure[] = [
   {
     id: "martha-house",
     kind: "building",
-    bounds: { x: 240, y: 720, width: 480, height: 320 },
+    bounds: { x: 325, y: 845, width: 310, height: 162 },
   },
   {
     id: "village-house-west",
     kind: "building",
-    bounds: { x: 760, y: 280, width: 320, height: 250 },
+    bounds: { x: 775, y: 410, width: 270, height: 127 },
   },
   {
     id: "village-house-east",
     kind: "building",
-    bounds: { x: 1220, y: 280, width: 340, height: 250 },
+    bounds: { x: 1245, y: 405, width: 282, height: 128 },
   },
   {
     id: "village-house-south",
     kind: "building",
-    bounds: { x: 1450, y: 810, width: 300, height: 240 },
+    bounds: { x: 1465, y: 880, width: 270, height: 127 },
   },
   {
     id: "village-well",
     kind: "well",
-    bounds: { x: 1045, y: 685, width: 110, height: 110 },
+    bounds: { x: 1058, y: 705, width: 82, height: 79 },
   },
   {
     id: "tomb-hillside",
     kind: "tomb",
-    bounds: { x: 1840, y: 96, width: 400, height: 250 },
+    bounds: { x: 1840, y: 205, width: 320, height: 194 },
   },
   {
     id: "jerusalem-gate",
     kind: "wall",
-    bounds: { x: 64, y: 210, width: 250, height: 70 },
+    bounds: { x: 65, y: 315, width: 250, height: 40 },
   },
 ];
 
 export const WORLD_ROUTES: readonly WorldRoute[] = [
   {
     id: "house",
-    width: 150,
+    width: 120,
     points: [
       WORLD_LANDMARKS.houseDoor,
       { x: 700, y: 1030 },
@@ -149,7 +150,7 @@ export const WORLD_ROUTES: readonly WorldRoute[] = [
   },
   {
     id: "arrival",
-    width: 170,
+    width: 120,
     points: [
       WORLD_LANDMARKS.jesusArrival,
       { x: 1830, y: 1260 },
@@ -159,7 +160,7 @@ export const WORLD_ROUTES: readonly WorldRoute[] = [
   },
   {
     id: "tomb",
-    width: 150,
+    width: 112,
     points: [
       WORLD_LANDMARKS.villageCenter,
       WORLD_LANDMARKS.tombRoadStart,
@@ -169,7 +170,7 @@ export const WORLD_ROUTES: readonly WorldRoute[] = [
   },
   {
     id: "jerusalem",
-    width: 140,
+    width: 104,
     points: [
       WORLD_LANDMARKS.jerusalemGate,
       { x: 480, y: 470 },
@@ -199,6 +200,7 @@ const boundaryObstacles: readonly Rectangle[] = [
 export const WORLD_OBSTACLES: readonly Rectangle[] = [
   ...boundaryObstacles,
   ...WORLD_STRUCTURES.map(({ bounds }) => bounds),
+  ...WORLD_ART_OBSTACLES,
 ];
 
 export const createWorldNavigation = (): NavigationGrid =>

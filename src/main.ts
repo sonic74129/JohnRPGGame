@@ -25,7 +25,8 @@ const game = new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   render: {
-    antialias: true,
+    antialias: false,
+    pixelArt: true,
     roundPixels: true,
   },
   scene: [BethanyScene],

@@ -39,19 +39,22 @@ import { PlayerController } from "./PlayerController";
 import { StoryEngine } from "./StoryEngine";
 import { Trigger } from "./Trigger";
 import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
+import {
+  WORLD_STRUCTURE_ART,
+  type WorldArtObject,
+} from "./WorldArt";
 import { WorldRuntime, type WorldHost } from "./WorldRuntime";
 import {
   WORLD_HEIGHT,
   WORLD_LANDMARKS,
   WORLD_WIDTH,
-  type WorldRoute,
   type WorldStructure,
 } from "./WorldLayout";
 
 const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
-const CHARACTER_DISPLAY_WIDTH = 80;
-const CHARACTER_DISPLAY_HEIGHT = 104;
+const CHARACTER_DISPLAY_WIDTH = 60;
+const CHARACTER_DISPLAY_HEIGHT = 78;
 const CHARACTER_ORIGIN_Y = 0.69;
 
 const ACTORS: Readonly<Record<ActorId, { readonly name: string; readonly color: number }>> = {
@@ -104,7 +107,7 @@ const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
     id: "bethany-world",
     width: WORLD_WIDTH,
     height: WORLD_HEIGHT,
-    backgroundKey: "world-earth-a",
+    backgroundKey: "world-ground",
     backgroundColor: 0x8c7956,
     obstacles: [],
     playerSpawn: WORLD_LANDMARKS.bethanyEntrance,
@@ -268,14 +271,21 @@ export class BethanyScene extends Phaser.Scene {
       "prop-tomb-stone",
       "assets/art/props/tomb-stone-rolled.png",
     );
-    this.load.image("world-earth-a", "assets/art/world/tiles/earth-a.png");
+    this.load.image(
+      "world-ground",
+      "assets/art/world/bethany-world-ground.png",
+    );
+    this.load.image(
+      "world-market-canopy",
+      "assets/art/world/objects/market-canopy.png",
+    );
+    this.load.image(
+      "world-market-table",
+      "assets/art/world/objects/market-table.png",
+    );
     this.load.image(
       "world-martha-house",
       "assets/art/world/objects/martha-house-base.png",
-    );
-    this.load.image(
-      "world-martha-house-roof",
-      "assets/art/world/objects/martha-house-roof.png",
     );
     this.load.image(
       "world-village-house-a",
@@ -294,6 +304,30 @@ export class BethanyScene extends Phaser.Scene {
       "assets/art/world/objects/tomb-entrance.png",
     );
     this.load.image("world-wall", "assets/art/world/objects/world-wall.png");
+    this.load.image(
+      "world-wall-corner",
+      "assets/art/world/objects/world-wall-corner.png",
+    );
+    this.load.image(
+      "world-wall-end",
+      "assets/art/world/objects/world-wall-end.png",
+    );
+    this.load.image(
+      "world-cliff-edge",
+      "assets/art/world/objects/world-cliff-edge.png",
+    );
+    this.load.image(
+      "world-olive-tree",
+      "assets/art/world/objects/world-olive-tree.png",
+    );
+    this.load.image(
+      "world-road-marker",
+      "assets/art/world/objects/world-road-marker.png",
+    );
+    this.load.image(
+      "world-rock-ledge",
+      "assets/art/world/objects/world-rock-ledge.png",
+    );
     this.loadCharacterSprites();
     this.load.image(
       lazarusTextureKey("wrapped-idle"),
@@ -310,6 +344,7 @@ export class BethanyScene extends Phaser.Scene {
     this.ui = ui;
     this.audio = audio;
     this.resetRuntimeState();
+    this.applyPixelArtFiltering();
     this.createWalkAnimations();
     this.cameras.main.setBackgroundColor("#706348");
     this.createPlayer();
@@ -383,8 +418,9 @@ export class BethanyScene extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, width, height);
       },
       createGround: () => this.createWorldGround(),
-      createRoute: (route) => this.createWorldRoute(route),
       createStructure: (structure) => this.createWorldStructure(structure),
+      createDecoration: (decoration) =>
+        this.createWorldArtObject(decoration),
       createObstacle: (obstacle) => this.createObstacle(obstacle),
       setNavigation: (navigation) => {
         this.navigation = navigation;
@@ -394,71 +430,34 @@ export class BethanyScene extends Phaser.Scene {
 
   private createWorldGround(): AreaResource {
     const ground = this.add
-      .tileSprite(
+      .image(
         WORLD_WIDTH / 2,
         WORLD_HEIGHT / 2,
-        WORLD_WIDTH,
-        WORLD_HEIGHT,
-        "world-earth-a",
+        "world-ground",
       )
       .setDepth(-40);
     return { destroy: () => ground.destroy() };
   }
 
-  private createWorldRoute(route: WorldRoute): AreaResource {
-    const graphics = this.add.graphics().setDepth(-35);
-    graphics.lineStyle(
-      route.width,
-      route.id === "tomb" || route.id === "jerusalem" ? 0xb7aa89 : 0x9d8157,
-      1,
-    );
-    graphics.beginPath();
-    route.points.forEach((point, index) => {
-      if (index === 0) {
-        graphics.moveTo(point.x, point.y);
-      } else {
-        graphics.lineTo(point.x, point.y);
-      }
-    });
-    graphics.strokePath();
-    return { destroy: () => graphics.destroy() };
+  private createWorldStructure(structure: WorldStructure): AreaResource {
+    const art = WORLD_STRUCTURE_ART[structure.id];
+    if (!art) {
+      throw new Error(`Missing world art placement for ${structure.id}.`);
+    }
+    return this.createWorldArtObject(art);
   }
 
-  private createWorldStructure(structure: WorldStructure): AreaResource {
-    const textureByStructure: Readonly<Record<string, string>> = {
-      "martha-house": "world-martha-house",
-      "village-house-west": "world-village-house-a",
-      "village-house-east": "world-village-house-b",
-      "village-house-south": "world-village-house-a",
-      "village-well": "world-village-well",
-      "tomb-hillside": "world-tomb-entrance",
-      "jerusalem-gate": "world-wall",
-    };
-    const texture = textureByStructure[structure.id];
-    if (!texture) {
-      throw new Error(`Missing world texture for ${structure.id}.`);
-    }
+  private createWorldArtObject(art: WorldArtObject): AreaResource {
+    const { bounds } = art;
     const image = this.add
       .image(
-        structure.bounds.x + structure.bounds.width / 2,
-        structure.bounds.y + structure.bounds.height / 2,
-        texture,
+        bounds.x + bounds.width / 2,
+        bounds.y + bounds.height / 2,
+        art.texture,
       )
-      .setDisplaySize(structure.bounds.width, structure.bounds.height)
-      .setDepth(-25);
-    const roof =
-      structure.id === "martha-house"
-        ? this.add
-            .image(image.x, image.y - 48, "world-martha-house-roof")
-            .setDisplaySize(structure.bounds.width, structure.bounds.height)
-            .setDepth(1000)
-        : undefined;
-    return {
-      destroy: () => {
-        roof?.destroy();
-        image.destroy();
-      },
-    };
+      .setDisplaySize(bounds.width, bounds.height)
+      .setDepth(bounds.y + bounds.height);
+    return { destroy: () => image.destroy() };
   }
 
   private createAreaBackground(config: AreaConfig): AreaResource {
@@ -507,7 +506,7 @@ export class BethanyScene extends Phaser.Scene {
         obstacle.width,
         obstacle.height,
         0x3d3429,
-        0.12,
+        0,
       )
       .setDepth(-20);
     this.physics.add.existing(collisionBody, true);
@@ -533,6 +532,12 @@ export class BethanyScene extends Phaser.Scene {
     this.player.setBodySize(72, 60);
     this.player.setOffset(44, 150);
     this.showPlayerIdle();
+  }
+
+  private applyPixelArtFiltering(): void {
+    for (const key of this.textures.getTextureKeys()) {
+      this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
   }
 
   private loadCharacterSprites(): void {
@@ -712,10 +717,10 @@ export class BethanyScene extends Phaser.Scene {
     const character = actorSpriteCharacter(id);
     const facing: Facing = "front";
     const marker = this.add
-      .ellipse(0, 31, 88, 40)
-      .setStrokeStyle(4, 0xf4c86a, 0.95)
+      .ellipse(0, 24, 66, 30)
+      .setStrokeStyle(3, 0xf4c86a, 0.95)
       .setVisible(false);
-    const shadow = this.add.rectangle(0, 35, 60, 18, 0x2b261e, 0.35);
+    const shadow = this.add.rectangle(0, 27, 44, 12, 0x2b261e, 0.35);
     const sprite = this.add
       .sprite(0, 0, spriteTextureKey(character, facing, "idle"))
       .setDisplaySize(CHARACTER_DISPLAY_WIDTH, CHARACTER_DISPLAY_HEIGHT)
@@ -725,7 +730,7 @@ export class BethanyScene extends Phaser.Scene {
       shadow,
       sprite,
     ]);
-    container.setSize(92, 135);
+    container.setSize(70, 100);
     container.setInteractive({ useHandCursor: true });
     container.on(
       "pointerdown",
@@ -756,11 +761,11 @@ export class BethanyScene extends Phaser.Scene {
       .setDepth(-10);
     this.stone = this.add
       .image(1940, 415, "prop-tomb-stone")
-      .setDisplaySize(190, 125)
+      .setDisplaySize(140, 92)
       .setDepth(405);
     this.lazarus = this.add
       .sprite(2010, 465, lazarusTextureKey("wrapped-idle"))
-      .setDisplaySize(102, 95)
+      .setDisplaySize(78, 72)
       .setOrigin(0.5, CHARACTER_ORIGIN_Y)
       .setDepth(390)
       .setVisible(false);
