@@ -25,4 +25,18 @@ describe("ActorRegistry", () => {
       },
     ]);
   });
+
+  it("isolates live character positions from input and snapshot mutation", () => {
+    const actors = new ActorRegistry();
+    const initialPosition = { x: 10, y: 20 };
+    actors.register(
+      new Character("martha", "马大", "lazarus-house", initialPosition),
+    );
+
+    initialPosition.x = 99;
+    const snapshot = actors.require("martha").state;
+    Object.assign(snapshot.position, { x: 77 });
+
+    expect(actors.require("martha").state.position).toEqual({ x: 10, y: 20 });
+  });
 });

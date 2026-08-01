@@ -114,4 +114,13 @@ describe("StoryEngine", () => {
 
     expect(story.resultLabel()).toBe("经文脉络清楚");
   });
+
+  it("rejects out-of-order progression without changing stage", () => {
+    const story = new StoryEngine();
+
+    expect(() => story.arriveAtBethany()).toThrow(
+      "Cannot advance story from opening; expected journey.",
+    );
+    expect(story.stage).toBe("opening");
+  });
 });
