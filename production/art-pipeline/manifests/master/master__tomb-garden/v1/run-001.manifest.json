@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "master.tomb-garden",
+    "family": "master",
+    "purpose": "Art-direction reference for the hillside burial garden; locks the tomb composition, restrained late-afternoon light, gathering space and respectful non-horror material language.",
+    "runtime": false,
+    "output": "reference",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 3,
+    "dependsOn": [
+      "master.bethany-world"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:14:05.635Z",
+    "updatedAt": "2026-08-01T15:16:49.146Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/master/master__tomb-garden/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001",
+    "selectedSource": "production/art-source/master/master__tomb-garden/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/master/master__tomb-garden/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/master/master__tomb-garden/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:14:48.189Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:15:21.896Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 3,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001/candidate-03.png",
+      "generatedAt": "2026-08-01T15:16:01.537Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 2,
+    "sourcePath": "production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001/candidate-02.png",
+    "selectedSourcePath": "production/art-source/master/master__tomb-garden/v1/run-001-selected.png",
+    "reason": "Best approved broad gathering area, clearly separable rock-cut entrance and round stone, historically restrained olive-and-limestone setting, natural late-afternoon light, and no body, horror, supernatural glow, text, UI, or modern elements.",
+    "selectedAt": "2026-08-01T15:16:49.145Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 3,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "review",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001/candidate-01.png",
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001/candidate-02.png",
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/candidates/master/master__tomb-garden/v1/run-001/candidate-03.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/review/master/master__tomb-garden/v1/run-001-contact-sheet.jpg"
+    ],
+    "startedAt": "2026-08-01T15:16:16.813720Z",
+    "completedAt": "2026-08-01T15:16:16.921051Z",
+    "failureReason": null
+  }
+}
