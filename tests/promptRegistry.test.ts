@@ -28,6 +28,7 @@ const REQUIRED_KEYS = [
   "dependsOn",
   "output",
 ] as const;
+const OPTIONAL_KEYS = ["requestWidth", "requestHeight"] as const;
 
 const ALLOWED_FAMILIES = new Set([
   "master",
@@ -55,6 +56,8 @@ interface PromptEntry {
   model: string;
   width: number;
   height: number;
+  requestWidth?: number;
+  requestHeight?: number;
   basePromptVersion: string;
   promptVersion: string;
   prompt: string;
@@ -95,8 +98,13 @@ const parsePromptEntry = (value: unknown, source: string): PromptEntry => {
   const entry = value as JsonObject;
   const id = isNonEmptyString(entry.id) ? entry.id : `${source}:unknown`;
 
+  const hasRequestDimensions =
+    entry.requestWidth !== undefined || entry.requestHeight !== undefined;
   expect(Object.keys(entry).sort(), `${id} must use the executable schema`).toEqual(
-    [...REQUIRED_KEYS].sort(),
+    [
+      ...REQUIRED_KEYS,
+      ...(hasRequestDimensions ? OPTIONAL_KEYS : []),
+    ].sort(),
   );
   expect(entry.id, `${id}.id must be stable dot notation`).toMatch(
     /^[a-z]+(?:[.-][a-z0-9]+)+$/,
@@ -114,6 +122,14 @@ const parsePromptEntry = (value: unknown, source: string): PromptEntry => {
     Number.isInteger(entry.height) && Number(entry.height) > 0,
     `${id}.height`,
   ).toBe(true);
+  if (hasRequestDimensions) {
+    expect(Number.isInteger(entry.requestWidth), `${id}.requestWidth`).toBe(true);
+    expect(Number.isInteger(entry.requestHeight), `${id}.requestHeight`).toBe(true);
+    expect(
+      Number(entry.width) * Number(entry.requestHeight),
+      `${id} request aspect ratio`,
+    ).toBe(Number(entry.height) * Number(entry.requestWidth));
+  }
   expect(entry.basePromptVersion, `${id}.basePromptVersion`).toMatch(/^v\d+$/);
   expect(entry.promptVersion, `${id}.promptVersion`).toMatch(/^v\d+$/);
   expect(isNonEmptyString(entry.prompt), `${id}.prompt`).toBe(true);
@@ -223,6 +239,8 @@ describe("MAI prompt registry", () => {
       model: LOCKED_MODEL,
       width: 2720,
       height: 1536,
+      requestWidth: 1360,
+      requestHeight: 768,
       basePromptVersion: "v1",
       promptVersion: "v1",
       candidateCount: 3,

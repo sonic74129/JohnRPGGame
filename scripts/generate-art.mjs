@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -25,7 +25,14 @@ const REPO_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
+const GENERATED_IMAGE_RESIZER = path.join(
+  REPO_ROOT,
+  "scripts",
+  "art",
+  "resize-generated-image.py",
+);
 const MAX_REQUEST_ATTEMPTS = 4;
+const MAX_IMAGE_BUFFER_BYTES = 64 * 1024 * 1024;
 
 const usage = `Usage:
   npm run art:generate -- --family <family> [--asset <id>] [--mode start|resume|regenerate] [--dry-run]
@@ -80,6 +87,8 @@ const getAzureToken = (subscription) =>
   ).trim();
 
 const requestCandidate = async ({ endpoint, token, backend, entry }) => {
+  const requestWidth = entry.requestWidth ?? entry.width;
+  const requestHeight = entry.requestHeight ?? entry.height;
   for (let attempt = 1; attempt <= MAX_REQUEST_ATTEMPTS; attempt += 1) {
     const response = await fetch(`${endpoint}/mai/v1/images/generations`, {
       method: "POST",
@@ -90,8 +99,8 @@ const requestCandidate = async ({ endpoint, token, backend, entry }) => {
       body: JSON.stringify({
         model: backend.deployment,
         prompt: entry.prompt,
-        width: entry.width,
-        height: entry.height,
+        width: requestWidth,
+        height: requestHeight,
       }),
     });
     if (response.ok) {
@@ -120,6 +129,38 @@ const requestCandidate = async ({ endpoint, token, backend, entry }) => {
   throw new Error(`Image generation exhausted retries for ${entry.id}.`);
 };
 
+export const normalizeCandidateImage = (image, entry) => {
+  const requestWidth = entry.requestWidth ?? entry.width;
+  const requestHeight = entry.requestHeight ?? entry.height;
+  if (requestWidth === entry.width && requestHeight === entry.height) {
+    return image;
+  }
+  const result = spawnSync(
+    "python3",
+    [
+      GENERATED_IMAGE_RESIZER,
+      String(requestWidth),
+      String(requestHeight),
+      String(entry.width),
+      String(entry.height),
+    ],
+    {
+      input: image,
+      maxBuffer: MAX_IMAGE_BUFFER_BYTES,
+      stdio: ["pipe", "pipe", "pipe"],
+    },
+  );
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    throw new Error(
+      `Generated image normalization failed for ${entry.id}: ${result.stderr.toString("utf8").trim()}`,
+    );
+  }
+  return result.stdout;
+};
+
 const dryRunPlan = async (entries, mode) =>
   Promise.all(
     entries.map(async (entry) => {
@@ -138,6 +179,10 @@ const dryRunPlan = async (entries, mode) =>
         model: entry.model,
         promptVersion: entry.promptVersion,
         candidateCount: entry.candidateCount,
+        requestWidth: entry.requestWidth ?? entry.width,
+        requestHeight: entry.requestHeight ?? entry.height,
+        outputWidth: entry.width,
+        outputHeight: entry.height,
         mode,
         paths: buildRunPaths(REPO_ROOT, entry, runNumber),
       };
@@ -171,12 +216,13 @@ const generateEntry = async ({
       candidate.index,
     );
     try {
-      const image = await requestCandidate({
+      const requestedImage = await requestCandidate({
         endpoint,
         token,
         backend: registry.style.backend,
         entry,
       });
+      const image = normalizeCandidateImage(requestedImage, entry);
       const outputPath = repositoryPathToAbsolute(
         REPO_ROOT,
         candidate.outputPath,

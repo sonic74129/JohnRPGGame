@@ -44,6 +44,7 @@ const REQUIRED_ENTRY_KEYS = [
   "runtime",
   "width",
 ].sort();
+const OPTIONAL_ENTRY_KEYS = ["requestHeight", "requestWidth"].sort();
 
 const isObject = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -89,9 +90,14 @@ const validateAcceptance = (acceptance, id) => {
 const validateEntry = (entry, source, style) => {
   assert(isObject(entry), `${source} entries must be objects.`);
   const id = typeof entry.id === "string" ? entry.id : `${source}:unknown`;
+  const entryKeys = Object.keys(entry).sort();
+  const hasRequestDimensions =
+    entry.requestWidth !== undefined || entry.requestHeight !== undefined;
+  const expectedKeys = hasRequestDimensions
+    ? [...REQUIRED_ENTRY_KEYS, ...OPTIONAL_ENTRY_KEYS].sort()
+    : REQUIRED_ENTRY_KEYS;
   assert(
-    JSON.stringify(Object.keys(entry).sort()) ===
-      JSON.stringify(REQUIRED_ENTRY_KEYS),
+    JSON.stringify(entryKeys) === JSON.stringify(expectedKeys),
     `${id} does not match the executable prompt schema.`,
   );
   assert(
@@ -116,6 +122,24 @@ const validateEntry = (entry, source, style) => {
     Number.isInteger(entry.height) && entry.height > 0,
     `${id}.height must be a positive integer.`,
   );
+  if (hasRequestDimensions) {
+    assert(
+      Number.isInteger(entry.requestWidth) && entry.requestWidth > 0,
+      `${id}.requestWidth must be a positive integer.`,
+    );
+    assert(
+      Number.isInteger(entry.requestHeight) && entry.requestHeight > 0,
+      `${id}.requestHeight must be a positive integer.`,
+    );
+    assert(
+      entry.width * entry.requestHeight === entry.height * entry.requestWidth,
+      `${id} request and output dimensions must have the same aspect ratio.`,
+    );
+    assert(
+      entry.requestWidth <= entry.width && entry.requestHeight <= entry.height,
+      `${id} request dimensions cannot exceed output dimensions.`,
+    );
+  }
   assert(
     entry.basePromptVersion === style.basePromptVersion,
     `${id}.basePromptVersion must match style.json.`,

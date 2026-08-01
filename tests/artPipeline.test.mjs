@@ -17,6 +17,7 @@ import {
   recordCandidateSuccess,
   repositoryPathToAbsolute,
 } from "../scripts/art/pipeline-manifest.mjs";
+import { normalizeCandidateImage } from "../scripts/generate-art.mjs";
 
 const temporaryDirectories = [];
 
@@ -52,6 +53,25 @@ describe("recoverable art registry", () => {
         assetId: "portrait.messenger",
       }),
     ).toThrow(/belongs to family portrait/);
+  });
+
+  describe("generated image normalization", () => {
+    it("upscales a service-sized PNG to the immutable source dimensions", () => {
+      const onePixelPng = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        "base64",
+      );
+      const resized = normalizeCandidateImage(onePixelPng, {
+        id: "environment.world-map",
+        requestWidth: 1,
+        requestHeight: 1,
+        width: 2,
+        height: 2,
+      });
+      expect(resized.subarray(1, 4).toString("ascii")).toBe("PNG");
+      expect(resized.readUInt32BE(16)).toBe(2);
+      expect(resized.readUInt32BE(20)).toBe(2);
+    });
   });
 
   it("rejects cross-family and duplicate family invocations", () => {

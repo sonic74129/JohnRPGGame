@@ -163,6 +163,13 @@ const assertManifestIdentity = (manifest, entry, registryVersion, expectedPaths)
     basePromptVersion: entry.basePromptVersion,
     promptVersion: entry.promptVersion,
     candidateCount: entry.candidateCount,
+    ...(entry.requestWidth === undefined
+      ? {}
+      : {
+          requestWidth: entry.requestWidth,
+          requestHeight: entry.requestHeight,
+          sourceNormalization: "lanczos",
+        }),
   };
   for (const [key, value] of Object.entries(expectedAsset)) {
     if (manifest.asset?.[key] !== value) {
@@ -206,6 +213,13 @@ const createManifest = async ({
       promptVersion: entry.promptVersion,
       candidateCount: entry.candidateCount,
       dependsOn: [...entry.dependsOn],
+      ...(entry.requestWidth === undefined
+        ? {}
+        : {
+            requestWidth: entry.requestWidth,
+            requestHeight: entry.requestHeight,
+            sourceNormalization: "lanczos",
+          }),
     },
     run: {
       number: runNumber,
