@@ -55,6 +55,11 @@ import { ProximityTrigger } from "./ProximityTrigger";
 import { partitionTombDialogue } from "./StoryEvents";
 import { StoryEngine } from "./StoryEngine";
 import { StoryJourney } from "./StoryJourney";
+import {
+  TOMB_PROP_ASSETS,
+  TOMB_PROP_PLACEMENTS,
+  TOMB_STONE_PLACEMENT,
+} from "./TombAssets";
 import { Trigger } from "./Trigger";
 import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
 import {
@@ -301,10 +306,9 @@ export class BethanyScene extends Phaser.Scene {
     this.load.image("art-bethany-village", "assets/art/map-village-edge-clean.png");
     this.load.image("art-road-to-tomb", "assets/art/map-road-to-tomb-clean.png");
     this.load.image("art-tomb", "assets/art/map-tomb-clean.png");
-    this.load.image(
-      "prop-tomb-stone",
-      "assets/art/props/tomb-stone-rolled.png",
-    );
+    for (const asset of Object.values(TOMB_PROP_ASSETS)) {
+      this.load.image(asset.key, asset.path);
+    }
     this.load.spritesheet(WORLD_GROUND_ASSET.key, WORLD_GROUND_ASSET.path, {
       frameWidth: WORLD_GROUND_ASSET.frameWidth,
       frameHeight: WORLD_GROUND_ASSET.frameHeight,
@@ -796,21 +800,38 @@ export class BethanyScene extends Phaser.Scene {
 
   private createTombElements(): void {
     const wrappedSize = lazarusDisplaySize("wrapped-idle");
-    const entrance = this.add
-      .ellipse(1990, 350, 210, 145, 0x1c1b18)
-      .setStrokeStyle(12, 0x514839)
-      .setDepth(-10);
     this.stone = this.add
-      .image(1940, 415, "prop-tomb-stone")
-      .setDisplaySize(140, 92)
-      .setDepth(405);
+      .image(
+        TOMB_STONE_PLACEMENT.x,
+        TOMB_STONE_PLACEMENT.y,
+        TOMB_PROP_ASSETS.stone.key,
+      )
+      .setDisplaySize(
+        TOMB_STONE_PLACEMENT.width,
+        TOMB_STONE_PLACEMENT.height,
+      )
+      .setDepth(TOMB_STONE_PLACEMENT.depth);
     this.lazarus = this.add
       .sprite(2010, 390, lazarusTextureKey("wrapped-idle"))
       .setDisplaySize(wrappedSize.width, wrappedSize.height)
       .setOrigin(0.5, CHARACTER_ORIGIN_Y)
       .setDepth(390)
       .setVisible(false);
-    this.decorations = [entrance, this.stone, this.lazarus];
+    const props = TOMB_PROP_PLACEMENTS.map((placement) => {
+      const image = this.add
+        .image(
+          placement.x,
+          placement.y,
+          TOMB_PROP_ASSETS[placement.id].key,
+        )
+        .setDisplaySize(placement.width, placement.height)
+        .setDepth(placement.depth);
+      if (placement.alpha !== undefined) {
+        image.setAlpha(placement.alpha);
+      }
+      return image;
+    });
+    this.decorations = [this.stone, this.lazarus, ...props];
   }
 
   private createSickLazarus(): void {
@@ -1576,7 +1597,13 @@ export class BethanyScene extends Phaser.Scene {
         x: 2190,
         duration: 900,
         ease: "Sine.easeInOut",
-        onComplete: () => resolve(),
+        onComplete: () => {
+          stone.setTexture(TOMB_PROP_ASSETS.stoneRolled.key).setDisplaySize(
+            TOMB_STONE_PLACEMENT.width,
+            TOMB_STONE_PLACEMENT.height,
+          );
+          resolve();
+        },
       });
     });
   }
