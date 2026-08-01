@@ -269,7 +269,10 @@ export class BethanyScene extends Phaser.Scene {
     this.configureInput();
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
     this.game.events.on("start-story", this.startStory, this);
+    this.registry.set("bethany-ready", true);
+    this.game.events.emit("bethany-ready");
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.registry.set("bethany-ready", false);
       this.game.events.off("start-story", this.startStory, this);
       this.areaRuntime?.cleanup();
       this.clearDecorations();

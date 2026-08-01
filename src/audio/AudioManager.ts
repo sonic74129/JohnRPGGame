@@ -142,7 +142,10 @@ export class AudioManager {
         return;
       }
 
-      const progress = Math.min(1, (now - startedAt) / Math.max(1, durationMs));
+      const progress = Math.max(
+        0,
+        Math.min(1, (now - startedAt) / Math.max(1, durationMs)),
+      );
       for (const [state, track] of this.tracks) {
         const start = startingVolumes.get(state) ?? 0;
         const target = state === activeState ? TRACKS[state].volume : 0;

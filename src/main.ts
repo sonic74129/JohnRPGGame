@@ -37,6 +37,14 @@ const game = new Phaser.Game({
   },
 });
 
+const sceneReady = new Promise<void>((resolve) => {
+  if (game.registry.get("bethany-ready") === true) {
+    resolve();
+    return;
+  }
+  game.events.once("bethany-ready", resolve);
+});
+
 let starting = false;
 ui.bindStart(async (fullscreen) => {
   if (starting) {
@@ -63,6 +71,7 @@ ui.bindStart(async (fullscreen) => {
     ui.showNotice("浏览器未能进入全屏，游戏仍可正常进行。");
   }
 
+  await sceneReady;
   document.getElementById("game-root")?.focus();
   game.events.emit("start-story");
 });

@@ -104,6 +104,18 @@ describe("AudioManager", () => {
     expect(track("theme-1").volume).toBeCloseTo(0.34);
   });
 
+  it("clamps fade progress when a frame timestamp precedes the transition", async () => {
+    const audio = new AudioManager();
+    await audio.unlock();
+    audio.setState("exploration", 1000);
+
+    const callback = [...frames.values()][0];
+    expect(callback).toBeDefined();
+    callback?.(0);
+
+    expect(FakeAudio.instances.every(({ volume }) => volume >= 0)).toBe(true);
+  });
+
   function flushFrames(): void {
     const callbacks = [...frames.values()];
     frames.clear();
