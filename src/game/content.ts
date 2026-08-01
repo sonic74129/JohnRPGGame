@@ -25,7 +25,6 @@ export const DIALOGUES: Record<
       text: "有一个患病的人，名叫拉撒路，住在伯大尼，就是马利亚和她姐姐马大的村庄。",
       reference: "约翰福音 11:1｜和合本",
       kind: "scripture",
-      art: "opening-sickroom.png",
       music: "dialogue",
     },
     {
@@ -34,7 +33,6 @@ export const DIALOGUES: Record<
       reference: "根据约翰福音 11:1–3 的情境重现",
       kind: "dramatization",
       portrait: "mary-worried",
-      art: "opening-sickroom.png",
     },
     {
       speaker: "马大",
@@ -42,21 +40,18 @@ export const DIALOGUES: Record<
       reference: "根据约翰福音 11:3 的情境重现",
       kind: "dramatization",
       portrait: "martha-worried",
-      art: "opening-sickroom.png",
     },
     {
       speaker: "旁白",
       text: "他姐妹两个就打发人去见耶稣。",
       reference: "约翰福音 11:3｜和合本",
       kind: "scripture",
-      art: "opening-sickroom.png",
     },
     {
       speaker: "游戏提示",
       text: "你们将作为经文没有记名的报信者和见证者。找到耶稣，并准确传达姐妹的口信。",
       kind: "instruction",
       portrait: "messenger",
-      art: "opening-sickroom.png",
     },
   ],
   messageJourney: [
@@ -66,7 +61,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:3｜和合本",
       kind: "scripture",
       portrait: "messenger",
-      art: "journey-to-jesus.png",
       music: "dialogue",
     },
     {
@@ -75,21 +69,18 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:4｜和合本",
       kind: "scripture",
       portrait: "jesus-listening",
-      art: "journey-to-jesus.png",
     },
     {
       speaker: "旁白",
       text: "耶稣素来爱马大和她妹子并拉撒路。听见拉撒路病了，就在所居之地仍住了两天。",
       reference: "约翰福音 11:5–6",
       kind: "narration",
-      art: "journey-to-jesus.png",
     },
     {
       speaker: "时间推移",
       text: "两天后",
       reference: "约翰福音 11:6–7",
       kind: "instruction",
-      art: "journey-to-jesus.png",
       pauseMs: 1600,
       music: "silence",
     },
@@ -99,7 +90,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:7｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "journey-to-jesus.png",
       music: "dialogue",
     },
     {
@@ -108,7 +98,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:8｜和合本",
       kind: "scripture",
       portrait: "witness",
-      art: "journey-to-jesus.png",
     },
     {
       speaker: "耶稣",
@@ -116,7 +105,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:14–15｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "journey-to-jesus.png",
     },
     {
       speaker: "多马",
@@ -124,14 +112,12 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:16｜和合本",
       kind: "scripture",
       portrait: "thomas",
-      art: "journey-to-jesus.png",
     },
     {
       speaker: "旁白",
       text: "耶稣到了，就知道拉撒路在坟墓里已经四天了。好些犹太人来安慰马大和马利亚。",
       reference: "约翰福音 11:17–19",
       kind: "narration",
-      art: "bethany-village.png",
     },
   ],
   marthaBeforeQuestion: [
@@ -141,7 +127,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:21｜和合本",
       kind: "scripture",
       portrait: "martha-grieving",
-      art: "story-martha-meets-jesus.png",
       music: "dialogue",
     },
     {
@@ -150,7 +135,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:22｜和合本",
       kind: "scripture",
       portrait: "martha-grieving",
-      art: "story-martha-meets-jesus.png",
     },
     {
       speaker: "耶稣",
@@ -158,7 +142,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:23｜和合本",
       kind: "scripture",
       portrait: "jesus-listening",
-      art: "story-martha-meets-jesus.png",
     },
     {
       speaker: "马大",
@@ -166,7 +149,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:24｜和合本",
       kind: "scripture",
       portrait: "martha-faith",
-      art: "story-martha-meets-jesus.png",
     },
   ],
   marthaCore: [
@@ -176,7 +158,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:25｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "story-martha-meets-jesus.png",
       music: "revelation",
     },
     {
@@ -185,7 +166,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:26｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "story-martha-meets-jesus.png",
     },
     {
       speaker: "马大",
@@ -193,7 +173,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:27｜和合本",
       kind: "scripture",
       portrait: "martha-faith",
-      art: "story-martha-meets-jesus.png",
     },
   ],
   marthaReturns: [
@@ -202,7 +181,6 @@ export const DIALOGUES: Record<
       text: "马大说了这话，就回去暗暗地叫她妹子马利亚。",
       reference: "约翰福音 11:28",
       kind: "narration",
-      art: "opening-sickroom.png",
       music: "dialogue",
     },
     {
@@ -211,7 +189,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:28｜和合本",
       kind: "scripture",
       portrait: "martha-faith",
-      art: "opening-sickroom.png",
     },
     {
       speaker: "旁白",
@@ -219,7 +196,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:29",
       kind: "narration",
       portrait: "mary-urgent",
-      art: "opening-sickroom.png",
     },
   ],
   mary: [
@@ -229,7 +205,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:32｜和合本",
       kind: "scripture",
       portrait: "mary-grieving",
-      art: "bethany-village.png",
       music: "dialogue",
     },
     {
@@ -237,7 +212,6 @@ export const DIALOGUES: Record<
       text: "耶稣看见她哭，并看见与她同来的犹太人也哭，就心里悲叹，又甚忧愁。",
       reference: "约翰福音 11:33",
       kind: "narration",
-      art: "bethany-village.png",
     },
     {
       speaker: "耶稣",
@@ -245,7 +219,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:34｜和合本",
       kind: "scripture",
       portrait: "jesus-weeping",
-      art: "bethany-village.png",
     },
     {
       speaker: "众人",
@@ -253,7 +226,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:34｜和合本",
       kind: "scripture",
       portrait: "witness",
-      art: "bethany-village.png",
       music: "dialogue",
     },
     {
@@ -262,7 +234,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:35｜和合本",
       kind: "scripture",
       portrait: "jesus-weeping",
-      art: "story-jesus-weeps.png",
       pauseMs: 3000,
       music: "silence",
     },
@@ -272,7 +243,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:36｜和合本",
       kind: "scripture",
       portrait: "witness",
-      art: "bethany-village.png",
       music: "dialogue",
     },
     {
@@ -281,7 +251,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:37｜和合本",
       kind: "scripture",
       portrait: "witness",
-      art: "bethany-village.png",
     },
   ],
   tomb: [
@@ -290,7 +259,6 @@ export const DIALOGUES: Record<
       text: "耶稣来到坟墓前。那坟墓是个洞，有一块石头挡着。",
       reference: "约翰福音 11:38",
       kind: "narration",
-      art: "tomb-garden.png",
       music: "dialogue",
     },
     {
@@ -299,7 +267,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:39｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "tomb-garden.png",
     },
     {
       speaker: "马大",
@@ -307,7 +274,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:39｜和合本",
       kind: "scripture",
       portrait: "martha-grieving",
-      art: "tomb-garden.png",
       music: "silence",
     },
     {
@@ -316,7 +282,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:40｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "tomb-garden.png",
       music: "dialogue",
     },
     {
@@ -324,7 +289,6 @@ export const DIALOGUES: Record<
       text: "他们就把石头挪开。耶稣举目望天祷告。",
       reference: "约翰福音 11:41–42",
       kind: "narration",
-      art: "tomb-garden.png",
       music: "revelation",
     },
     {
@@ -333,7 +297,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:43｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "tomb-garden.png",
       music: "silence",
     },
     {
@@ -341,7 +304,6 @@ export const DIALOGUES: Record<
       text: "那死人就出来了，手脚裹着布，脸上包着手巾。",
       reference: "约翰福音 11:44",
       kind: "narration",
-      art: "story-lazarus-comes-out.png",
       music: "revelation",
     },
     {
@@ -350,7 +312,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:44｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "story-lazarus-comes-out.png",
     },
   ],
   epilogue: [
@@ -359,7 +320,6 @@ export const DIALOGUES: Record<
       text: "那些来看马利亚的犹太人见了耶稣所做的事，就多有信他的。",
       reference: "约翰福音 11:45",
       kind: "narration",
-      art: "story-ending-reflection.png",
       music: "revelation",
     },
     {
@@ -368,14 +328,12 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:46｜和合本",
       kind: "scripture",
       portrait: "witness",
-      art: "story-ending-reflection.png",
       music: "dialogue",
     },
     {
       speaker: "小组回顾",
       text: "拉撒路真的死了；马大相信末日的复活；耶稣把焦点指向自己是谁。",
       kind: "instruction",
-      art: "story-ending-reflection.png",
       music: "revelation",
     },
     {
@@ -384,7 +342,6 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:25–26｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
-      art: "story-ending-reflection.png",
     },
   ],
 };

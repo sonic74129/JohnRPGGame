@@ -34,7 +34,6 @@ export interface DialogueLine {
   readonly reference?: string;
   readonly kind: ContentKind;
   readonly portrait?: string;
-  readonly art?: string;
   readonly pauseMs?: number;
   readonly music?: MusicState;
 }

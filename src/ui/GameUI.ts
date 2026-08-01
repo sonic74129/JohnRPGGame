@@ -27,7 +27,6 @@ export class GameUI {
   private readonly score = this.element("score");
   private readonly musicToggle = this.button("music-toggle");
   private readonly interactionPrompt = this.element("interaction-prompt");
-  private readonly sceneArt = this.element("scene-art");
   private readonly dialogue = this.element("dialogue");
   private readonly dialoguePortrait = this.element("dialogue-portrait");
   private readonly dialogueKind = this.element("dialogue-kind");
@@ -113,7 +112,6 @@ export class GameUI {
     this.dialogueComplete = onComplete;
     this.dialogueLineChanged = onLineChanged;
     this.dialogue.classList.remove("is-hidden");
-    this.hud.classList.add("is-hidden");
     this.interactionPrompt.classList.add("is-hidden");
     this.renderDialogueLine();
     this.dialogueNext.focus();
@@ -130,7 +128,6 @@ export class GameUI {
     this.dialogueIndex += 1;
     if (this.dialogueIndex >= this.dialogueLines.length) {
       this.dialogue.classList.add("is-hidden");
-      this.sceneArt.classList.add("is-hidden");
       this.hud.classList.remove("is-hidden");
       const callback = this.dialogueComplete;
       this.dialogueComplete = undefined;
@@ -237,7 +234,6 @@ export class GameUI {
         ? "小组清楚掌握了马大、马利亚和众人前往坟墓的经文次序。"
         : "分数只反映本次经文观察，不代表任何人的信心或属灵程度。";
     this.resultScreen.classList.remove("is-hidden");
-    this.sceneArt.classList.add("is-hidden");
     this.button("result-restart").onclick = onRestart;
     this.button("result-exit").onclick = onExit;
     this.button("result-exit").focus();
@@ -307,7 +303,6 @@ export class GameUI {
     this.dialogueSpeaker.textContent = line.speaker;
     this.dialogueText.textContent = line.text;
     this.renderPortrait(line.portrait);
-    this.renderSceneArt(line.art);
     this.dialogueLocked = Boolean(line.pauseMs);
     this.dialogueNext.toggleAttribute("disabled", this.dialogueLocked);
     if (this.dialogueTimer !== undefined) {
@@ -389,13 +384,6 @@ export class GameUI {
     }
     this.dialoguePortrait.style.backgroundImage = `url("${selected.image}")`;
     this.dialoguePortrait.style.backgroundPosition = selected.position;
-  }
-
-  private renderSceneArt(art?: string): void {
-    this.sceneArt.classList.toggle("is-hidden", !art);
-    if (art) {
-      this.sceneArt.style.backgroundImage = `url("assets/art/${art}")`;
-    }
   }
 
   private focusGame(): void {
