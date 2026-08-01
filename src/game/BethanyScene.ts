@@ -30,6 +30,19 @@ import {
 } from "./CharacterSprites";
 import { CutsceneDirector } from "./CutsceneDirector";
 import { DIALOGUES, OBJECTIVES, QUESTIONS } from "./content";
+import {
+  HOUSE_ART,
+  HOUSE_EXIT,
+  HOUSE_FOREGROUND_PLACEMENTS,
+  HOUSE_OBSTACLES,
+  HOUSE_PLAYER_SPAWN,
+  HOUSE_PROP_PLACEMENTS,
+  HOUSE_SICK_LAZARUS_POSITION,
+  HOUSE_SICK_LAZARUS_SIZE,
+  HOUSE_STORY_FOCUS,
+  INTERIOR_CHARACTER_SIZE,
+  type HouseArtPlacement,
+} from "./EnvironmentAssets";
 import { Interaction, type InteractionRules } from "./Interaction";
 import {
   NavigationGrid,
@@ -60,8 +73,8 @@ const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
 const EXTERIOR_CHARACTER_WIDTH = 60;
 const EXTERIOR_CHARACTER_HEIGHT = 78;
-const INTERIOR_CHARACTER_WIDTH = 88;
-const INTERIOR_CHARACTER_HEIGHT = 114;
+const INTERIOR_CHARACTER_WIDTH = INTERIOR_CHARACTER_SIZE.width;
+const INTERIOR_CHARACTER_HEIGHT = INTERIOR_CHARACTER_SIZE.height;
 const CHARACTER_ORIGIN_Y = 0.69;
 
 const ACTORS: Readonly<Record<ActorId, { readonly name: string; readonly color: number }>> = {
@@ -93,23 +106,16 @@ const WORLD_ACTORS: Readonly<
 const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
   "lazarus-house": {
     id: "lazarus-house",
-    width: 1100,
-    height: 800,
-    backgroundKey: "art-house",
+    width: HOUSE_ART.width,
+    height: HOUSE_ART.height,
+    backgroundKey: HOUSE_ART.base.key,
     backgroundColor: 0x706348,
-    obstacles: [
-      { x: 0, y: 0, width: 1100, height: 65 },
-      { x: 0, y: 0, width: 65, height: 800 },
-      { x: 1035, y: 0, width: 65, height: 800 },
-      { x: 0, y: 735, width: 870, height: 65 },
-      { x: 105, y: 80, width: 315, height: 225 },
-      { x: 490, y: 250, width: 300, height: 215 },
-    ],
-    playerSpawn: { x: 530, y: 665 },
+    obstacles: HOUSE_OBSTACLES,
+    playerSpawn: HOUSE_PLAYER_SPAWN,
     actors: [
-      { id: "martha", position: { x: 430, y: 390 } },
-      { id: "mary", position: { x: 610, y: 420 } },
-      { id: "mourner", position: { x: 780, y: 610 } },
+      { id: "martha", position: { x: 690, y: 455 } },
+      { id: "mary", position: { x: 705, y: 535 } },
+      { id: "mourner", position: { x: 940, y: 535 } },
     ],
   },
   "bethany-world": {
@@ -273,7 +279,15 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image("art-house", "assets/art/map-house-interior-clean.png");
+    this.load.image(HOUSE_ART.base.key, HOUSE_ART.base.path);
+    this.load.spritesheet(HOUSE_ART.foreground.key, HOUSE_ART.foreground.path, {
+      frameWidth: HOUSE_ART.foreground.frameWidth,
+      frameHeight: HOUSE_ART.foreground.frameHeight,
+    });
+    this.load.spritesheet(HOUSE_ART.props.key, HOUSE_ART.props.path, {
+      frameWidth: HOUSE_ART.props.frameWidth,
+      frameHeight: HOUSE_ART.props.frameHeight,
+    });
     this.load.image("art-road-to-jesus", "assets/art/map-road-to-jesus-clean.png");
     this.load.image("art-bethany-village", "assets/art/map-village-edge-clean.png");
     this.load.image("art-road-to-tomb", "assets/art/map-road-to-tomb-clean.png");
@@ -697,6 +711,7 @@ export class BethanyScene extends Phaser.Scene {
     if (area === "tomb-garden") {
       this.createTombElements();
     } else if (area === "lazarus-house") {
+      this.createHouseArt();
       this.createSickLazarus();
       this.createHouseStoryTrigger();
     }
@@ -812,18 +827,55 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private createSickLazarus(): void {
-    const size = lazarusDisplaySize("sick");
     const lazarus = this.add
-      .image(270, 310, lazarusTextureKey("sick"))
-      .setDisplaySize(size.width, size.height)
-      .setDepth(-18);
+      .image(
+        HOUSE_SICK_LAZARUS_POSITION.x,
+        HOUSE_SICK_LAZARUS_POSITION.y,
+        lazarusTextureKey("sick"),
+      )
+      .setDisplaySize(
+        HOUSE_SICK_LAZARUS_SIZE.width,
+        HOUSE_SICK_LAZARUS_SIZE.height,
+      )
+      .setDepth(HOUSE_STORY_FOCUS.y - 1);
     this.decorations.push(lazarus);
+  }
+
+  private createHouseArt(): void {
+    for (const placement of [
+      ...HOUSE_FOREGROUND_PLACEMENTS,
+      ...HOUSE_PROP_PLACEMENTS,
+    ]) {
+      const image = this.createHouseArtPlacement(placement);
+      this.decorations.push(image);
+    }
+  }
+
+  private createHouseArtPlacement(
+    placement: HouseArtPlacement,
+  ): Phaser.GameObjects.Image {
+    const atlas = HOUSE_ART[placement.atlas];
+    const centerX =
+      placement.sourceBounds.x + placement.sourceBounds.width / 2;
+    const bottomY =
+      placement.sourceBounds.y + placement.sourceBounds.height;
+    return this.add
+      .image(
+        placement.anchor.x -
+          (centerX - atlas.frameWidth / 2) * placement.scale,
+        placement.anchor.y -
+          (bottomY - atlas.frameHeight / 2) * placement.scale,
+        atlas.key,
+        placement.frame,
+      )
+      .setScale(placement.scale)
+      .setDepth(placement.depth);
   }
 
   private createHouseStoryTrigger(): void {
     this.openingTrigger = new ProximityTrigger({
       stage: "opening",
-      position: { x: 315, y: 335 },
+      position: HOUSE_STORY_FOCUS,
       radius: 155,
       handler: () => this.runOpeningEncounter(),
     });
@@ -994,7 +1046,12 @@ export class BethanyScene extends Phaser.Scene {
       return;
     }
     if (
-      Phaser.Math.Distance.Between(this.player.x, this.player.y, 970, 680) >
+      Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        HOUSE_EXIT.x,
+        HOUSE_EXIT.y,
+      ) >
       82
     ) {
       return;
