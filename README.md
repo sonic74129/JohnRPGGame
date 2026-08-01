@@ -72,7 +72,7 @@ npm run art:generate
 
 提示词位于 `art/prompts.json`，生成结果写入 `public/assets/art/`。脚本会保留
 已经存在的文件，只生成缺少的素材。角色与道具源图保存在
-`production/art-source/`，可按类别生成和处理：
+`production/art-source/`；剧情插画会直接用于相应的关键经文段落。可按类别生成和处理：
 
 ```bash
 ART_CATEGORY=sprite npm run art:generate
