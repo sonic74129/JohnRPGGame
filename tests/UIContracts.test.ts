@@ -87,5 +87,6 @@ describe("minimal UI contract", () => {
   it("uses default canvas interpolation rather than pixelated CSS", () => {
     expect(styles).toContain("image-rendering: auto");
     expect(styles).not.toContain("image-rendering: pixelated");
+    expect(styles).not.toContain("dramatization");
   });
 });
