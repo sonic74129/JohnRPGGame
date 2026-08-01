@@ -11,6 +11,34 @@ import {
 
 type VoidCallback = () => void;
 
+export type TechnicalErrorKind = "browser" | "transition" | "unreachable";
+
+export interface ToastPresentation {
+  readonly message: string;
+  readonly kind?: "info" | TechnicalErrorKind;
+  readonly duration?: number;
+}
+
+interface VerseEchoBase {
+  readonly text: string;
+  readonly reference: string;
+  readonly anchor: {
+    readonly x: number;
+    readonly y: number;
+  };
+  readonly duration?: number;
+}
+
+export type VerseEchoPresentation =
+  | (VerseEchoBase & {
+      readonly mode: "npc-scripture";
+      readonly speaker: string;
+    })
+  | (VerseEchoBase & {
+      readonly mode: "player-memory";
+      readonly speaker?: never;
+    });
+
 export class GameUI {
   private dialogueLines: readonly DialogueLine[] = [];
   private dialogueIndex = 0;
@@ -18,7 +46,8 @@ export class GameUI {
   private dialogueLineChanged?: (line: DialogueLine) => void;
   private dialogueLocked = false;
   private dialogueTimer?: number;
-  private noticeTimer?: number;
+  private toastTimer?: number;
+  private verseEchoTimer?: number;
   private pauseHandlers?: {
     readonly resume: VoidCallback;
     readonly restart: VoidCallback;
@@ -26,7 +55,6 @@ export class GameUI {
   };
 
   private readonly hud = this.element("hud");
-  private readonly objective = this.element("objective");
   private readonly objectiveReference = this.element("objective-reference");
   private readonly score = this.element("score");
   private readonly musicToggle = this.button("music-toggle");
@@ -38,7 +66,12 @@ export class GameUI {
   private readonly dialogueSpeaker = this.element("dialogue-speaker");
   private readonly dialogueText = this.element("dialogue-text");
   private readonly dialogueNext = this.button("dialogue-next");
-  private readonly notice = this.element("notice");
+  private readonly technicalToast = this.element("technical-toast");
+  private readonly verseEcho = this.element("verse-echo");
+  private readonly verseEchoKind = this.element("verse-echo-kind");
+  private readonly verseEchoSpeaker = this.element("verse-echo-speaker");
+  private readonly verseEchoText = this.element("verse-echo-text");
+  private readonly verseEchoReference = this.element("verse-echo-reference");
   private readonly choiceScreen = this.element("choice-screen");
   private readonly choiceQuestion = this.element("choice-question");
   private readonly choiceReference = this.element("choice-reference");
@@ -88,7 +121,6 @@ export class GameUI {
   }
 
   setObjective(objective: Objective): void {
-    this.objective.textContent = objective.text;
     this.objectiveReference.textContent = objective.reference;
   }
 
@@ -96,7 +128,7 @@ export class GameUI {
     this.score.textContent = String(value);
   }
 
-  setInteractionPrompt(visible: boolean, label = "SPACE / 点击人物"): void {
+  setInteractionPrompt(visible: boolean, label = "SPACE / 互动"): void {
     this.interactionPrompt.textContent = label;
     this.interactionPrompt.classList.toggle("is-hidden", !visible);
   }
@@ -194,15 +226,65 @@ export class GameUI {
   }
 
   showNotice(message: string, duration = 2800): void {
-    if (this.noticeTimer !== undefined) {
-      window.clearTimeout(this.noticeTimer);
+    this.showToast({ message, duration });
+  }
+
+  showTechnicalError(
+    message: string,
+    kind: TechnicalErrorKind,
+    duration = 3200,
+  ): void {
+    this.showToast({ message, kind, duration });
+  }
+
+  showToast(presentation: ToastPresentation): void {
+    if (this.toastTimer !== undefined) {
+      window.clearTimeout(this.toastTimer);
     }
-    this.notice.textContent = message;
-    this.notice.classList.remove("is-hidden");
-    this.noticeTimer = window.setTimeout(() => {
-      this.notice.classList.add("is-hidden");
-      this.noticeTimer = undefined;
-    }, duration);
+    this.technicalToast.textContent = presentation.message;
+    this.technicalToast.dataset.kind = presentation.kind ?? "info";
+    this.technicalToast.classList.remove("is-hidden");
+    this.toastTimer = window.setTimeout(() => {
+      this.technicalToast.classList.add("is-hidden");
+      this.toastTimer = undefined;
+    }, presentation.duration ?? 2800);
+  }
+
+  showVerseEcho(presentation: VerseEchoPresentation): void {
+    if (this.verseEchoTimer !== undefined) {
+      window.clearTimeout(this.verseEchoTimer);
+    }
+
+    const x = Math.min(
+      window.innerWidth - 16,
+      Math.max(16, presentation.anchor.x),
+    );
+    const y = Math.min(
+      window.innerHeight - 16,
+      Math.max(16, presentation.anchor.y),
+    );
+    this.verseEcho.dataset.mode = presentation.mode;
+    this.verseEcho.style.left = `${x}px`;
+    this.verseEcho.style.top = `${y}px`;
+    this.verseEchoKind.textContent =
+      presentation.mode === "player-memory" ? "玩家回想" : "经文回看";
+    this.verseEchoSpeaker.textContent =
+      presentation.mode === "npc-scripture" ? presentation.speaker : "";
+    this.verseEchoText.textContent = presentation.text;
+    this.verseEchoReference.textContent = presentation.reference;
+    this.verseEcho.classList.remove("is-hidden");
+    this.verseEchoTimer = window.setTimeout(
+      () => this.hideVerseEcho(),
+      presentation.duration ?? 4200,
+    );
+  }
+
+  hideVerseEcho(): void {
+    if (this.verseEchoTimer !== undefined) {
+      window.clearTimeout(this.verseEchoTimer);
+      this.verseEchoTimer = undefined;
+    }
+    this.verseEcho.classList.add("is-hidden");
   }
 
   showPause(

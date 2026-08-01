@@ -54,7 +54,7 @@ button.primary {
 
 #game-root canvas {
   display: block;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 
 .is-hidden {
@@ -72,17 +72,17 @@ button.primary {
   pointer-events: none;
 }
 
-.objective-panel,
+.scripture-panel,
 .score-panel {
-  padding: 14px 18px;
+  padding: 10px 14px;
   border: 1px solid rgba(255, 246, 218, 0.28);
   border-radius: 10px;
   background: rgba(24, 21, 16, 0.9);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-.objective-panel {
-  max-width: min(760px, 68vw);
+.scripture-panel {
+  max-width: min(420px, 56vw);
 }
 
 .hud-actions {
@@ -99,18 +99,11 @@ button.primary {
   white-space: nowrap;
 }
 
-.music-toggle--floating {
-  position: fixed;
-  top: 118px;
-  right: 34px;
-  z-index: 30;
-}
-
-.objective-panel strong,
+.scripture-panel strong,
 .score-panel strong {
   display: block;
-  margin-top: 4px;
-  font-size: clamp(20px, 2vw, 30px);
+  margin-top: 2px;
+  font-size: clamp(17px, 1.6vw, 23px);
   line-height: 1.35;
 }
 
@@ -228,21 +221,67 @@ button.primary {
   float: right;
 }
 
-.notice {
+.technical-toast {
   position: fixed;
   z-index: 40;
-  top: 50%;
+  top: 20px;
   left: 50%;
-  width: min(720px, calc(100vw - 64px));
-  padding: 24px 30px;
-  transform: translate(-50%, -50%);
-  border: 2px solid #f4c86a;
+  width: min(520px, calc(100vw - 32px));
+  padding: 10px 14px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 246, 218, 0.55);
+  border-radius: 9px;
+  color: #fffaf0;
+  background: rgba(28, 24, 18, 0.94);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42);
+  font-size: 15px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.technical-toast[data-kind="browser"],
+.technical-toast[data-kind="transition"],
+.technical-toast[data-kind="unreachable"] {
+  border-color: rgba(244, 200, 106, 0.85);
+}
+
+.verse-echo {
+  position: fixed;
+  z-index: 24;
+  width: min(360px, calc(100vw - 32px));
+  padding: 10px 13px;
+  transform: translate(-50%, calc(-100% - 14px));
+  border: 1px solid rgba(244, 200, 106, 0.72);
   border-radius: 12px;
-  background: rgba(26, 22, 16, 0.97);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  font-size: clamp(22px, 2.5vw, 34px);
+  color: #fffaf0;
+  background: rgba(24, 21, 16, 0.92);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.verse-echo[data-mode="player-memory"] {
+  border-color: rgba(166, 202, 236, 0.86);
+  background: rgba(24, 31, 41, 0.94);
+}
+
+.verse-echo-kind {
+  display: inline-block;
+  margin-right: 8px;
+  color: #f4c86a;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.verse-echo[data-mode="player-memory"] .verse-echo-kind {
+  color: #b8dcff;
+}
+
+.verse-echo p {
+  margin: 5px 0;
+  font-family: "Noto Serif CJK SC", "Songti SC", SimSun, serif;
+  font-size: 17px;
   line-height: 1.45;
-  text-align: center;
 }
 
 .choice-screen {
@@ -337,35 +376,23 @@ button.primary {
   line-height: 1.6;
 }
 
-.control-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin: 24px 0;
-}
-
-.control-grid div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: #332d21;
-}
-
-.control-grid strong {
-  color: #f4c86a;
-}
-
 .prototype-warning {
   color: #d9ccb4;
   font-size: 15px !important;
 }
 
-.audio-note {
+.about-notice {
+  margin: 18px 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 246, 218, 0.24);
+  border-radius: 8px;
+  background: #312b1f;
+}
+
+.about-notice summary {
   color: #f4c86a;
-  font-size: 15px !important;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .button-row {
@@ -427,12 +454,17 @@ blockquote cite {
     padding: 10px 12px;
   }
 
-  .objective-panel {
+  .scripture-panel {
     padding: 10px 12px;
   }
 
-  .control-grid {
-    grid-template-columns: 1fr;
+  .hud-actions {
+    gap: 6px;
+  }
+
+  .music-toggle {
+    min-height: 44px;
+    padding-inline: 10px;
   }
 
   .dialogue {

@@ -12,31 +12,29 @@
       <div id="game-root" tabindex="0" aria-label="游戏画面"></div>
 
       <header id="hud" class="hud is-hidden" aria-live="polite">
-        <section class="objective-panel">
-          <span class="eyebrow">当前经文线索</span>
-          <strong id="objective">等待开始</strong>
-          <span id="objective-reference" class="reference"></span>
+        <section class="scripture-panel" aria-label="当前经文">
+          <span class="eyebrow">当前经文</span>
+          <strong id="objective-reference" class="reference">约翰福音 11</strong>
         </section>
         <div class="hud-actions">
           <section class="score-panel" aria-label="经文观察分">
-            <span class="eyebrow">经文观察分</span>
+            <span class="eyebrow">分数</span>
             <strong><span id="score">100</span> / 100</strong>
           </section>
+          <button
+            id="music-toggle"
+            class="music-toggle"
+            type="button"
+            aria-label="切换叙事音乐"
+            aria-pressed="false"
+          >
+            音乐：开
+          </button>
         </div>
       </header>
 
-      <button
-        id="music-toggle"
-        class="music-toggle music-toggle--floating"
-        type="button"
-        aria-label="切换叙事音乐"
-        aria-pressed="false"
-      >
-        音乐：开
-      </button>
-
       <div id="interaction-prompt" class="interaction-prompt is-hidden">
-        SPACE / 点击人物
+        SPACE / 互动
       </div>
 
       <section
@@ -57,7 +55,24 @@
         </div>
       </section>
 
-      <div id="notice" class="notice is-hidden" role="status" aria-live="assertive"></div>
+      <div
+        id="technical-toast"
+        class="technical-toast is-hidden"
+        role="status"
+        aria-live="polite"
+      ></div>
+
+      <aside
+        id="verse-echo"
+        class="verse-echo is-hidden"
+        role="status"
+        aria-live="polite"
+      >
+        <span id="verse-echo-kind" class="verse-echo-kind"></span>
+        <strong id="verse-echo-speaker"></strong>
+        <p id="verse-echo-text"></p>
+        <span id="verse-echo-reference" class="reference"></span>
+      </aside>
 
       <section id="choice-screen" class="choice-screen is-hidden" role="dialog" aria-modal="true">
         <div class="choice-card">
@@ -71,22 +86,8 @@
 
       <section id="start-screen" class="modal-screen">
         <div class="modal-card start-card">
-          <p class="eyebrow">约翰福音第 11 章 · 小组探索游戏</p>
+          <p class="eyebrow">约翰福音第 11 章</p>
           <h1>伯大尼见证者</h1>
-          <p>
-            序章中，小组先作为经文没有记名的报信者去找耶稣；之后再根据经文决定下一步跟随谁。
-            一位成员负责操作，其他成员一起观察和讨论。
-          </p>
-          <div class="control-grid" aria-label="操作说明">
-            <div><strong>↑ ↓ ← →</strong><span>移动</span></div>
-            <div><strong>点击地面</strong><span>自动行走</span></div>
-            <div><strong>SPACE</strong><span>互动／继续</span></div>
-            <div><strong>ESC</strong><span>主持人菜单</span></div>
-          </div>
-          <p class="audio-note">音乐会在开始后播放，可随时使用右上角按钮关闭。</p>
-          <p class="prototype-warning">
-            经文采用和合本简体原型文本，正式使用前须由教会逐字审核。情境重现对白会与经文原句明确区分。
-          </p>
           <div class="button-row">
             <button id="start-game" class="primary" type="button">开始游戏</button>
             <button id="start-fullscreen" type="button">全屏开始</button>
@@ -98,6 +99,12 @@
         <div class="modal-card">
           <p class="eyebrow">主持人菜单</p>
           <h2>游戏已暂停</h2>
+          <details class="about-notice">
+            <summary>版本与文本说明</summary>
+            <p class="prototype-warning">
+              经文采用和合本简体原型文本，正式使用前须由教会逐字审核。原型中的内容类型会与经文原句明确区分。
+            </p>
+          </details>
           <div class="button-stack">
             <button id="resume-game" class="primary" type="button">继续游戏</button>
             <button id="restart-game" type="button">重新开始</button>
