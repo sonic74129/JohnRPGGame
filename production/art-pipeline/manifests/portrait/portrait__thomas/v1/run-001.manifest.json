@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.thomas",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Thomas showing serious courage despite danger.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.disciples"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:53:49.080Z",
+    "updatedAt": "2026-08-01T17:02:07.314Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__thomas/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__thomas/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__thomas/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__thomas/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__thomas/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__thomas/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:54:32.133Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__thomas/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:56:13.422Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__thomas/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__thomas/v1/run-001-selected.png",
+    "reason": "Score 91/100 (identity 18, emotion 17, style 18, UI 19, cleanliness 19): clean warm limestone backdrop, soft upper-left key light, centered chest-up composition with clear serious/restrained-determination expression matching the locked Thomas identity. Candidate 02 scored 86/100 and passed but its weathered wall included cool blue-gray patina patches that diverged from the locked warm-limestone/earth palette (style/palette 14/20), making candidate 01 the stronger match.",
+    "selectedAt": "2026-08-01T17:02:07.313Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__thomas/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__thomas/v1/run-001/portrait__thomas.png"
+    ],
+    "startedAt": "2026-08-01T17:02:14.575309Z",
+    "completedAt": "2026-08-01T17:02:15.282960Z",
+    "failureReason": null
+  }
+}
