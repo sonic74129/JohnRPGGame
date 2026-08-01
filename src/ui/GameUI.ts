@@ -383,15 +383,8 @@ export class GameUI {
     }
     this.dialogueLineChanged?.(line);
 
-    this.dialogueKind.textContent =
-      line.kind === "scripture"
-        ? "和合本原文"
-        : line.kind === "narration"
-          ? "经文叙述"
-          : line.kind === "dramatization"
-            ? "情境重现"
-            : "小组提示";
-    this.dialogueKind.className = `content-kind ${line.kind}`;
+    this.dialogueKind.textContent = "和合本原文";
+    this.dialogueKind.className = "content-kind scripture";
     this.dialogueReference.textContent = line.reference ?? "";
     this.dialogueSpeaker.textContent = line.speaker;
     this.dialogueText.textContent = line.text;

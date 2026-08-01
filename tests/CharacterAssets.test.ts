@@ -67,7 +67,11 @@ describe("approved character asset contracts", () => {
     expect(CORE_POSES.mary).toContain("kneeling-grief");
     expect(CORE_POSES.jesus).toContain("authoritative-call");
     expect(corePoseFrame("jesus", "restrained-prayer")).toBe(3);
-    expect(SUPPORTING_ACTIONS).toHaveLength(9);
+    expect(SUPPORTING_ACTIONS).toEqual([
+      "thomas-listening",
+      "stone-moving",
+    ]);
+    expect(supportingActionFrame("thomas-listening")).toBe(3);
     expect(supportingActionFrame("stone-moving")).toBe(7);
   });
 

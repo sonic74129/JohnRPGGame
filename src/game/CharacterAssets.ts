@@ -253,18 +253,15 @@ export const CORE_POSE_BASELINES: Readonly<
 export const corePoseOriginY = (character: CorePoseCharacter): number =>
   CORE_POSE_BASELINES[character] / CORE_POSE_SHEETS[character].frameHeight;
 
+export const SUPPORTING_ACTION_FRAMES = {
+  "thomas-listening": 3,
+  "stone-moving": 7,
+} as const;
+export type SupportingAction = keyof typeof SUPPORTING_ACTION_FRAMES;
 export const SUPPORTING_ACTIONS = [
-  "mourner-care",
-  "older-witness-rising",
-  "mourner-kneeling-grief",
   "thomas-listening",
-  "younger-disciple-following",
-  "older-disciple-praying",
-  "guide-calling",
   "stone-moving",
-  "restrained-group-reaction",
-] as const;
-export type SupportingAction = (typeof SUPPORTING_ACTIONS)[number];
+] as const satisfies readonly SupportingAction[];
 
 export const SUPPORTING_ACTION_SHEET = {
   key: "pose-disciples-witnesses",
@@ -274,7 +271,7 @@ export const SUPPORTING_ACTION_SHEET = {
 } as const satisfies SheetAsset;
 
 export const supportingActionFrame = (action: SupportingAction): number =>
-  indexOf(SUPPORTING_ACTIONS, action);
+  SUPPORTING_ACTION_FRAMES[action];
 
 export const PORTRAIT_ASSETS = {
   "martha-worried":

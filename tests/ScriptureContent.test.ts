@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { PROTOTYPE_TRANSLATION_NOTE } from "../src/game/content";
 import {
   ACTOR_LABELS,
   FIND_JESUS_CONTRACT,
@@ -14,7 +13,9 @@ import {
 
 describe("ScriptureContent", () => {
   it("preserves the existing translation metadata on all 46 original verses", () => {
-    expect(SCRIPTURE_TRANSLATION.note).toBe(PROTOTYPE_TRANSLATION_NOTE);
+    expect(SCRIPTURE_TRANSLATION.note).toBe(
+      "和合本简体原型文本 · 正式使用前须逐字审核",
+    );
     expect(JOHN_11_VERSE_KEYS).toHaveLength(46);
 
     JOHN_11_VERSE_KEYS.forEach((key, index) => {

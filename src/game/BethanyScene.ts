@@ -86,6 +86,7 @@ import {
   type RecallQuestion,
   type StoryActorId,
 } from "./ScriptureContent";
+import { dialogueLinesForBeat } from "./ScriptureDialogue";
 import { StoryEngine } from "./StoryEngine";
 import { TOMB_PROP_ASSETS } from "./TombAssets";
 import type { ActorId, DialogueLine, MusicState } from "./types";
@@ -184,34 +185,6 @@ const completedOperation = (): MapSequenceOperation => ({
 
 const isPoint = (target: CameraTarget): target is Point =>
   typeof target === "object" && "x" in target && "y" in target;
-
-const dialogueSpeaker = (verse: number): string => {
-  if ([4, 7, 9, 10, 11, 14, 15, 23, 25, 26, 34, 35, 39, 40, 41, 42, 43].includes(verse)) {
-    return "耶稣";
-  }
-  if ([21, 22, 24, 27, 39].includes(verse)) {
-    return "马大";
-  }
-  if ([28].includes(verse)) {
-    return "马大";
-  }
-  if ([32].includes(verse)) {
-    return "马利亚";
-  }
-  if (verse === 16) {
-    return "多马";
-  }
-  if ([8, 12].includes(verse)) {
-    return "门徒";
-  }
-  if ([34, 36, 37].includes(verse)) {
-    return "众人";
-  }
-  if (verse === 3) {
-    return "姐妹二人";
-  }
-  return "经文";
-};
 
 export class BethanyScene extends Phaser.Scene {
   private story = new StoryEngine();
@@ -1390,15 +1363,7 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private dialogueForBeat(beat: VerseBeat): readonly DialogueLine[] {
-    return beat.verseKeys.map((key) => {
-      const verse = JOHN_11_VERSES[key];
-      return {
-        speaker: dialogueSpeaker(verse.verse),
-        text: verse.text,
-        reference: verse.reference,
-        kind: "scripture" as const,
-      };
-    });
+    return dialogueLinesForBeat(beat);
   }
 
   private beatFocus(beatId: VerseBeatId): CameraTarget {
