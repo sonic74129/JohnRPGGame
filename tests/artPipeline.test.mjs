@@ -68,6 +68,32 @@ describe("recoverable art registry", () => {
     ).toThrow(/Duplicate option/);
   });
 
+  it("locks portrait composition and character identity across emotion states", async () => {
+    const registry = await loadPromptRegistry();
+    const portraits = selectPrompts(registry.entries, { family: "portrait" });
+    const identityLock = (entry) =>
+      entry.prompt.match(/Identity lock: (.+)\n\nEmotion:/s)?.[1];
+
+    expect(portraits).toHaveLength(12);
+    for (const portrait of portraits) {
+      expect(portrait.prompt).toContain(
+        "one centered chest-up subject at eye level",
+      );
+      expect(portrait.prompt).toContain(
+        "for a small map-visible dialogue window",
+      );
+      expect(identityLock(portrait)).toBeTruthy();
+    }
+
+    for (const character of ["martha", "mary", "jesus"]) {
+      const states = portraits.filter((entry) =>
+        entry.id.startsWith(`portrait.${character}-`),
+      );
+      expect(states).toHaveLength(3);
+      expect(new Set(states.map(identityLock)).size).toBe(1);
+    }
+  });
+
   it("strictly rejects changed model and prompt versions", async () => {
     const sourceDirectory = path.resolve("art/prompts");
     const registryDirectory = await temporaryDirectory();
