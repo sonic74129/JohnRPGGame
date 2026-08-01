@@ -1511,6 +1511,9 @@ export class BethanyScene extends Phaser.Scene {
   private applySequenceFinalState(state: VerseBeat["finalState"]): void {
     const beatId = this.story.beatId;
     this.applyFinalPositions(beatId);
+    if (beatId === "two-day-wait") {
+      this.daylightOverlay?.setAlpha(0);
+    }
     for (const id of ACTOR_IDS) {
       const visible = state.actors.visibleActorIds.includes(id);
       this.setActorVisible(id, visible);

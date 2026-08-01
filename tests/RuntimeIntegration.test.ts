@@ -25,6 +25,12 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain("showTechnicalError");
   });
 
+  it("normalizes the two-day waiting overlay in the shared final state", () => {
+    expect(sceneSource).toMatch(
+      /beatId === "two-day-wait"[\s\S]{0,120}daylightOverlay\?\.setAlpha\(0\)/,
+    );
+  });
+
   it("keeps the result free of authored recap and objective guidance", () => {
     expect(html).not.toContain('id="result-summary"');
     expect(html).not.toContain("discussion-question");
