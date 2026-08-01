@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "character.messenger",
+    "family": "character",
+    "purpose": "Source character sheet for the unnamed messenger/player, including four-direction idle and two-step walk poses with one stable identity and foot anchor.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v3",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:34:22.918Z",
+    "updatedAt": "2026-08-01T15:38:49.201Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/character/character__messenger/v3/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/character/character__messenger/v3/run-001",
+    "selectedSource": "production/art-source/characters/core/character__messenger/v3/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/character__messenger/v3/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/character/character__messenger/v3/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__messenger/v3/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:34:56.825Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__messenger/v3/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:37:44.430Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/character/character__messenger/v3/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/characters/core/character__messenger/v3/run-001-selected.png",
+    "reason": "Best exact twelve-cell source with stable messenger identity, complete front and back rows, distinct idle and two-step poses, consistent scale and foot anchors, master-matched style, and no prohibited content. Both source profile rows face right, so deterministic runtime normalization mirrors only row four to supply the left direction while preserving identity, proportions, anchors and source immutability.",
+    "selectedAt": "2026-08-01T15:38:49.201Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "idle",
+      "step-left",
+      "step-right"
+    ],
+    "rows": [
+      "front",
+      "back",
+      "right",
+      "left"
+    ]
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/character__messenger/v3/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/character__messenger/v3/run-001/character__messenger.png"
+    ],
+    "startedAt": "2026-08-01T15:39:32.400833Z",
+    "completedAt": "2026-08-01T15:39:33.064945Z",
+    "failureReason": null
+  }
+}
