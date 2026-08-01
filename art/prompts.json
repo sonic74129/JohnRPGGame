@@ -155,6 +155,22 @@
     "prompt": "Production prop atlas in polished 32-bit pixel art on one perfectly flat solid bright magenta background (#FF00FF), no texture and no gradient. Eight isolated respectful burial-garden props arranged in a clean 4 by 2 layout with generous spacing: one large round movable limestone tomb stone shown front-on, matching stone shown slightly rolled aside, rocky cave lip foreground, folded burial cloth, loose burial cloth strips, small dust cloud sprite, limestone rubble, and sparse grave-side plant. Three-quarter top-down RPG perspective where appropriate, consistent scale, no people, no body, no horror, no supernatural effects, no connected scenery, no grid lines, no labels, no text, no UI."
   },
   {
+    "filename": "tileset-bethany-ground-source.png",
+    "category": "world",
+    "output": "source",
+    "width": 1024,
+    "height": 1024,
+    "prompt": "Strict production ground tileset atlas for one continuous first-century Bethany RPG map, polished 32-bit pixel art, exact square 1024 by 1024 image. Exactly 4 columns by 4 rows of equal 256 by 256 edge-to-edge square cells, perfectly aligned with no margins, no gutters, no grid lines, no labels and no text. Orthographic top-down ground only, neutral warm daylight, one locked palette of muted ochre dry earth, pale limestone, dusty olive green and restrained gray-brown rocks; no objects, trees, buildings, people, shadows or perspective horizon. Every cell must tile cleanly at all matching edges. Row 1: dry earth variation A, dry earth variation B, sparse short grass over earth, rocky earth. Row 2: compacted dirt road vertical connecting exact top and bottom centers, dirt road horizontal connecting exact left and right centers, dirt road 90-degree top-to-right corner, dirt road T junction connecting left-right-bottom. Row 3: dirt road four-way crossroads, pale limestone road vertical, pale limestone road horizontal, pale limestone road 90-degree top-to-right corner. Row 4: limestone road T junction connecting left-right-bottom, limestone four-way crossroads, vertical dirt-to-limestone road transition, horizontal dirt-to-limestone road transition. Consistent road width in every cell, crisp readable pixel clusters, seamless edges, no lighting change between cells, no border, no UI."
+  },
+  {
+    "filename": "objects-bethany-world-source.png",
+    "category": "world",
+    "output": "source",
+    "width": 1024,
+    "height": 1024,
+    "prompt": "Strict production object atlas for the same continuous first-century Bethany RPG map, polished 32-bit pixel art, exact square 1024 by 1024 image on one perfectly flat solid bright magenta background (#FF00FF), no texture and no gradient. Exactly 4 columns by 4 rows of equal 256 by 256 cells with generous internal spacing; one isolated object centered in each cell, no object crosses a cell boundary, no cast shadows connecting objects, no grid lines, no labels, no text and no UI. Use one locked three-quarter top-down camera, one consistent scale, neutral warm daylight and the same muted ochre earth, pale limestone, dusty olive green and gray-brown palette throughout. Row 1: Martha's modest limestone house exterior base with visible doorway and no removable roof, separate matching roof/awning foreground piece, small village house variation A, small village house variation B. Row 2: respectful rock-cut tomb entrance in a limestone hillside with open dark chamber and no round stone, stone village well, simple cloth shade canopy, low market table. Row 3: low limestone wall straight segment, matching outside corner, matching wall end cap, rocky cliff-edge segment. Row 4: doorway threshold, unmarked road marker stone, rocky ledge cluster, mature olive tree. Historically plausible, no people, no animals, no modern objects, no dramatic effects."
+  },
+  {
     "filename": "story-martha-meets-jesus.png",
     "category": "story",
     "width": 1360,

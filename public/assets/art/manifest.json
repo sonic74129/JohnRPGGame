@@ -21,6 +21,9 @@
     "story-martha-meets-jesus.png": "Martha meets Jesus outside Bethany",
     "story-jesus-weeps.png": "Jesus grieves with Mary and the mourners",
     "story-lazarus-comes-out.png": "Lazarus emerges from the open tomb",
-    "story-ending-reflection.png": "Witnesses reflect and depart at dusk"
+    "story-ending-reflection.png": "Witnesses reflect and depart at dusk",
+    "world/tileset-bethany-ground.png": "Unified 4 by 4 Bethany ground and road tileset",
+    "world/tileset-bethany-ground.json": "Ground tile names and indices",
+    "world/objects-bethany-world.json": "Unified editable world-object manifest"
   }
 }

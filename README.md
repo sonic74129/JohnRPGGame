@@ -77,6 +77,8 @@ npm run art:generate
 ```bash
 ART_CATEGORY=sprite npm run art:generate
 ART_CATEGORY=sprite npm run art:process
+ART_CATEGORY=world npm run art:generate
+ART_CATEGORY=world npm run art:process
 ```
 
 ## 返回查经页面

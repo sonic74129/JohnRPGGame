@@ -1,0 +1,100 @@
+{
+  "objects": [
+    {
+      "name": "martha-house-base",
+      "file": "objects/martha-house-base.png",
+      "width": 209,
+      "height": 163
+    },
+    {
+      "name": "martha-house-roof",
+      "file": "objects/martha-house-roof.png",
+      "width": 203,
+      "height": 133
+    },
+    {
+      "name": "village-house-a",
+      "file": "objects/village-house-a.png",
+      "width": 188,
+      "height": 158
+    },
+    {
+      "name": "village-house-b",
+      "file": "objects/village-house-b.png",
+      "width": 202,
+      "height": 156
+    },
+    {
+      "name": "tomb-entrance",
+      "file": "objects/tomb-entrance.png",
+      "width": 213,
+      "height": 186
+    },
+    {
+      "name": "village-well",
+      "file": "objects/village-well.png",
+      "width": 151,
+      "height": 180
+    },
+    {
+      "name": "market-canopy",
+      "file": "objects/market-canopy.png",
+      "width": 183,
+      "height": 180
+    },
+    {
+      "name": "market-table",
+      "file": "objects/market-table.png",
+      "width": 187,
+      "height": 134
+    },
+    {
+      "name": "world-wall",
+      "file": "objects/world-wall.png",
+      "width": 210,
+      "height": 67
+    },
+    {
+      "name": "world-wall-corner",
+      "file": "objects/world-wall-corner.png",
+      "width": 204,
+      "height": 124
+    },
+    {
+      "name": "world-wall-end",
+      "file": "objects/world-wall-end.png",
+      "width": 195,
+      "height": 76
+    },
+    {
+      "name": "world-cliff-edge",
+      "file": "objects/world-cliff-edge.png",
+      "width": 208,
+      "height": 137
+    },
+    {
+      "name": "door-threshold",
+      "file": "objects/door-threshold.png",
+      "width": 180,
+      "height": 155
+    },
+    {
+      "name": "world-road-marker",
+      "file": "objects/world-road-marker.png",
+      "width": 126,
+      "height": 156
+    },
+    {
+      "name": "world-rock-ledge",
+      "file": "objects/world-rock-ledge.png",
+      "width": 206,
+      "height": 116
+    },
+    {
+      "name": "world-olive-tree",
+      "file": "objects/world-olive-tree.png",
+      "width": 177,
+      "height": 186
+    }
+  ]
+}

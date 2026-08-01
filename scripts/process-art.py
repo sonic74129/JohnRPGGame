@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from typing import Iterable
@@ -10,6 +11,7 @@ SOURCE = ROOT / "production" / "art-source"
 OUTPUT = ROOT / "public" / "assets" / "art"
 SPRITES = OUTPUT / "sprites"
 PROPS = OUTPUT / "props"
+WORLD = OUTPUT / "world"
 
 DIRECTIONS = ("front", "back", "left", "right")
 STEPS = ("idle", "step-left", "step-right")
@@ -17,6 +19,46 @@ PROP_SOURCES = (
     "props-house-source.png",
     "props-village-road-source.png",
     "props-tomb-source.png",
+)
+WORLD_SOURCES = (
+    "tileset-bethany-ground-source.png",
+    "objects-bethany-world-source.png",
+)
+WORLD_TILE_NAMES = (
+    "earth-a",
+    "earth-b",
+    "earth-grass",
+    "earth-rocky",
+    "dirt-road-vertical",
+    "dirt-road-horizontal",
+    "dirt-road-corner-ne",
+    "dirt-road-t-s",
+    "dirt-road-cross",
+    "stone-road-vertical",
+    "stone-road-horizontal",
+    "stone-road-corner-ne",
+    "stone-road-t-s",
+    "stone-road-cross",
+    "road-transition-vertical",
+    "road-transition-horizontal",
+)
+WORLD_OBJECT_NAMES = (
+    "martha-house-base",
+    "martha-house-roof",
+    "village-house-a",
+    "village-house-b",
+    "tomb-entrance",
+    "village-well",
+    "market-canopy",
+    "market-table",
+    "world-wall",
+    "world-wall-corner",
+    "world-wall-end",
+    "world-cliff-edge",
+    "door-threshold",
+    "world-road-marker",
+    "world-rock-ledge",
+    "world-olive-tree",
 )
 
 
@@ -49,14 +91,24 @@ def remove_magenta_key(image: Image.Image) -> Image.Image:
     for y in range(result.height):
         for x in range(result.width):
             red, green, blue, alpha = pixels[x, y]
-            if (
-                alpha > 0
-                and red > 130
-                and blue > 65
-                and green < 50
-                and abs(red - blue) < 110
-            ):
+            if alpha <= 0:
+                continue
+            magenta_excess = min(red, blue) - green
+            if magenta_excess <= 20:
+                continue
+
+            strength = min(1.0, magenta_excess / 170)
+            cleaned_alpha = round(alpha * (1 - strength))
+            if cleaned_alpha < 20:
                 pixels[x, y] = transparent_color()
+                continue
+
+            pixels[x, y] = (
+                max(0, red - round(magenta_excess * 0.85)),
+                green,
+                max(0, blue - round(magenta_excess * 0.85)),
+                cleaned_alpha,
+            )
     return result
 
 
@@ -176,10 +228,78 @@ def process_prop_sheet(
         cleaned.crop(alpha_box).save(PROPS / f"{name}.png", optimize=True)
 
 
+def process_world_ground() -> None:
+    image = Image.open(SOURCE / WORLD_SOURCES[0]).convert("RGB")
+    tile_size = 32
+    columns = 4
+    rows = 4
+    sheet = Image.new("RGB", (columns * tile_size, rows * tile_size))
+    tile_directory = WORLD / "tiles"
+    tile_directory.mkdir(parents=True, exist_ok=True)
+
+    for index, name in enumerate(WORLD_TILE_NAMES):
+        tile = crop_cell(image, columns, rows, index % columns, index // columns)
+        inset = max(4, round(min(tile.width, tile.height) * 0.04))
+        tile = tile.crop(
+            (inset, inset, tile.width - inset, tile.height - inset),
+        ).convert("RGB").resize(
+            (tile_size, tile_size),
+            Image.Resampling.LANCZOS,
+        )
+        tile.save(tile_directory / f"{name}.png", optimize=True)
+        sheet.paste(tile, ((index % columns) * tile_size, (index // columns) * tile_size))
+
+    WORLD.mkdir(parents=True, exist_ok=True)
+    sheet.save(WORLD / "tileset-bethany-ground.png", optimize=True)
+    manifest = {
+        "tileWidth": tile_size,
+        "tileHeight": tile_size,
+        "columns": columns,
+        "rows": rows,
+        "tiles": [
+            {"id": index, "name": name}
+            for index, name in enumerate(WORLD_TILE_NAMES)
+        ],
+    }
+    (WORLD / "tileset-bethany-ground.json").write_text(
+        json.dumps(manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def process_world_objects() -> None:
+    image = Image.open(SOURCE / WORLD_SOURCES[1])
+    object_directory = WORLD / "objects"
+    object_directory.mkdir(parents=True, exist_ok=True)
+    manifest = []
+
+    for index, name in enumerate(WORLD_OBJECT_NAMES):
+        cell = crop_cell(image, 4, 4, index % 4, index // 4)
+        cleaned = remove_magenta_key(remove_connected_background(cell))
+        alpha_box = cleaned.getchannel("A").getbbox()
+        if alpha_box is None:
+            raise ValueError(f"No foreground found for world object {name}.")
+        output = cleaned.crop(alpha_box)
+        output.save(object_directory / f"{name}.png", optimize=True)
+        manifest.append(
+            {
+                "name": name,
+                "file": f"objects/{name}.png",
+                "width": output.width,
+                "height": output.height,
+            }
+        )
+
+    (WORLD / "objects-bethany-world.json").write_text(
+        json.dumps({"objects": manifest}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def main() -> None:
     category = os.environ.get("ART_CATEGORY")
-    if category not in (None, "sprite", "prop"):
-        raise ValueError("ART_CATEGORY must be 'sprite' or 'prop'.")
+    if category not in (None, "sprite", "prop", "world"):
+        raise ValueError("ART_CATEGORY must be 'sprite', 'prop', or 'world'.")
 
     if category in (None, "sprite"):
         process_directional_sheet(
@@ -270,6 +390,18 @@ def main() -> None:
         print(f"Processed props into {PROPS}")
     elif category is None:
         print("Skipped props because their source atlases have not been generated yet.")
+
+    world_sources_available = all((SOURCE / name).exists() for name in WORLD_SOURCES)
+    if category == "world" and not world_sources_available:
+        missing = [name for name in WORLD_SOURCES if not (SOURCE / name).exists()]
+        raise FileNotFoundError(f"Missing world source atlases: {', '.join(missing)}")
+
+    if category == "world" or (category is None and world_sources_available):
+        process_world_ground()
+        process_world_objects()
+        print(f"Processed world art into {WORLD}")
+    elif category is None:
+        print("Skipped world art because its source atlases have not been generated yet.")
 
 
 if __name__ == "__main__":
