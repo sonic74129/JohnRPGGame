@@ -55,6 +55,26 @@ describe("recoverable art registry", () => {
     ).toThrow(/belongs to family portrait/);
   });
 
+  it("supports dotted safety revisions with an environment-only prompt profile", async () => {
+    const registry = await loadPromptRegistry();
+    const worldMap = registry.entries.find(
+      (entry) => entry.id === "environment.world-map",
+    );
+
+    expect(worldMap).toMatchObject({
+      promptVersion: "v1.1",
+      promptProfile: "moderation-safe-environment",
+      requestWidth: 1360,
+      requestHeight: 768,
+      width: 2720,
+      height: 1536,
+      candidateCount: 3,
+    });
+    expect(worldMap.prompt).not.toContain(registry.style.commonPrefix);
+    expect(worldMap.prompt).toContain("x 90-380, y 440-715");
+    expect(worldMap.prompt).toContain("about 90 pixels wide");
+  });
+
   describe("generated image normalization", () => {
     it("upscales a service-sized PNG to the immutable source dimensions", () => {
       const onePixelPng = Buffer.from(

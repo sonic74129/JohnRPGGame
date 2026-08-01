@@ -44,7 +44,12 @@ const REQUIRED_ENTRY_KEYS = [
   "runtime",
   "width",
 ].sort();
-const OPTIONAL_ENTRY_KEYS = ["requestHeight", "requestWidth"].sort();
+const OPTIONAL_ENTRY_KEYS = [
+  "promptProfile",
+  "requestHeight",
+  "requestWidth",
+].sort();
+const PROMPT_PROFILES = new Set(["project", "moderation-safe-environment"]);
 
 const isObject = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -56,7 +61,7 @@ const assert = (condition, message) => {
 };
 
 const isVersion = (value) =>
-  typeof value === "string" && /^v[1-9]\d*$/.test(value);
+  typeof value === "string" && /^v[1-9]\d*(?:\.[1-9]\d*)?$/.test(value);
 
 const validateBackend = (style) => {
   assert(isObject(style), "style.json must contain an object.");
@@ -91,11 +96,10 @@ const validateEntry = (entry, source, style) => {
   assert(isObject(entry), `${source} entries must be objects.`);
   const id = typeof entry.id === "string" ? entry.id : `${source}:unknown`;
   const entryKeys = Object.keys(entry).sort();
-  const hasRequestDimensions =
-    entry.requestWidth !== undefined || entry.requestHeight !== undefined;
-  const expectedKeys = hasRequestDimensions
-    ? [...REQUIRED_ENTRY_KEYS, ...OPTIONAL_ENTRY_KEYS].sort()
-    : REQUIRED_ENTRY_KEYS;
+  const expectedKeys = [
+    ...REQUIRED_ENTRY_KEYS,
+    ...OPTIONAL_ENTRY_KEYS.filter((key) => entry[key] !== undefined),
+  ].sort();
   assert(
     JSON.stringify(entryKeys) === JSON.stringify(expectedKeys),
     `${id} does not match the executable prompt schema.`,
@@ -122,6 +126,8 @@ const validateEntry = (entry, source, style) => {
     Number.isInteger(entry.height) && entry.height > 0,
     `${id}.height must be a positive integer.`,
   );
+  const hasRequestDimensions =
+    entry.requestWidth !== undefined || entry.requestHeight !== undefined;
   if (hasRequestDimensions) {
     assert(
       Number.isInteger(entry.requestWidth) && entry.requestWidth > 0,
@@ -145,11 +151,22 @@ const validateEntry = (entry, source, style) => {
     `${id}.basePromptVersion must match style.json.`,
   );
   assert(isVersion(entry.promptVersion), `${id}.promptVersion must use vN format.`);
+  const promptProfile = entry.promptProfile ?? "project";
+  assert(
+    PROMPT_PROFILES.has(promptProfile),
+    `${id}.promptProfile is invalid.`,
+  );
   assert(
     typeof entry.prompt === "string" &&
-      entry.prompt.startsWith(`${style.commonPrefix}\n\n`),
-    `${id}.prompt must contain the locked common prefix.`,
+      entry.prompt.trim().length > 0,
+    `${id}.prompt must be non-empty.`,
   );
+  if (promptProfile === "project") {
+    assert(
+      entry.prompt.startsWith(`${style.commonPrefix}\n\n`),
+      `${id}.prompt must contain the locked common prefix.`,
+    );
+  }
   assert(
     entry.candidateCount === 2 || entry.candidateCount === 3,
     `${id}.candidateCount must be 2 or 3.`,
