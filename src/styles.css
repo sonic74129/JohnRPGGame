@@ -175,8 +175,8 @@ button.primary {
   min-height: 168px;
   border-right: 2px solid rgba(244, 200, 106, 0.45);
   background-repeat: no-repeat;
-  background-position: left center;
-  background-size: 300% 100%;
+  background-position: center;
+  background-size: cover;
 }
 
 .dialogue-heading {

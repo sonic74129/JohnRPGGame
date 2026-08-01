@@ -33,6 +33,7 @@ export const DIALOGUES: Record<
       reference: "根据约翰福音 11:1–3 的情境重现",
       kind: "dramatization",
       portrait: "mary-worried",
+      mapPoses: [{ kind: "core", actor: "mary", pose: "care" }],
     },
     {
       speaker: "马大",
@@ -40,6 +41,7 @@ export const DIALOGUES: Record<
       reference: "根据约翰福音 11:3 的情境重现",
       kind: "dramatization",
       portrait: "martha-worried",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "worried-idle" }],
     },
     {
       speaker: "旁白",
@@ -62,6 +64,7 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "messenger",
       music: "dialogue",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "listening" }],
     },
     {
       speaker: "耶稣",
@@ -69,6 +72,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:4｜和合本",
       kind: "scripture",
       portrait: "jesus-listening",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
     {
       speaker: "旁白",
@@ -91,6 +95,7 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "jesus-declaration",
       music: "dialogue",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
     {
       speaker: "门徒",
@@ -98,6 +103,9 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:8｜和合本",
       kind: "scripture",
       portrait: "witness",
+      mapPoses: [
+        { kind: "supporting", actor: "thomas", pose: "thomas-listening" },
+      ],
     },
     {
       speaker: "耶稣",
@@ -105,6 +113,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:14–15｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
     {
       speaker: "多马",
@@ -112,6 +121,9 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:16｜和合本",
       kind: "scripture",
       portrait: "thomas",
+      mapPoses: [
+        { kind: "supporting", actor: "thomas", pose: "thomas-listening" },
+      ],
     },
     {
       speaker: "旁白",
@@ -128,6 +140,7 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "martha-grieving",
       music: "dialogue",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "worried-idle" }],
     },
     {
       speaker: "马大",
@@ -135,6 +148,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:22｜和合本",
       kind: "scripture",
       portrait: "martha-grieving",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "worried-idle" }],
     },
     {
       speaker: "耶稣",
@@ -142,6 +156,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:23｜和合本",
       kind: "scripture",
       portrait: "jesus-listening",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "listening" }],
     },
     {
       speaker: "马大",
@@ -149,6 +164,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:24｜和合本",
       kind: "scripture",
       portrait: "martha-faith",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "calm-conviction" }],
     },
   ],
   marthaCore: [
@@ -159,6 +175,7 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "jesus-declaration",
       music: "revelation",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
     {
       speaker: "耶稣",
@@ -166,6 +183,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:26｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
     {
       speaker: "马大",
@@ -173,6 +191,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:27｜和合本",
       kind: "scripture",
       portrait: "martha-faith",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "calm-conviction" }],
     },
   ],
   marthaReturns: [
@@ -182,6 +201,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:28",
       kind: "narration",
       music: "dialogue",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "purposeful-walk" }],
     },
     {
       speaker: "马大",
@@ -189,6 +209,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:28｜和合本",
       kind: "scripture",
       portrait: "martha-faith",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "quiet-call" }],
     },
     {
       speaker: "旁白",
@@ -196,6 +217,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:29",
       kind: "narration",
       portrait: "mary-urgent",
+      mapPoses: [{ kind: "core", actor: "mary", pose: "urgent-rise" }],
     },
   ],
   mary: [
@@ -206,12 +228,22 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "mary-grieving",
       music: "dialogue",
+      mapPoses: [{ kind: "core", actor: "mary", pose: "kneeling-grief" }],
     },
     {
       speaker: "旁白",
       text: "耶稣看见她哭，并看见与她同来的犹太人也哭，就心里悲叹，又甚忧愁。",
       reference: "约翰福音 11:33",
       kind: "narration",
+      mapPoses: [
+        { kind: "core", actor: "mary", pose: "quiet-weeping" },
+        { kind: "core", actor: "jesus", pose: "visible-grief" },
+        {
+          kind: "supporting",
+          actor: "mourner-woman",
+          pose: "mourner-kneeling-grief",
+        },
+      ],
     },
     {
       speaker: "耶稣",
@@ -219,6 +251,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:34｜和合本",
       kind: "scripture",
       portrait: "jesus-weeping",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "visible-grief" }],
     },
     {
       speaker: "众人",
@@ -227,6 +260,13 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "witness",
       music: "dialogue",
+      mapPoses: [
+        {
+          kind: "supporting",
+          actor: "older-witness",
+          pose: "older-witness-rising",
+        },
+      ],
     },
     {
       speaker: "旁白",
@@ -236,6 +276,7 @@ export const DIALOGUES: Record<
       portrait: "jesus-weeping",
       pauseMs: 3000,
       music: "silence",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "visible-grief" }],
     },
     {
       speaker: "一位犹太人",
@@ -260,6 +301,10 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:38",
       kind: "narration",
       music: "dialogue",
+      mapPoses: [
+        { kind: "core", actor: "jesus", pose: "visible-grief" },
+        { kind: "supporting", actor: "guide", pose: "guide-calling" },
+      ],
     },
     {
       speaker: "耶稣",
@@ -267,6 +312,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:39｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
     {
       speaker: "马大",
@@ -275,6 +321,7 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "martha-grieving",
       music: "silence",
+      mapPoses: [{ kind: "core", actor: "martha", pose: "worried-idle" }],
     },
     {
       speaker: "耶稣",
@@ -283,6 +330,7 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "jesus-declaration",
       music: "dialogue",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
     {
       speaker: "旁白",
@@ -290,6 +338,15 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:41–42",
       kind: "narration",
       music: "revelation",
+      mapPoses: [
+        { kind: "core", actor: "jesus", pose: "restrained-prayer" },
+        {
+          kind: "supporting",
+          actor: "guide",
+          pose: "stone-moving",
+          hideActors: ["thomas"],
+        },
+      ],
     },
     {
       speaker: "耶稣",
@@ -298,6 +355,9 @@ export const DIALOGUES: Record<
       kind: "scripture",
       portrait: "jesus-declaration",
       music: "silence",
+      mapPoses: [
+        { kind: "core", actor: "jesus", pose: "authoritative-call" },
+      ],
     },
     {
       speaker: "旁白",
@@ -305,6 +365,14 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:44",
       kind: "narration",
       music: "revelation",
+      mapPoses: [
+        {
+          kind: "supporting",
+          actor: "older-witness",
+          pose: "restrained-group-reaction",
+          hideActors: ["thomas", "mourner", "mourner-woman"],
+        },
+      ],
     },
     {
       speaker: "耶稣",
@@ -312,6 +380,7 @@ export const DIALOGUES: Record<
       reference: "约翰福音 11:44｜和合本",
       kind: "scripture",
       portrait: "jesus-declaration",
+      mapPoses: [{ kind: "core", actor: "jesus", pose: "calm-speaking" }],
     },
   ],
   epilogue: [

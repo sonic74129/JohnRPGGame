@@ -4,6 +4,10 @@ import type {
   Objective,
   QuestionResult,
 } from "../game/types";
+import {
+  PORTRAIT_ASSETS,
+  type PortraitKey,
+} from "../game/CharacterAssets";
 
 type VoidCallback = () => void;
 
@@ -322,68 +326,14 @@ export class GameUI {
         : "继续　SPACE";
   }
 
-  private renderPortrait(portrait?: string): void {
-    const portraits: Record<
-      string,
-      { readonly image: string; readonly position: string }
-    > = {
-      "martha-worried": {
-        image: "assets/art/portrait-martha.png",
-        position: "0% center",
-      },
-      "martha-grieving": {
-        image: "assets/art/portrait-martha.png",
-        position: "50% center",
-      },
-      "martha-faith": {
-        image: "assets/art/portrait-martha.png",
-        position: "100% center",
-      },
-      "mary-worried": {
-        image: "assets/art/portrait-mary.png",
-        position: "0% center",
-      },
-      "mary-urgent": {
-        image: "assets/art/portrait-mary.png",
-        position: "50% center",
-      },
-      "mary-grieving": {
-        image: "assets/art/portrait-mary.png",
-        position: "100% center",
-      },
-      "jesus-listening": {
-        image: "assets/art/portrait-jesus.png",
-        position: "0% center",
-      },
-      "jesus-declaration": {
-        image: "assets/art/portrait-jesus.png",
-        position: "50% center",
-      },
-      "jesus-weeping": {
-        image: "assets/art/portrait-jesus.png",
-        position: "100% center",
-      },
-      messenger: {
-        image: "assets/art/portrait-witnesses.png",
-        position: "0% center",
-      },
-      thomas: {
-        image: "assets/art/portrait-witnesses.png",
-        position: "50% center",
-      },
-      witness: {
-        image: "assets/art/portrait-witnesses.png",
-        position: "100% center",
-      },
-    };
-    const selected = portrait ? portraits[portrait] : undefined;
+  private renderPortrait(portrait?: PortraitKey): void {
+    const selected = portrait ? PORTRAIT_ASSETS[portrait] : undefined;
     this.dialogue.classList.toggle("dialogue--without-portrait", !selected);
     this.dialoguePortrait.classList.toggle("is-hidden", !selected);
     if (!selected) {
       return;
     }
-    this.dialoguePortrait.style.backgroundImage = `url("${selected.image}")`;
-    this.dialoguePortrait.style.backgroundPosition = selected.position;
+    this.dialoguePortrait.style.backgroundImage = `url("${selected}")`;
   }
 
   private focusGame(): void {

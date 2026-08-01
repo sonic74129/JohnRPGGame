@@ -1,3 +1,10 @@
+import type {
+  CorePoseCharacter,
+  CorePoseFor,
+  PortraitKey,
+  SupportingAction,
+} from "./CharacterAssets";
+
 export type ActorId =
   | "martha"
   | "mary"
@@ -9,6 +16,23 @@ export type ActorId =
   | "thomas"
   | "older-disciple"
   | "younger-disciple";
+
+type CoreMapPoseCue = {
+  [Character in CorePoseCharacter]: {
+    readonly kind: "core";
+    readonly actor: Character;
+    readonly pose: CorePoseFor<Character>;
+  };
+}[CorePoseCharacter];
+
+export interface SupportingMapPoseCue {
+  readonly kind: "supporting";
+  readonly actor: Exclude<ActorId, CorePoseCharacter>;
+  readonly pose: SupportingAction;
+  readonly hideActors?: readonly ActorId[];
+}
+
+export type MapPoseCue = CoreMapPoseCue | SupportingMapPoseCue;
 
 export type StoryStage =
   | "opening"
@@ -43,7 +67,8 @@ export interface DialogueLine {
   readonly text: string;
   readonly reference?: string;
   readonly kind: ContentKind;
-  readonly portrait?: string;
+  readonly portrait?: PortraitKey;
+  readonly mapPoses?: readonly MapPoseCue[];
   readonly pauseMs?: number;
   readonly music?: MusicState;
 }

@@ -15,6 +15,9 @@ import {
   CORE_POSE_SHEETS,
   LAZARUS_SHEET,
   SUPPORTING_ACTION_SHEET,
+  corePoseFrame,
+  corePoseOriginY,
+  supportingActionFrame,
 } from "./CharacterAssets";
 import {
   FACINGS,
@@ -68,7 +71,13 @@ import {
   TOMB_STONE_PLACEMENT,
 } from "./TombAssets";
 import { Trigger } from "./Trigger";
-import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
+import type {
+  ActorId,
+  DialogueLine,
+  MapPoseCue,
+  MusicState,
+  StoryStage,
+} from "./types";
 import {
   WORLD_OBJECT_ASSETS,
   WORLD_STRUCTURE_ART,
@@ -563,6 +572,74 @@ export class BethanyScene extends Phaser.Scene {
       walkAnimationKey(visual.character, visual.facing),
       true,
     );
+  }
+
+  private actorDisplayHeight(id: ActorId): number {
+    return this.actorRegistry.require(id).state.area === "lazarus-house"
+      ? INTERIOR_CHARACTER_HEIGHT
+      : EXTERIOR_CHARACTER_HEIGHT;
+  }
+
+  private restoreActorVisual(id: ActorId): void {
+    const visual = this.visuals.get(id);
+    if (!visual) {
+      return;
+    }
+    const sheet = spriteSheet(visual.character);
+    visual.sprite.anims.stop();
+    visual.sprite
+      .setTexture(sheet.key)
+      .setFrame(spriteFrame(visual.character, visual.facing, "idle"))
+      .setScale(this.actorDisplayHeight(id) / sheet.frameHeight)
+      .setOrigin(0.5, characterOriginY(visual.character));
+    visual.container.setVisible(this.actorRegistry.require(id).state.visible);
+  }
+
+  private resetMapPoses(): void {
+    for (const id of this.visuals.keys()) {
+      this.restoreActorVisual(id);
+    }
+  }
+
+  private applyMapPoseCues(cues: readonly MapPoseCue[]): void {
+    this.resetMapPoses();
+    for (const cue of cues) {
+      const visual = this.visuals.get(cue.actor);
+      if (!visual) {
+        throw new Error(`Map pose actor ${cue.actor} has no active visual.`);
+      }
+      visual.sprite.anims.stop();
+      if (cue.kind === "core") {
+        const sheet = CORE_POSE_SHEETS[cue.actor];
+        visual.sprite
+          .setTexture(sheet.key)
+          .setFrame(corePoseFrame(cue.actor, cue.pose))
+          .setScale(this.actorDisplayHeight(cue.actor) / sheet.frameHeight)
+          .setOrigin(0.5, corePoseOriginY(cue.actor));
+      } else {
+        visual.sprite
+          .setTexture(SUPPORTING_ACTION_SHEET.key)
+          .setFrame(supportingActionFrame(cue.pose))
+          .setScale(
+            Math.max(this.actorDisplayHeight(cue.actor), 88) /
+              SUPPORTING_ACTION_SHEET.frameHeight,
+          )
+          .setOrigin(
+            0.5,
+            (SUPPORTING_ACTION_SHEET.frameHeight - 8) /
+              SUPPORTING_ACTION_SHEET.frameHeight,
+          );
+        for (const hiddenActor of cue.hideActors ?? []) {
+          const hiddenVisual = this.visuals.get(hiddenActor);
+          if (!hiddenVisual) {
+            throw new Error(
+              `Map pose hidden actor ${hiddenActor} has no active visual.`,
+            );
+          }
+          hiddenVisual.container.setVisible(false);
+        }
+      }
+    }
   }
 
   private registerActors(): void {
@@ -1425,6 +1502,11 @@ export class BethanyScene extends Phaser.Scene {
     this.setActorVisible("guide", true);
     this.setActorPosition("guide", 1320, 650);
     this.setActorPosition("mourner", 1510, 1150);
+    this.setActorPosition("mourner-woman", 1550, 1100);
+    this.setActorPosition("older-witness", 1590, 1040);
+    this.setActorPosition("thomas", 1510, 930);
+    this.setActorPosition("older-disciple", 1450, 880);
+    this.setActorPosition("younger-disciple", 1580, 880);
     this.setActorPosition("mary", 1480, 1080);
     this.setActorPosition("martha", 1460, 1050);
     this.storyJourneys.reset("guide");
@@ -1481,6 +1563,56 @@ export class BethanyScene extends Phaser.Scene {
             { x: 1480, y: 760 },
             ...tombRoute,
             { x: 1700, y: 650 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "mourner-woman",
+          [
+            { x: 1400, y: 1010 },
+            { x: 1500, y: 780 },
+            ...tombRoute,
+            { x: 1740, y: 700 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "older-witness",
+          [
+            { x: 1420, y: 950 },
+            { x: 1510, y: 740 },
+            ...tombRoute,
+            { x: 1680, y: 670 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "thomas",
+          [
+            { x: 1430, y: 900 },
+            { x: 1530, y: 720 },
+            ...tombRoute,
+            { x: 1810, y: 690 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "older-disciple",
+          [
+            { x: 1390, y: 880 },
+            { x: 1490, y: 700 },
+            ...tombRoute,
+            { x: 1710, y: 730 },
+          ],
+          () => undefined,
+        ),
+        this.moveActorAlong(
+          "younger-disciple",
+          [
+            { x: 1440, y: 880 },
+            { x: 1550, y: 710 },
+            ...tombRoute,
+            { x: 1760, y: 750 },
           ],
           () => undefined,
         ),
@@ -1623,11 +1755,22 @@ export class BethanyScene extends Phaser.Scene {
 
   private showDialogue(lines: readonly DialogueLine[]): Promise<void> {
     return new Promise((resolve) => {
-      this.ui.showDialogue(lines, resolve, (line) => {
-        if (line.music) {
-          this.audio.setState(line.music, this.musicTransitionDuration(line.music));
-        }
-      });
+      this.ui.showDialogue(
+        lines,
+        () => {
+          this.resetMapPoses();
+          resolve();
+        },
+        (line) => {
+          this.applyMapPoseCues(line.mapPoses ?? []);
+          if (line.music) {
+            this.audio.setState(
+              line.music,
+              this.musicTransitionDuration(line.music),
+            );
+          }
+        },
+      );
     });
   }
 

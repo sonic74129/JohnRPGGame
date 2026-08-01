@@ -210,8 +210,9 @@ export const CORE_POSES = {
 } as const;
 
 export type CorePoseCharacter = keyof typeof CORE_POSES;
-export type CorePose =
-  (typeof CORE_POSES)[CorePoseCharacter][number];
+export type CorePoseFor<Character extends CorePoseCharacter> =
+  (typeof CORE_POSES)[Character][number];
+export type CorePose = CorePoseFor<CorePoseCharacter>;
 
 export const CORE_POSE_SHEETS: Readonly<
   Record<CorePoseCharacter, SheetAsset>
@@ -240,6 +241,17 @@ export const corePoseFrame = (
   character: CorePoseCharacter,
   pose: CorePose,
 ): number => indexOf(CORE_POSES[character], pose);
+
+export const CORE_POSE_BASELINES: Readonly<
+  Record<CorePoseCharacter, number>
+> = {
+  martha: 543,
+  mary: 447,
+  jesus: 565,
+};
+
+export const corePoseOriginY = (character: CorePoseCharacter): number =>
+  CORE_POSE_BASELINES[character] / CORE_POSE_SHEETS[character].frameHeight;
 
 export const SUPPORTING_ACTIONS = [
   "mourner-care",
