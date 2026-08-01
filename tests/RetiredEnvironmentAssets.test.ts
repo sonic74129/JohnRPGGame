@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const RETIRED_STORY_ASSETS = [
+const RETIRED_ENVIRONMENT_ASSETS = [
   "opening-sickroom.png",
   "journey-to-jesus.png",
   "bethany-village.png",
@@ -12,16 +12,20 @@ const RETIRED_STORY_ASSETS = [
   "story-jesus-weeps.png",
   "story-lazarus-comes-out.png",
   "story-ending-reflection.png",
+  "map-road-to-jesus-clean.png",
+  "map-village-edge-clean.png",
+  "map-road-to-tomb-clean.png",
+  "map-tomb-clean.png",
 ] as const;
 
-describe("retired story environment assets", () => {
-  it("keeps cinematic and story illustrations out of public runtime assets", () => {
-    for (const filename of RETIRED_STORY_ASSETS) {
+describe("retired environment assets", () => {
+  it("keeps retired illustrations and isolated maps out of public runtime assets", () => {
+    for (const filename of RETIRED_ENVIRONMENT_ASSETS) {
       expect(existsSync(resolve("public/assets/art", filename))).toBe(false);
     }
   });
 
-  it("keeps runtime source free of cinematic and story illustration paths", () => {
+  it("keeps runtime source free of retired environment paths", () => {
     const runtimeSource = [
       "src/game/BethanyScene.ts",
       "src/ui/GameUI.ts",
@@ -30,7 +34,7 @@ describe("retired story environment assets", () => {
       .map((path) => readFileSync(path, "utf8"))
       .join("\n");
 
-    for (const filename of RETIRED_STORY_ASSETS) {
+    for (const filename of RETIRED_ENVIRONMENT_ASSETS) {
       expect(runtimeSource).not.toContain(filename);
     }
   });
