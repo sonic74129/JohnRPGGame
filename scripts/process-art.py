@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -12,6 +13,11 @@ PROPS = OUTPUT / "props"
 
 DIRECTIONS = ("front", "back", "left", "right")
 STEPS = ("idle", "step-left", "step-right")
+PROP_SOURCES = (
+    "props-house-source.png",
+    "props-village-road-source.png",
+    "props-tomb-source.png",
+)
 
 
 def crop_cell(image: Image.Image, columns: int, rows: int, column: int, row: int) -> Image.Image:
@@ -75,6 +81,10 @@ def save_sprite(image: Image.Image, character: str, frame: str) -> None:
     image.save(directory / f"{frame}.png", optimize=True)
 
 
+def foreground_pixels(image: Image.Image) -> int:
+    return sum(1 for alpha in image.getchannel("A").getdata() if alpha > 0)
+
+
 def process_directional_sheet(
     filename: str,
     character_columns: Iterable[tuple[str, int]],
@@ -83,10 +93,21 @@ def process_directional_sheet(
     image = Image.open(SOURCE / filename)
     for character, start_column in character_columns:
         for row, direction in enumerate(DIRECTIONS):
-            for step, motion in enumerate(STEPS):
-                frame = normalize_sprite(
+            frames = {
+                motion: normalize_sprite(
                     crop_cell(image, columns, 4, start_column + step, row)
                 )
+                for step, motion in enumerate(STEPS)
+            }
+            idle_pixels = foreground_pixels(frames["idle"])
+            for motion in STEPS:
+                frame = frames[motion]
+                if (
+                    motion != "idle"
+                    and foreground_pixels(frame) < idle_pixels * 0.4
+                ):
+                    fallback = "step-right" if motion == "step-left" else "idle"
+                    frame = frames[fallback]
                 save_sprite(frame, character, f"{direction}-{motion}")
 
 
@@ -139,87 +160,99 @@ def process_prop_sheet(
 
 
 def main() -> None:
-    process_directional_sheet(
-        "sprite-messenger-source.png",
-        (("messenger", 0),),
-        3,
-    )
-    process_directional_sheet(
-        "sprite-sisters-source.png",
-        (("martha", 0), ("mary", 3)),
-        6,
-    )
-    process_directional_sheet(
-        "sprite-jesus-source.png",
-        (("jesus", 0),),
-        3,
-    )
-    process_reference_sheet(
-        "sprite-disciples-source.png",
-        ("thomas", "disciple-older", "disciple-younger"),
-    )
-    process_reference_sheet(
-        "sprite-witnesses-source.png",
-        ("mourner-man", "mourner-woman", "guide", "witness-older"),
-    )
-    process_lazarus()
+    category = os.environ.get("ART_CATEGORY")
+    if category not in (None, "sprite", "prop"):
+        raise ValueError("ART_CATEGORY must be 'sprite' or 'prop'.")
 
-    process_prop_sheet(
-        "props-house-source.png",
-        4,
-        3,
-        (
-            "house-bed",
-            "house-lamp",
-            "house-water-bowl",
-            "house-table",
-            "house-stool-a",
-            "house-stool-b",
-            "house-linen",
-            "house-storage-jar",
-            "house-basket",
-            "house-door",
-            "house-shelf",
-            "messenger-satchel",
-        ),
-    )
-    process_prop_sheet(
-        "props-village-road-source.png",
-        4,
-        3,
-        (
-            "village-jar-a",
-            "village-jar-b",
-            "village-wall",
-            "village-wall-corner",
-            "olive-tree",
-            "olive-sapling",
-            "dry-shrub",
-            "grass-clump",
-            "stone-pile",
-            "wood-fence",
-            "road-basket",
-            "road-marker",
-        ),
-    )
-    process_prop_sheet(
-        "props-tomb-source.png",
-        4,
-        2,
-        (
-            "tomb-stone",
-            "tomb-stone-rolled",
-            "tomb-cave-lip",
-            "burial-cloth-folded",
-            "burial-cloth-strips",
-            "tomb-dust",
-            "tomb-rubble",
-            "tomb-plant",
-        ),
-    )
+    if category in (None, "sprite"):
+        process_directional_sheet(
+            "sprite-messenger-source.png",
+            (("messenger", 0),),
+            3,
+        )
+        process_directional_sheet(
+            "sprite-sisters-source.png",
+            (("martha", 0), ("mary", 4)),
+            7,
+        )
+        process_directional_sheet(
+            "sprite-jesus-source.png",
+            (("jesus", 0),),
+            3,
+        )
+        process_reference_sheet(
+            "sprite-disciples-source.png",
+            ("thomas", "disciple-older", "disciple-younger"),
+        )
+        process_reference_sheet(
+            "sprite-witnesses-source.png",
+            ("mourner-man", "mourner-woman", "guide", "witness-older"),
+        )
+        process_lazarus()
+        print(f"Processed sprites into {SPRITES}")
 
-    print(f"Processed sprites into {SPRITES}")
-    print(f"Processed props into {PROPS}")
+    prop_sources_available = all((SOURCE / name).exists() for name in PROP_SOURCES)
+    if category == "prop" and not prop_sources_available:
+        missing = [name for name in PROP_SOURCES if not (SOURCE / name).exists()]
+        raise FileNotFoundError(f"Missing prop source atlases: {', '.join(missing)}")
+
+    if category == "prop" or (category is None and prop_sources_available):
+        process_prop_sheet(
+            "props-house-source.png",
+            4,
+            3,
+            (
+                "house-bed",
+                "house-lamp",
+                "house-water-bowl",
+                "house-table",
+                "house-stool-a",
+                "house-stool-b",
+                "house-linen",
+                "house-storage-jar",
+                "house-basket",
+                "house-door",
+                "house-shelf",
+                "messenger-satchel",
+            ),
+        )
+        process_prop_sheet(
+            "props-village-road-source.png",
+            4,
+            3,
+            (
+                "village-jar-a",
+                "village-jar-b",
+                "village-wall",
+                "village-wall-corner",
+                "olive-tree",
+                "olive-sapling",
+                "dry-shrub",
+                "grass-clump",
+                "stone-pile",
+                "wood-fence",
+                "road-basket",
+                "road-marker",
+            ),
+        )
+        process_prop_sheet(
+            "props-tomb-source.png",
+            4,
+            2,
+            (
+                "tomb-stone",
+                "tomb-stone-rolled",
+                "tomb-cave-lip",
+                "burial-cloth-folded",
+                "burial-cloth-strips",
+                "tomb-dust",
+                "tomb-rubble",
+                "tomb-plant",
+            ),
+        )
+        print(f"Processed props into {PROPS}")
+    elif category is None:
+        print("Skipped props because their source atlases have not been generated yet.")
 
 
 if __name__ == "__main__":

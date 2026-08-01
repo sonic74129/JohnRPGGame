@@ -11,6 +11,21 @@ import {
   type AreaResource,
 } from "./AreaRuntime";
 import { Character } from "./Character";
+import {
+  FACINGS,
+  actorSpriteCharacter,
+  hasWalkFrames,
+  lazarusAssetPath,
+  lazarusTextureKey,
+  resolveFacing,
+  spriteAssetPath,
+  spriteTextureKey,
+  walkAnimationKey,
+  walkFrameKeys,
+  type Facing,
+  type SpriteCharacter,
+  type WalkingSpriteCharacter,
+} from "./CharacterSprites";
 import { CutsceneDirector } from "./CutsceneDirector";
 import { DIALOGUES, OBJECTIVES, QUESTIONS } from "./content";
 import { Interaction, type InteractionRules } from "./Interaction";
@@ -27,6 +42,9 @@ import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
 
 const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
+const CHARACTER_DISPLAY_WIDTH = 80;
+const CHARACTER_DISPLAY_HEIGHT = 104;
+const CHARACTER_ORIGIN_Y = 0.69;
 
 const ACTORS: Readonly<Record<ActorId, { readonly name: string; readonly color: number }>> = {
   martha: { name: "马大", color: 0x76508b },
@@ -149,6 +167,9 @@ const INTERACTION_RULES: InteractionRules = {
 interface ActorVisual {
   readonly container: Phaser.GameObjects.Container;
   readonly marker: Phaser.GameObjects.Ellipse;
+  readonly sprite: Phaser.GameObjects.Sprite;
+  readonly character: SpriteCharacter;
+  facing: Facing;
 }
 
 export class BethanyScene extends Phaser.Scene {
@@ -180,8 +201,9 @@ export class BethanyScene extends Phaser.Scene {
   private started = false;
   private paused = false;
   private stone?: Phaser.GameObjects.Ellipse;
-  private lazarus?: Phaser.GameObjects.Container;
+  private lazarus?: Phaser.GameObjects.Sprite;
   private decorations: Phaser.GameObjects.GameObject[] = [];
+  private playerFacing: Facing = "front";
 
   constructor() {
     super("bethany");
@@ -192,6 +214,11 @@ export class BethanyScene extends Phaser.Scene {
     this.load.image("art-bethany", "assets/art/bethany-village.png");
     this.load.image("art-journey", "assets/art/journey-to-jesus.png");
     this.load.image("art-tomb", "assets/art/tomb-garden.png");
+    this.loadCharacterSprites();
+    this.load.image(
+      lazarusTextureKey("wrapped-idle"),
+      lazarusAssetPath("wrapped-idle"),
+    );
   }
 
   create(): void {
@@ -203,6 +230,7 @@ export class BethanyScene extends Phaser.Scene {
     this.ui = ui;
     this.audio = audio;
     this.resetRuntimeState();
+    this.createWalkAnimations();
     this.cameras.main.setBackgroundColor("#706348");
     this.createPlayer();
     this.registerActors();
@@ -226,6 +254,7 @@ export class BethanyScene extends Phaser.Scene {
   update(): void {
     if (!this.canAcceptPlayerInput()) {
       this.player.setVelocity(0);
+      this.updatePlayerAnimation(0, 0);
       this.ui.setInteractionPrompt(false);
       return;
     }
@@ -313,26 +342,101 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private createPlayer(): void {
-    if (!this.textures.exists("player")) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0x2f77be);
-      graphics.fillRect(8, 4, 40, 20);
-      graphics.fillStyle(0xd6ad7b);
-      graphics.fillRect(16, 0, 24, 20);
-      graphics.fillStyle(0x2f77be);
-      graphics.fillRect(8, 20, 40, 38);
-      graphics.fillStyle(0x1e4f82);
-      graphics.fillRect(8, 58, 16, 14);
-      graphics.fillRect(32, 58, 16, 14);
-      graphics.lineStyle(4, 0xcce8ff);
-      graphics.strokeRect(8, 20, 40, 38);
-      graphics.generateTexture("player", 56, 74);
-      graphics.destroy();
-    }
-    this.player = this.physics.add.sprite(0, 0, "player");
+    this.player = this.physics.add.sprite(
+      0,
+      0,
+      spriteTextureKey("messenger", this.playerFacing, "idle"),
+    );
+    this.player
+      .setDisplaySize(CHARACTER_DISPLAY_WIDTH, CHARACTER_DISPLAY_HEIGHT)
+      .setOrigin(0.5, CHARACTER_ORIGIN_Y);
     this.player.setCollideWorldBounds(true);
-    this.player.setBodySize(40, 30);
-    this.player.setOffset(8, 40);
+    this.player.setBodySize(72, 60);
+    this.player.setOffset(44, 150);
+    this.showPlayerIdle();
+  }
+
+  private loadCharacterSprites(): void {
+    const characters: readonly SpriteCharacter[] = [
+      "messenger",
+      "martha",
+      "mary",
+      "jesus",
+      "mourner-man",
+      "guide",
+    ];
+    for (const character of characters) {
+      const poses = hasWalkFrames(character)
+        ? (["idle", "step-left", "step-right"] as const)
+        : (["idle"] as const);
+      for (const facing of FACINGS) {
+        for (const pose of poses) {
+          this.load.image(
+            spriteTextureKey(character, facing, pose),
+            spriteAssetPath(character, facing, pose),
+          );
+        }
+      }
+    }
+  }
+
+  private createWalkAnimations(): void {
+    const characters: readonly WalkingSpriteCharacter[] = [
+      "messenger",
+      "martha",
+      "mary",
+      "jesus",
+    ];
+    for (const character of characters) {
+      for (const facing of FACINGS) {
+        const key = walkAnimationKey(character, facing);
+        if (!this.anims.exists(key)) {
+          this.anims.create({
+            key,
+            frames: walkFrameKeys(character, facing).map((textureKey) => ({
+              key: textureKey,
+            })),
+            frameRate: 9,
+            repeat: -1,
+          });
+        }
+      }
+    }
+  }
+
+  private updatePlayerAnimation(x: number, y: number): void {
+    this.playerFacing = resolveFacing(x, y, this.playerFacing);
+    if (x === 0 && y === 0) {
+      this.showPlayerIdle();
+      return;
+    }
+    this.player.play(walkAnimationKey("messenger", this.playerFacing), true);
+  }
+
+  private showPlayerIdle(): void {
+    this.player.anims.stop();
+    this.player.setTexture(
+      spriteTextureKey("messenger", this.playerFacing, "idle"),
+    );
+  }
+
+  private updateActorAnimation(id: ActorId, x: number, y: number): void {
+    const visual = this.visuals.get(id);
+    if (!visual) {
+      return;
+    }
+    visual.facing = resolveFacing(x, y, visual.facing);
+    if ((x === 0 && y === 0) || !hasWalkFrames(visual.character)) {
+      visual.sprite.anims.stop();
+      visual.sprite.setTexture(
+        spriteTextureKey(visual.character, visual.facing, "idle"),
+      );
+      return;
+    }
+    visual.sprite.play(
+      walkAnimationKey(visual.character, visual.facing),
+      true,
+    );
   }
 
   private registerActors(): void {
@@ -364,6 +468,7 @@ export class BethanyScene extends Phaser.Scene {
     this.stone = undefined;
     this.lazarus = undefined;
     this.decorations = [];
+    this.playerFacing = "front";
   }
 
   private enterArea(area: AreaId): void {
@@ -391,27 +496,21 @@ export class BethanyScene extends Phaser.Scene {
 
   private createActorVisual(id: ActorId): void {
     const actor = this.actorRegistry.require(id).state;
-    const details = ACTORS[id];
+    const character = actorSpriteCharacter(id);
+    const facing: Facing = "front";
     const marker = this.add
       .ellipse(0, 31, 88, 40)
       .setStrokeStyle(4, 0xf4c86a, 0.95)
       .setVisible(false);
     const shadow = this.add.rectangle(0, 35, 60, 18, 0x2b261e, 0.35);
-    const legs = this.add
-      .rectangle(0, 24, 42, 28, details.color)
-      .setStrokeStyle(3, 0x3d3429);
-    const body = this.add
-      .rectangle(0, -7, 56, 52, details.color)
-      .setStrokeStyle(4, id === "jesus" ? 0x8d7b4d : 0xf5ead2);
-    const head = this.add
-      .rectangle(0, -42, 30, 28, 0xd5a574)
-      .setStrokeStyle(3, 0x5a4030);
+    const sprite = this.add
+      .sprite(0, 0, spriteTextureKey(character, facing, "idle"))
+      .setDisplaySize(CHARACTER_DISPLAY_WIDTH, CHARACTER_DISPLAY_HEIGHT)
+      .setOrigin(0.5, CHARACTER_ORIGIN_Y);
     const container = this.add.container(actor.position.x, actor.position.y, [
       marker,
       shadow,
-      legs,
-      body,
-      head,
+      sprite,
     ]);
     container.setSize(92, 135);
     container.setInteractive({ useHandCursor: true });
@@ -427,7 +526,7 @@ export class BethanyScene extends Phaser.Scene {
         this.moveTowardActor(id);
       },
     );
-    this.visuals.set(id, { container, marker });
+    this.visuals.set(id, { container, marker, sprite, character, facing });
   }
 
   private clearActorVisuals(): void {
@@ -446,11 +545,10 @@ export class BethanyScene extends Phaser.Scene {
       .ellipse(825, 405, 145, 165, 0x736b5e)
       .setStrokeStyle(7, 0x403b34)
       .setDepth(405);
-    const body = this.add
-      .rectangle(0, 0, 54, 92, 0xe7dec8)
-      .setStrokeStyle(5, 0xa59a82);
     this.lazarus = this.add
-      .container(880, 480, [body])
+      .sprite(880, 480, lazarusTextureKey("wrapped-idle"))
+      .setDisplaySize(102, 95)
+      .setOrigin(0.5, CHARACTER_ORIGIN_Y)
       .setDepth(480)
       .setVisible(false);
     this.decorations = [entrance, this.stone, this.lazarus];
@@ -547,6 +645,7 @@ export class BethanyScene extends Phaser.Scene {
       this.movementPath = [];
       this.pendingActor = undefined;
       this.player.setVelocity(direction.x * PLAYER_SPEED, direction.y * PLAYER_SPEED);
+      this.updatePlayerAnimation(direction.x, direction.y);
       return;
     }
     const waypoint = this.movementPath[0];
@@ -560,12 +659,18 @@ export class BethanyScene extends Phaser.Scene {
       if (distance < 13) {
         this.movementPath.shift();
         this.player.setVelocity(0);
+        this.updatePlayerAnimation(0, 0);
       } else {
         this.physics.moveTo(this.player, waypoint.x, waypoint.y, PLAYER_SPEED);
+        this.updatePlayerAnimation(
+          waypoint.x - this.player.x,
+          waypoint.y - this.player.y,
+        );
       }
       return;
     }
     this.player.setVelocity(0);
+    this.updatePlayerAnimation(0, 0);
     if (this.pendingActor) {
       const context = this.interactionContext();
       if (!this.interaction?.canApproach(this.pendingActor, context)) {
@@ -812,6 +917,11 @@ export class BethanyScene extends Phaser.Scene {
             resolve();
             return;
           }
+          this.updateActorAnimation(
+            id,
+            target.x - visual.container.x,
+            target.y - visual.container.y,
+          );
           this.tweens.add({
             targets: visual.container,
             x: target.x,
@@ -826,6 +936,7 @@ export class BethanyScene extends Phaser.Scene {
             },
             onComplete: () => {
               this.actorRegistry.move(id, area, target);
+              this.updateActorAnimation(id, 0, 0);
               resolve();
             },
           });
@@ -887,6 +998,7 @@ export class BethanyScene extends Phaser.Scene {
     this.player.setVelocity(0);
     this.movementPath = [];
     this.pendingActor = undefined;
+    this.updatePlayerAnimation(0, 0);
   }
 
   private prepareGuideDecision(): void {
@@ -906,6 +1018,7 @@ export class BethanyScene extends Phaser.Scene {
     }
     this.actorRegistry.move(id, area, { x, y });
     visual.container.setPosition(x, y);
+    this.updateActorAnimation(id, 0, 0);
   }
 
   private setActorVisible(id: ActorId, visible: boolean): void {
@@ -1062,6 +1175,10 @@ export class BethanyScene extends Phaser.Scene {
     }
     this.paused = true;
     this.player.setVelocity(0);
+    this.updatePlayerAnimation(0, 0);
+    for (const visual of this.visuals.values()) {
+      visual.sprite.anims.pause();
+    }
     this.physics.world.pause();
     this.tweens.pauseAll();
     this.audio.pause("game");
@@ -1076,6 +1193,9 @@ export class BethanyScene extends Phaser.Scene {
     this.paused = false;
     this.physics.world.resume();
     this.tweens.resumeAll();
+    for (const visual of this.visuals.values()) {
+      visual.sprite.anims.resume();
+    }
     this.audio.resume("game");
     this.ui.hidePause();
     document.getElementById("game-root")?.focus();

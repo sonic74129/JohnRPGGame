@@ -7,6 +7,8 @@
 - 拉撒路家、前往耶稣的道路、伯大尼村庄和坟墓花园四个独立探索区域
 - 拉撒路家中的游戏内开场过场，对话结束后在同一房间取得控制
 - 区域切换会统一清理背景、碰撞、人物和寻路数据
+- 报信者、马大、马利亚和耶稣使用四方向像素步行动画
+- 安慰者、带路的人和拉撒路使用独立透明像素精灵
 - MAI-Image-2.5-Pro 生成的像素场景和半写实对话肖像
 - 键盘上下左右移动
 - 鼠标点击地面自动寻路
@@ -68,7 +70,13 @@ npm run art:generate
 ```
 
 提示词位于 `art/prompts.json`，生成结果写入 `public/assets/art/`。脚本会保留
-已经存在的文件，只生成缺少的素材。
+已经存在的文件，只生成缺少的素材。角色与道具源图保存在
+`production/art-source/`，可按类别生成和处理：
+
+```bash
+ART_CATEGORY=sprite npm run art:generate
+ART_CATEGORY=sprite npm run art:process
+```
 
 ## 返回查经页面
 
