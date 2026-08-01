@@ -1,4 +1,14 @@
-export type ActorId = "martha" | "mary" | "jesus" | "mourner" | "guide";
+export type ActorId =
+  | "martha"
+  | "mary"
+  | "jesus"
+  | "mourner"
+  | "mourner-woman"
+  | "guide"
+  | "older-witness"
+  | "thomas"
+  | "older-disciple"
+  | "younger-disciple";
 
 export type StoryStage =
   | "opening"

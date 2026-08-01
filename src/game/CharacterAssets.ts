@@ -26,6 +26,7 @@ interface SheetAsset {
 interface DirectionalSheetAsset extends SheetAsset {
   readonly rows: readonly Facing[];
   readonly sourceMirroredFacings: readonly Facing[];
+  readonly footBaseline: number;
 }
 
 export const DIRECTIONAL_CHARACTER_SHEETS: Readonly<
@@ -38,6 +39,7 @@ export const DIRECTIONAL_CHARACTER_SHEETS: Readonly<
     frameHeight: 208,
     rows: ["front", "back", "right", "left"],
     sourceMirroredFacings: ["left"],
+    footBaseline: 201,
   },
   martha: {
     key: "character-martha",
@@ -46,6 +48,7 @@ export const DIRECTIONAL_CHARACTER_SHEETS: Readonly<
     frameHeight: 192,
     rows: ["front", "back", "right", "left"],
     sourceMirroredFacings: [],
+    footBaseline: 185,
   },
   mary: {
     key: "character-mary",
@@ -54,6 +57,7 @@ export const DIRECTIONAL_CHARACTER_SHEETS: Readonly<
     frameHeight: 224,
     rows: ["front", "back", "right", "left"],
     sourceMirroredFacings: ["left"],
+    footBaseline: 217,
   },
   jesus: {
     key: "character-jesus",
@@ -62,6 +66,7 @@ export const DIRECTIONAL_CHARACTER_SHEETS: Readonly<
     frameHeight: 200,
     rows: ["front", "back", "right", "left"],
     sourceMirroredFacings: ["left"],
+    footBaseline: 193,
   },
 };
 
@@ -84,6 +89,7 @@ export const directionalFrame = (
 
 interface SupportingSheetAsset extends SheetAsset {
   readonly rows: readonly SupportingCharacter[];
+  readonly footBaseline: number;
 }
 
 export const SUPPORTING_CHARACTER_SHEETS = {
@@ -93,6 +99,7 @@ export const SUPPORTING_CHARACTER_SHEETS = {
     frameWidth: 128,
     frameHeight: 249,
     rows: ["thomas", "older-disciple", "younger-disciple"],
+    footBaseline: 241,
   },
   witnesses: {
     key: "character-witnesses",
@@ -100,6 +107,7 @@ export const SUPPORTING_CHARACTER_SHEETS = {
     frameWidth: 133,
     frameHeight: 194,
     rows: ["mourner-man", "mourner-woman", "guide", "older-witness"],
+    footBaseline: 186,
   },
 } as const satisfies Record<string, SupportingSheetAsset>;
 
@@ -122,6 +130,19 @@ export const supportingFrame = (
   );
 };
 
+export const characterOriginY = (
+  character: CoreCharacter | SupportingCharacter,
+): number => {
+  const sheet =
+    character === "messenger" ||
+    character === "martha" ||
+    character === "mary" ||
+    character === "jesus"
+      ? DIRECTIONAL_CHARACTER_SHEETS[character]
+      : supportingSheet(character);
+  return sheet.footBaseline / sheet.frameHeight;
+};
+
 export const LAZARUS_POSES = [
   "sick",
   "wrapped-idle",
@@ -137,8 +158,32 @@ export const LAZARUS_SHEET = {
   frameHeight: 544,
 } as const satisfies SheetAsset;
 
+export const LAZARUS_CONTENT_BOUNDS: Readonly<
+  Record<
+    LazarusPose,
+    {
+      readonly width: number;
+      readonly height: number;
+      readonly originY: number;
+    }
+  >
+> = {
+  sick: { width: 387, height: 176, originY: 0.5 },
+  "wrapped-idle": { width: 155, height: 524, originY: 535 / 544 },
+  "wrapped-step": { width: 196, height: 503, originY: 535 / 544 },
+  restored: { width: 181, height: 526, originY: 535 / 544 },
+};
+
 export const lazarusFrame = (pose: LazarusPose): number =>
   indexOf(LAZARUS_POSES, pose);
+
+export const lazarusScaleToFit = (
+  pose: LazarusPose,
+  maximum: { readonly width: number; readonly height: number },
+): number => {
+  const bounds = LAZARUS_CONTENT_BOUNDS[pose];
+  return Math.min(maximum.width / bounds.width, maximum.height / bounds.height);
+};
 
 export const CORE_POSES = {
   martha: [

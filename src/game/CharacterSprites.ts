@@ -1,26 +1,37 @@
-export const FACINGS = ["front", "back", "left", "right"] as const;
+import {
+  DIRECTIONAL_CHARACTER_SHEETS,
+  FACINGS,
+  LAZARUS_CONTENT_BOUNDS,
+  LAZARUS_POSES,
+  LAZARUS_SHEET,
+  SUPPORTING_CHARACTER_SHEETS,
+  WALK_POSES,
+  characterOriginY,
+  directionalFrame,
+  lazarusFrame,
+  lazarusScaleToFit,
+  supportingFrame,
+  supportingSheet,
+  type CoreCharacter,
+  type Facing,
+  type LazarusPose,
+  type SupportingCharacter,
+  type WalkPose,
+} from "./CharacterAssets";
+import type { ActorId } from "./types";
 
-export type Facing = (typeof FACINGS)[number];
-export type WalkingSpriteCharacter = "messenger" | "martha" | "mary" | "jesus";
-export type IdleSpriteCharacter = "mourner-man" | "guide";
-export type SpriteCharacter = WalkingSpriteCharacter | IdleSpriteCharacter;
-export type SpritePose = "idle" | "step-left" | "step-right";
-export const LAZARUS_POSES = [
-  "sick",
-  "wrapped-idle",
-  "wrapped-step",
-  "restored",
-] as const;
-export type LazarusPose = (typeof LAZARUS_POSES)[number];
-
-const LAZARUS_DISPLAY_SIZES: Readonly<
-  Record<LazarusPose, { readonly width: number; readonly height: number }>
-> = {
-  sick: { width: 280, height: 190 },
-  "wrapped-idle": { width: 78, height: 72 },
-  "wrapped-step": { width: 78, height: 72 },
-  restored: { width: 84, height: 78 },
+export {
+  FACINGS,
+  LAZARUS_CONTENT_BOUNDS,
+  LAZARUS_POSES,
+  characterOriginY,
+  lazarusScaleToFit,
 };
+export type { Facing, LazarusPose };
+
+export type WalkingSpriteCharacter = CoreCharacter;
+export type SpriteCharacter = CoreCharacter | SupportingCharacter;
+export type SpritePose = WalkPose;
 
 const WALKING_CHARACTERS: readonly WalkingSpriteCharacter[] = [
   "messenger",
@@ -29,32 +40,48 @@ const WALKING_CHARACTERS: readonly WalkingSpriteCharacter[] = [
   "jesus",
 ];
 
-export const actorSpriteCharacter = (
-  id: "martha" | "mary" | "jesus" | "mourner" | "guide",
-): SpriteCharacter => (id === "mourner" ? "mourner-man" : id);
+export const actorSpriteCharacter = (id: ActorId): SpriteCharacter => {
+  switch (id) {
+    case "mourner":
+      return "mourner-man";
+    case "martha":
+    case "mary":
+    case "jesus":
+    case "mourner-woman":
+    case "guide":
+    case "older-witness":
+    case "thomas":
+    case "older-disciple":
+    case "younger-disciple":
+      return id;
+  }
+};
 
-export const spriteTextureKey = (
+export const spriteSheet = (character: SpriteCharacter) =>
+  character === "messenger" ||
+  character === "martha" ||
+  character === "mary" ||
+  character === "jesus"
+    ? DIRECTIONAL_CHARACTER_SHEETS[character]
+    : supportingSheet(character);
+
+export const spriteTextureKey = (character: SpriteCharacter): string =>
+  spriteSheet(character).key;
+
+export const spriteFrame = (
   character: SpriteCharacter,
   facing: Facing,
-  pose: SpritePose,
-): string => `sprite-${character}-${facing}-${pose}`;
+  pose: SpritePose = "idle",
+): number =>
+  hasWalkFrames(character)
+    ? directionalFrame(character, facing, pose)
+    : supportingFrame(character, facing);
 
-export const spriteAssetPath = (
-  character: SpriteCharacter,
-  facing: Facing,
-  pose: SpritePose,
-): string => `assets/art/sprites/${character}/${facing}-${pose}.png`;
+export const lazarusTextureKey = (): string => LAZARUS_SHEET.key;
 
-export const lazarusTextureKey = (pose: LazarusPose): string =>
-  `sprite-lazarus-${pose}`;
+export const lazarusAssetPath = (): string => LAZARUS_SHEET.path;
 
-export const lazarusAssetPath = (pose: LazarusPose): string =>
-  `assets/art/sprites/lazarus/${pose}.png`;
-
-export const lazarusDisplaySize = (
-  pose: LazarusPose,
-): { readonly width: number; readonly height: number } =>
-  LAZARUS_DISPLAY_SIZES[pose];
+export { lazarusFrame };
 
 export const walkAnimationKey = (
   character: WalkingSpriteCharacter,
@@ -66,14 +93,25 @@ export const hasWalkFrames = (
 ): character is WalkingSpriteCharacter =>
   WALKING_CHARACTERS.includes(character as WalkingSpriteCharacter);
 
-export const walkFrameKeys = (
+export const walkFrames = (
   character: WalkingSpriteCharacter,
   facing: Facing,
-): readonly string[] => [
-  spriteTextureKey(character, facing, "step-left"),
-  spriteTextureKey(character, facing, "idle"),
-  spriteTextureKey(character, facing, "step-right"),
-  spriteTextureKey(character, facing, "idle"),
+): readonly { readonly key: string; readonly frame: number }[] => {
+  const poses: readonly SpritePose[] = [
+    "step-left",
+    "idle",
+    "step-right",
+    "idle",
+  ];
+  return poses.map((pose) => ({
+    key: DIRECTIONAL_CHARACTER_SHEETS[character].key,
+    frame: directionalFrame(character, facing, pose),
+  }));
+};
+
+export const allCharacterSheets = () => [
+  ...Object.values(DIRECTIONAL_CHARACTER_SHEETS),
+  ...Object.values(SUPPORTING_CHARACTER_SHEETS),
 ];
 
 export const resolveFacing = (
@@ -89,3 +127,5 @@ export const resolveFacing = (
   }
   return y > 0 ? "front" : "back";
 };
+
+export const WALK_POSE_COUNT = WALK_POSES.length;

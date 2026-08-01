@@ -12,18 +12,25 @@ import {
 } from "./AreaRuntime";
 import { Character } from "./Character";
 import {
+  CORE_POSE_SHEETS,
+  LAZARUS_SHEET,
+  SUPPORTING_ACTION_SHEET,
+} from "./CharacterAssets";
+import {
   FACINGS,
-  LAZARUS_POSES,
+  allCharacterSheets,
   actorSpriteCharacter,
+  characterOriginY,
   hasWalkFrames,
-  lazarusAssetPath,
-  lazarusDisplaySize,
+  lazarusFrame,
+  lazarusScaleToFit,
   lazarusTextureKey,
   resolveFacing,
-  spriteAssetPath,
+  spriteFrame,
+  spriteSheet,
   spriteTextureKey,
   walkAnimationKey,
-  walkFrameKeys,
+  walkFrames,
   type Facing,
   type SpriteCharacter,
   type WalkingSpriteCharacter,
@@ -85,26 +92,33 @@ import {
 
 const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
-const EXTERIOR_CHARACTER_WIDTH = 60;
 const EXTERIOR_CHARACTER_HEIGHT = 78;
-const INTERIOR_CHARACTER_WIDTH = INTERIOR_CHARACTER_SIZE.width;
 const INTERIOR_CHARACTER_HEIGHT = INTERIOR_CHARACTER_SIZE.height;
-const CHARACTER_ORIGIN_Y = 0.69;
 
 const ACTORS: Readonly<Record<ActorId, { readonly name: string; readonly color: number }>> = {
   martha: { name: "马大", color: 0x76508b },
   mary: { name: "马利亚", color: 0xa44b59 },
   mourner: { name: "安慰者", color: 0x667079 },
+  "mourner-woman": { name: "女安慰者", color: 0xb28a55 },
   jesus: { name: "耶稣", color: 0xf2e5bd },
   guide: { name: "带路的人", color: 0x76654e },
+  "older-witness": { name: "年长见证人", color: 0x647052 },
+  thomas: { name: "多马", color: 0x5a4a40 },
+  "older-disciple": { name: "年长门徒", color: 0x66704b },
+  "younger-disciple": { name: "年轻门徒", color: 0xa86f45 },
 };
 
 const ACTOR_IDS: readonly ActorId[] = [
   "martha",
   "mary",
   "mourner",
+  "mourner-woman",
   "jesus",
   "guide",
+  "older-witness",
+  "thomas",
+  "older-disciple",
+  "younger-disciple",
 ];
 
 const WORLD_ACTORS: Readonly<
@@ -113,8 +127,13 @@ const WORLD_ACTORS: Readonly<
   martha: { position: { x: 760, y: 1050 } },
   mary: { position: { x: 860, y: 1000 } },
   mourner: { position: { x: 970, y: 970 } },
+  "mourner-woman": { position: { x: 1040, y: 1030 } },
   jesus: { position: WORLD_LANDMARKS.jesusArrival },
   guide: { position: WORLD_LANDMARKS.tombRoadStart, visible: false },
+  "older-witness": { position: { x: 1110, y: 990 } },
+  thomas: { position: { x: 1190, y: 790 } },
+  "older-disciple": { position: { x: 1260, y: 825 } },
+  "younger-disciple": { position: { x: 1330, y: 860 } },
 };
 
 const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
@@ -236,9 +255,6 @@ export class BethanyScene extends Phaser.Scene {
       this.load.image(key, path);
     }
     this.loadCharacterSprites();
-    for (const pose of LAZARUS_POSES) {
-      this.load.image(lazarusTextureKey(pose), lazarusAssetPath(pose));
-    }
   }
 
   create(): void {
@@ -458,11 +474,14 @@ export class BethanyScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(
       0,
       0,
-      spriteTextureKey("messenger", this.playerFacing, "idle"),
+      spriteTextureKey("messenger"),
+      spriteFrame("messenger", this.playerFacing, "idle"),
     );
     this.player
-      .setDisplaySize(INTERIOR_CHARACTER_WIDTH, INTERIOR_CHARACTER_HEIGHT)
-      .setOrigin(0.5, CHARACTER_ORIGIN_Y);
+      .setScale(
+        INTERIOR_CHARACTER_HEIGHT / spriteSheet("messenger").frameHeight,
+      )
+      .setOrigin(0.5, characterOriginY("messenger"));
     this.player.setCollideWorldBounds(true);
     this.player.setBodySize(72, 60);
     this.player.setOffset(44, 150);
@@ -476,26 +495,16 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private loadCharacterSprites(): void {
-    const characters: readonly SpriteCharacter[] = [
-      "messenger",
-      "martha",
-      "mary",
-      "jesus",
-      "mourner-man",
-      "guide",
-    ];
-    for (const character of characters) {
-      const poses = hasWalkFrames(character)
-        ? (["idle", "step-left", "step-right"] as const)
-        : (["idle"] as const);
-      for (const facing of FACINGS) {
-        for (const pose of poses) {
-          this.load.image(
-            spriteTextureKey(character, facing, pose),
-            spriteAssetPath(character, facing, pose),
-          );
-        }
-      }
+    for (const sheet of [
+      ...allCharacterSheets(),
+      ...Object.values(CORE_POSE_SHEETS),
+      SUPPORTING_ACTION_SHEET,
+      LAZARUS_SHEET,
+    ]) {
+      this.load.spritesheet(sheet.key, sheet.path, {
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
+      });
     }
   }
 
@@ -512,9 +521,7 @@ export class BethanyScene extends Phaser.Scene {
         if (!this.anims.exists(key)) {
           this.anims.create({
             key,
-            frames: walkFrameKeys(character, facing).map((textureKey) => ({
-              key: textureKey,
-            })),
+            frames: [...walkFrames(character, facing)],
             frameRate: 9,
             repeat: -1,
           });
@@ -534,9 +541,9 @@ export class BethanyScene extends Phaser.Scene {
 
   private showPlayerIdle(): void {
     this.player.anims.stop();
-    this.player.setTexture(
-      spriteTextureKey("messenger", this.playerFacing, "idle"),
-    );
+    this.player
+      .setTexture(spriteTextureKey("messenger"))
+      .setFrame(spriteFrame("messenger", this.playerFacing, "idle"));
   }
 
   private updateActorAnimation(id: ActorId, x: number, y: number): void {
@@ -547,9 +554,9 @@ export class BethanyScene extends Phaser.Scene {
     visual.facing = resolveFacing(x, y, visual.facing);
     if ((x === 0 && y === 0) || !hasWalkFrames(visual.character)) {
       visual.sprite.anims.stop();
-      visual.sprite.setTexture(
-        spriteTextureKey(visual.character, visual.facing, "idle"),
-      );
+      visual.sprite
+        .setTexture(spriteTextureKey(visual.character))
+        .setFrame(spriteFrame(visual.character, visual.facing, "idle"));
       return;
     }
     visual.sprite.play(
@@ -612,9 +619,8 @@ export class BethanyScene extends Phaser.Scene {
       }
     }
     this.player.setPosition(config.playerSpawn.x, config.playerSpawn.y);
-    this.player.setDisplaySize(
-      INTERIOR_CHARACTER_WIDTH,
-      INTERIOR_CHARACTER_HEIGHT,
+    this.player.setScale(
+      INTERIOR_CHARACTER_HEIGHT / spriteSheet("messenger").frameHeight,
     );
     this.stopPlayerMovement();
     this.nearestActor = undefined;
@@ -643,9 +649,8 @@ export class BethanyScene extends Phaser.Scene {
       WORLD_LANDMARKS.bethanyEntrance.x + 310,
       WORLD_LANDMARKS.bethanyEntrance.y + 250,
     );
-    this.player.setDisplaySize(
-      EXTERIOR_CHARACTER_WIDTH,
-      EXTERIOR_CHARACTER_HEIGHT,
+    this.player.setScale(
+      EXTERIOR_CHARACTER_HEIGHT / spriteSheet("messenger").frameHeight,
     );
     this.stopPlayerMovement();
     this.nearestActor = undefined;
@@ -664,28 +669,32 @@ export class BethanyScene extends Phaser.Scene {
     const character = actorSpriteCharacter(id);
     const facing: Facing = "front";
     const isInterior = actor.area === "lazarus-house";
-    const width = isInterior
-      ? INTERIOR_CHARACTER_WIDTH
-      : EXTERIOR_CHARACTER_WIDTH;
     const height = isInterior
       ? INTERIOR_CHARACTER_HEIGHT
       : EXTERIOR_CHARACTER_HEIGHT;
+    const sheet = spriteSheet(character);
+    const sprite = this.add
+      .sprite(
+        0,
+        0,
+        sheet.key,
+        spriteFrame(character, facing, "idle"),
+      )
+      .setScale(height / sheet.frameHeight)
+      .setOrigin(0.5, characterOriginY(character));
+    const width = sprite.displayWidth;
     const marker = this.add
-      .ellipse(0, height * 0.31, width * 1.1, height * 0.38)
+      .ellipse(0, 0, Math.max(width * 1.1, 42), height * 0.24)
       .setStrokeStyle(3, 0xf4c86a, 0.95)
       .setVisible(false);
     const shadow = this.add.rectangle(
       0,
-      height * 0.35,
-      width * 0.73,
-      height * 0.15,
+      0,
+      Math.max(width * 0.73, 24),
+      height * 0.1,
       0x2b261e,
       0.35,
     );
-    const sprite = this.add
-      .sprite(0, 0, spriteTextureKey(character, facing, "idle"))
-      .setDisplaySize(width, height)
-      .setOrigin(0.5, CHARACTER_ORIGIN_Y);
     const container = this.add.container(actor.position.x, actor.position.y, [
       marker,
       shadow,
@@ -716,7 +725,7 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private createTombElements(): void {
-    const wrappedSize = lazarusDisplaySize("wrapped-idle");
+    const wrappedPose = "wrapped-idle";
     this.stone = this.add
       .image(
         TOMB_STONE_PLACEMENT.x,
@@ -729,9 +738,16 @@ export class BethanyScene extends Phaser.Scene {
       )
       .setDepth(TOMB_STONE_PLACEMENT.depth);
     this.lazarus = this.add
-      .sprite(2010, 390, lazarusTextureKey("wrapped-idle"))
-      .setDisplaySize(wrappedSize.width, wrappedSize.height)
-      .setOrigin(0.5, CHARACTER_ORIGIN_Y)
+      .sprite(
+        2010,
+        390,
+        lazarusTextureKey(),
+        lazarusFrame(wrappedPose),
+      )
+      .setScale(
+        lazarusScaleToFit(wrappedPose, { width: 78, height: 72 }),
+      )
+      .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight)
       .setDepth(390)
       .setVisible(false);
     const props = TOMB_PROP_PLACEMENTS.map((placement) => {
@@ -753,14 +769,14 @@ export class BethanyScene extends Phaser.Scene {
 
   private createSickLazarus(): void {
     const lazarus = this.add
-      .image(
+      .sprite(
         HOUSE_SICK_LAZARUS_POSITION.x,
         HOUSE_SICK_LAZARUS_POSITION.y,
-        lazarusTextureKey("sick"),
+        lazarusTextureKey(),
+        lazarusFrame("sick"),
       )
-      .setDisplaySize(
-        HOUSE_SICK_LAZARUS_SIZE.width,
-        HOUSE_SICK_LAZARUS_SIZE.height,
+      .setScale(
+        lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE),
       )
       .setDepth(HOUSE_STORY_FOCUS.y - 1);
     this.decorations.push(lazarus);
@@ -1528,7 +1544,11 @@ export class BethanyScene extends Phaser.Scene {
   private async walkLazarusOut(): Promise<void> {
     const { lazarus } = this.requireTombElements();
     lazarus
-      .setTexture(lazarusTextureKey("wrapped-step"))
+      .setTexture(lazarusTextureKey())
+      .setFrame(lazarusFrame("wrapped-step"))
+      .setScale(
+        lazarusScaleToFit("wrapped-step", { width: 78, height: 72 }),
+      )
       .setVisible(true);
     await this.tweenLazarusTo(lazarus, 1980, 475, 850);
     await this.tweenLazarusTo(lazarus, 1930, 545, 850);
@@ -1536,12 +1556,12 @@ export class BethanyScene extends Phaser.Scene {
 
   private async restoreLazarus(): Promise<void> {
     const { lazarus } = this.requireTombElements();
-    const restoredSize = lazarusDisplaySize("restored");
     lazarus.anims.stop();
     lazarus
-      .setTexture(lazarusTextureKey("restored"))
-      .setDisplaySize(restoredSize.width, restoredSize.height)
-      .setOrigin(0.5, CHARACTER_ORIGIN_Y);
+      .setTexture(lazarusTextureKey())
+      .setFrame(lazarusFrame("restored"))
+      .setScale(lazarusScaleToFit("restored", { width: 84, height: 78 }))
+      .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight);
     await this.tweenLazarusTo(lazarus, 1880, 565, 650);
   }
 
