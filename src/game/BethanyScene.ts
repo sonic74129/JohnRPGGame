@@ -1,55 +1,163 @@
 import Phaser from "phaser";
 
-import type { AudioManager } from "../audio/AudioManager";
+import { AudioManager } from "../audio/AudioManager";
+import { GameUI } from "../ui/GameUI";
+import { ActorRegistry } from "./ActorRegistry";
+import {
+  AreaRuntime,
+  type AreaConfig,
+  type AreaHost,
+  type AreaId,
+  type AreaResource,
+} from "./AreaRuntime";
+import { Character } from "./Character";
+import { CutsceneDirector } from "./CutsceneDirector";
 import { DIALOGUES, OBJECTIVES, QUESTIONS } from "./content";
+import { Interaction, type InteractionRules } from "./Interaction";
 import {
   NavigationGrid,
   type Point,
   type Rectangle,
 } from "./NavigationGrid";
+import { NpcPathController, type NpcPathAdapter } from "./NpcPathController";
+import { PlayerController } from "./PlayerController";
 import { StoryEngine } from "./StoryEngine";
-import type { ActorId, DialogueLine, MusicState } from "./types";
-import type { GameUI } from "../ui/GameUI";
+import { Trigger } from "./Trigger";
+import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
 
-const WORLD_WIDTH = 3200;
-const WORLD_HEIGHT = 900;
 const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
 
-const OBSTACLES: readonly Rectangle[] = [
-  { x: 150, y: 100, width: 520, height: 300 },
-  { x: 800, y: 100, width: 320, height: 245 },
-  { x: 1190, y: 135, width: 250, height: 220 },
-  { x: 1790, y: 105, width: 380, height: 275 },
-  { x: 2260, y: 620, width: 330, height: 210 },
-  { x: 2790, y: 110, width: 360, height: 300 },
+const ACTORS: Readonly<Record<ActorId, { readonly name: string; readonly color: number }>> = {
+  martha: { name: "马大", color: 0x76508b },
+  mary: { name: "马利亚", color: 0xa44b59 },
+  mourner: { name: "安慰者", color: 0x667079 },
+  jesus: { name: "耶稣", color: 0xf2e5bd },
+  guide: { name: "带路的人", color: 0x76654e },
+};
+
+const ACTOR_IDS: readonly ActorId[] = [
+  "martha",
+  "mary",
+  "mourner",
+  "jesus",
+  "guide",
 ];
 
-const NAVIGATION_OBSTACLES: readonly Rectangle[] = OBSTACLES.map(
-  (obstacle) => ({
-    x: obstacle.x - 36,
-    y: obstacle.y - 36,
-    width: obstacle.width + 72,
-    height: obstacle.height + 72,
-  }),
-);
+const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
+  "lazarus-house": {
+    id: "lazarus-house",
+    width: 1100,
+    height: 800,
+    backgroundKey: "art-house",
+    backgroundColor: 0x706348,
+    obstacles: [
+      { x: 0, y: 0, width: 1100, height: 65 },
+      { x: 0, y: 0, width: 65, height: 800 },
+      { x: 1035, y: 0, width: 65, height: 800 },
+      { x: 0, y: 735, width: 870, height: 65 },
+    ],
+    playerSpawn: { x: 530, y: 665 },
+    actors: [
+      { id: "martha", position: { x: 430, y: 390 } },
+      { id: "mary", position: { x: 610, y: 420 } },
+      { id: "mourner", position: { x: 760, y: 520 } },
+    ],
+  },
+  "road-to-jesus": {
+    id: "road-to-jesus",
+    width: 1700,
+    height: 900,
+    backgroundKey: "art-journey",
+    backgroundColor: 0x74684c,
+    obstacles: [
+      { x: 0, y: 0, width: 1700, height: 85 },
+      { x: 0, y: 0, width: 75, height: 900 },
+      { x: 1625, y: 0, width: 75, height: 900 },
+      { x: 250, y: 140, width: 270, height: 180 },
+      { x: 1120, y: 120, width: 300, height: 190 },
+    ],
+    playerSpawn: { x: 170, y: 680 },
+    actors: [{ id: "jesus", position: { x: 1280, y: 540 } }],
+  },
+  "bethany-village": {
+    id: "bethany-village",
+    width: 1900,
+    height: 900,
+    backgroundKey: "art-bethany",
+    backgroundColor: 0x74684c,
+    obstacles: [
+      { x: 0, y: 0, width: 1900, height: 85 },
+      { x: 0, y: 0, width: 75, height: 900 },
+      { x: 1825, y: 0, width: 75, height: 900 },
+      { x: 150, y: 110, width: 420, height: 260 },
+      { x: 840, y: 115, width: 260, height: 220 },
+    ],
+    playerSpawn: { x: 560, y: 680 },
+    actors: [
+      { id: "martha", position: { x: 520, y: 525 } },
+      { id: "mary", position: { x: 405, y: 565 } },
+      { id: "mourner", position: { x: 650, y: 575 } },
+      { id: "jesus", position: { x: 1510, y: 520 } },
+      { id: "guide", position: { x: 1600, y: 600 }, visible: false },
+    ],
+  },
+  "tomb-garden": {
+    id: "tomb-garden",
+    width: 1100,
+    height: 780,
+    backgroundKey: "art-tomb",
+    backgroundColor: 0x625b4a,
+    obstacles: [
+      { x: 0, y: 0, width: 1100, height: 70 },
+      { x: 0, y: 0, width: 65, height: 780 },
+      { x: 1035, y: 0, width: 65, height: 780 },
+    ],
+    playerSpawn: { x: 470, y: 610 },
+    actors: [
+      { id: "jesus", position: { x: 760, y: 430 } },
+      { id: "martha", position: { x: 680, y: 520 } },
+      { id: "mary", position: { x: 780, y: 570 } },
+      { id: "mourner", position: { x: 620, y: 600 } },
+    ],
+  },
+};
 
-interface Actor {
-  readonly id: ActorId;
-  readonly name: string;
+const INTERACTION_RULES: InteractionRules = {
+  jesus: {
+    areas: ["road-to-jesus", "bethany-village"],
+    stages: ["deliverMessage", "chooseGuide"],
+  },
+  martha: {
+    areas: ["bethany-village"],
+    stages: ["chooseMartha", "chooseMary", "followMartha", "chooseGuide"],
+  },
+  mary: {
+    areas: ["bethany-village"],
+    stages: ["chooseMartha", "chooseMary", "followMary", "chooseGuide"],
+  },
+  mourner: {
+    areas: ["bethany-village"],
+    stages: ["chooseMartha", "chooseMary", "chooseGuide"],
+  },
+  guide: {
+    areas: ["bethany-village"],
+    stages: ["chooseGuide", "followGuide"],
+  },
+};
+
+interface ActorVisual {
   readonly container: Phaser.GameObjects.Container;
   readonly marker: Phaser.GameObjects.Ellipse;
 }
 
 export class BethanyScene extends Phaser.Scene {
-  private readonly story = new StoryEngine();
-  private readonly actors = new Map<ActorId, Actor>();
-  private readonly navigation = new NavigationGrid(
-    WORLD_WIDTH,
-    WORLD_HEIGHT,
-    40,
-    NAVIGATION_OBSTACLES,
-  );
+  private story = new StoryEngine();
+  private actorRegistry = new ActorRegistry();
+  private playerController = new PlayerController();
+  private cutscenes = new CutsceneDirector(this.playerController);
+  private npcPaths = new NpcPathController();
+  private readonly visuals = new Map<ActorId, ActorVisual>();
   private readonly completedJourneys = new Set<ActorId>();
 
   private ui!: GameUI;
@@ -57,53 +165,66 @@ export class BethanyScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private movementKeys!: {
-    W: Phaser.Input.Keyboard.Key;
-    A: Phaser.Input.Keyboard.Key;
-    S: Phaser.Input.Keyboard.Key;
-    D: Phaser.Input.Keyboard.Key;
+    readonly W: Phaser.Input.Keyboard.Key;
+    readonly A: Phaser.Input.Keyboard.Key;
+    readonly S: Phaser.Input.Keyboard.Key;
+    readonly D: Phaser.Input.Keyboard.Key;
   };
+  private areaRuntime?: AreaRuntime;
+  private interaction?: Interaction;
+  private navigation?: NavigationGrid;
   private movementPath: Point[] = [];
   private pendingActor?: ActorId;
+  private nearestActor?: ActorId;
+  private houseDoor?: Trigger<StoryStage>;
   private started = false;
   private paused = false;
-  private nearestActor?: ActorId;
-  private stone!: Phaser.GameObjects.Ellipse;
-  private lazarus!: Phaser.GameObjects.Container;
-  private jesusAreaLabel!: Phaser.GameObjects.Text;
+  private stone?: Phaser.GameObjects.Ellipse;
+  private lazarus?: Phaser.GameObjects.Container;
+  private decorations: Phaser.GameObjects.GameObject[] = [];
 
   constructor() {
     super("bethany");
   }
 
   preload(): void {
+    this.load.image("art-house", "assets/art/map-house-interior-clean.png");
     this.load.image("art-bethany", "assets/art/bethany-village.png");
     this.load.image("art-journey", "assets/art/journey-to-jesus.png");
     this.load.image("art-tomb", "assets/art/tomb-garden.png");
   }
 
   create(): void {
-    this.ui = this.registry.get("ui") as GameUI;
-    this.audio = this.registry.get("audio") as AudioManager;
-    this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    const ui = this.registry.get("ui");
+    const audio = this.registry.get("audio");
+    if (!(ui instanceof GameUI) || !(audio instanceof AudioManager)) {
+      throw new Error("Bethany scene requires initialized UI and audio services.");
+    }
+    this.ui = ui;
+    this.audio = audio;
+    this.resetRuntimeState();
     this.cameras.main.setBackgroundColor("#706348");
-
-    this.drawWorld();
     this.createPlayer();
-    this.createActors();
-    this.createTombElements();
+    this.registerActors();
+    this.areaRuntime = new AreaRuntime(this.createAreaHost(), AREAS);
+    this.interaction = new Interaction(
+      this.actorRegistry,
+      INTERACTION_RULES,
+      INTERACTION_DISTANCE,
+    );
+    this.enterArea("lazarus-house");
     this.configureInput();
-
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
-    this.cameras.main.setZoom(1);
     this.game.events.on("start-story", this.startStory, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off("start-story", this.startStory, this);
+      this.areaRuntime?.cleanup();
+      this.clearDecorations();
     });
   }
 
   update(): void {
-    if (!this.started || this.paused || this.ui.isBlockingOpen()) {
+    if (!this.canAcceptPlayerInput()) {
       this.player.setVelocity(0);
       this.ui.setInteractionPrompt(false);
       return;
@@ -111,200 +232,186 @@ export class BethanyScene extends Phaser.Scene {
 
     this.updateMovement();
     this.updateInteractionTarget();
+    this.tryHouseDoor();
     this.updateDepths();
   }
 
-  private startStory(): void {
-    if (this.started) {
-      return;
-    }
-
-    this.started = true;
-    this.audio.setState("dialogue", 1200);
-    this.ui.showGameHud();
-    this.updateObjective();
-    this.showDialogue(DIALOGUES.opening, () => {
-      this.story.completeOpening();
-      this.audio.setState("exploration", 2400);
-      this.updateObjective();
-      this.ui.showNotice("计分已经开始。请沿道路找到耶稣，并准确传达口信。");
-    });
+  private createAreaHost(): AreaHost {
+    return {
+      setBounds: (width, height) => {
+        this.physics.world.setBounds(0, 0, width, height);
+        this.cameras.main.setBounds(0, 0, width, height);
+      },
+      createBackground: (config) => this.createAreaBackground(config),
+      createObstacle: (obstacle) => this.createObstacle(obstacle),
+      clearActors: () => this.clearActorVisuals(),
+      rebuildNavigation: (config) => {
+        const paddedObstacles = config.obstacles.map((obstacle) => ({
+          x: obstacle.x - 36,
+          y: obstacle.y - 36,
+          width: obstacle.width + 72,
+          height: obstacle.height + 72,
+        }));
+        this.navigation = new NavigationGrid(
+          config.width,
+          config.height,
+          40,
+          paddedObstacles,
+        );
+      },
+    };
   }
 
-  private drawWorld(): void {
-    this.add
-      .rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, 0x74684c)
+  private createAreaBackground(config: AreaConfig): AreaResource {
+    const background = this.add
+      .rectangle(
+        config.width / 2,
+        config.height / 2,
+        config.width,
+        config.height,
+        config.backgroundColor,
+      )
+      .setDepth(-30);
+    const route = this.add
+      .rectangle(config.width / 2, config.height * 0.68, config.width, 150, 0xcbb98b, 0.5)
+      .setDepth(-29);
+    const art = this.textures.exists(config.backgroundKey)
+      ? this.add
+          .image(config.width / 2, config.height / 2, config.backgroundKey)
+          .setDisplaySize(config.width, config.height)
+          .setAlpha(config.id === "lazarus-house" ? 0.82 : 0.48)
+          .setDepth(-28)
+      : undefined;
+    return {
+      destroy: () => {
+        background.destroy();
+        route.destroy();
+        art?.destroy();
+      },
+    };
+  }
+
+  private createObstacle(obstacle: Rectangle): AreaResource {
+    const collisionBody = this.add
+      .rectangle(
+        obstacle.x + obstacle.width / 2,
+        obstacle.y + obstacle.height / 2,
+        obstacle.width,
+        obstacle.height,
+        0x3d3429,
+        0.12,
+      )
       .setDepth(-20);
-
-    if (this.textures.exists("art-bethany")) {
-      this.add
-        .image(650, 450, "art-bethany")
-        .setDisplaySize(1300, 900)
-        .setAlpha(0.48)
-        .setDepth(-19);
-    }
-    if (this.textures.exists("art-journey")) {
-      this.add
-        .image(1740, 450, "art-journey")
-        .setDisplaySize(1300, 900)
-        .setAlpha(0.4)
-        .setDepth(-19);
-    }
-    if (this.textures.exists("art-tomb")) {
-      this.add
-        .image(2780, 450, "art-tomb")
-        .setDisplaySize(1000, 900)
-        .setAlpha(0.5)
-        .setDepth(-19);
-    }
-
-    this.add
-      .rectangle(WORLD_WIDTH / 2, 560, WORLD_WIDTH, 270, 0xb8a173)
-      .setDepth(-18);
-    this.add
-      .rectangle(WORLD_WIDTH / 2, 560, WORLD_WIDTH, 115, 0xcbb98b)
-      .setDepth(-17);
-
-    const boundary = this.add.graphics().setDepth(-16);
-    boundary.lineStyle(8, 0x554b37, 0.7);
-    boundary.strokeRoundedRect(18, 18, WORLD_WIDTH - 36, WORLD_HEIGHT - 36, 24);
-
-    const buildingColors = [0x8a704b, 0x927854, 0x806747, 0x8c7250];
-    OBSTACLES.forEach((obstacle, index) => {
-      this.add
-        .rectangle(
-          obstacle.x + obstacle.width / 2,
-          obstacle.y + obstacle.height / 2,
-          obstacle.width,
-          obstacle.height,
-          buildingColors[index % buildingColors.length] ?? 0x8a704b,
-        )
-        .setStrokeStyle(8, 0x56432d)
-        .setDepth(-10);
-    });
-
-    this.addZoneLabel(410, 82, "马大与马利亚的家");
-    this.jesusAreaLabel = this.addZoneLabel(
-      1510,
-      425,
-      "耶稣所在之处（旅程场景）",
-    );
-    this.addZoneLabel(2330, 425, "通往坟墓的路");
-    this.addZoneLabel(2920, 425, "拉撒路的坟墓");
-
-    for (let x = 80; x < WORLD_WIDTH; x += 170) {
-      const upper = 70 + ((x * 17) % 70);
-      const lower = 760 + ((x * 11) % 80);
-      this.add.circle(x, upper, 22, 0x4d5d37).setDepth(-14);
-      this.add.circle(x + 70, lower, 27, 0x53633b).setDepth(-14);
-    }
-
-    this.add
-      .ellipse(2940, 430, 210, 145, 0x1c1b18)
-      .setStrokeStyle(12, 0x514839)
-      .setDepth(-9);
-  }
-
-  private addZoneLabel(
-    x: number,
-    y: number,
-    text: string,
-  ): Phaser.GameObjects.Text {
-    return this.add
-      .text(x, y, text, {
-        fontFamily: '"Microsoft YaHei", sans-serif',
-        fontSize: "24px",
-        color: "#fff3d4",
-        backgroundColor: "rgba(34,29,22,0.82)",
-        padding: { x: 13, y: 8 },
-      })
-      .setOrigin(0.5)
-      .setDepth(-8);
+    this.physics.add.existing(collisionBody, true);
+    const collider = this.physics.add.collider(this.player, collisionBody);
+    return {
+      destroy: () => {
+        collider.destroy();
+        collisionBody.destroy();
+      },
+    };
   }
 
   private createPlayer(): void {
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0x2f77be);
-    graphics.fillRect(8, 4, 40, 20);
-    graphics.fillStyle(0xd6ad7b);
-    graphics.fillRect(16, 0, 24, 20);
-    graphics.fillStyle(0x2f77be);
-    graphics.fillRect(8, 20, 40, 38);
-    graphics.fillStyle(0x1e4f82);
-    graphics.fillRect(8, 58, 16, 14);
-    graphics.fillRect(32, 58, 16, 14);
-    graphics.lineStyle(4, 0xcce8ff);
-    graphics.strokeRect(8, 20, 40, 38);
-    graphics.generateTexture("player", 56, 74);
-    graphics.destroy();
-
-    this.player = this.physics.add.sprite(560, 680, "player");
+    if (!this.textures.exists("player")) {
+      const graphics = this.add.graphics();
+      graphics.fillStyle(0x2f77be);
+      graphics.fillRect(8, 4, 40, 20);
+      graphics.fillStyle(0xd6ad7b);
+      graphics.fillRect(16, 0, 24, 20);
+      graphics.fillStyle(0x2f77be);
+      graphics.fillRect(8, 20, 40, 38);
+      graphics.fillStyle(0x1e4f82);
+      graphics.fillRect(8, 58, 16, 14);
+      graphics.fillRect(32, 58, 16, 14);
+      graphics.lineStyle(4, 0xcce8ff);
+      graphics.strokeRect(8, 20, 40, 38);
+      graphics.generateTexture("player", 56, 74);
+      graphics.destroy();
+    }
+    this.player = this.physics.add.sprite(0, 0, "player");
     this.player.setCollideWorldBounds(true);
     this.player.setBodySize(40, 30);
     this.player.setOffset(8, 40);
+  }
 
-    for (const obstacle of OBSTACLES) {
-      const collisionBody = this.add
-        .rectangle(
-          obstacle.x + obstacle.width / 2,
-          obstacle.y + obstacle.height / 2,
-          obstacle.width,
-          obstacle.height,
-          0xffffff,
-          0,
-        )
-        .setVisible(false);
-      this.physics.add.existing(collisionBody, true);
-      this.physics.add.collider(this.player, collisionBody);
+  private registerActors(): void {
+    for (const id of ACTOR_IDS) {
+      const actor = ACTORS[id];
+      this.actorRegistry.register(
+        new Character(id, actor.name, "lazarus-house", { x: 0, y: 0 }, false),
+      );
     }
   }
 
-  private createActors(): void {
-    this.createActor("martha", "马大", 520, 525, 0x76508b);
-    this.createActor("mary", "马利亚", 405, 565, 0xa44b59);
-    this.createActor("mourner", "安慰者", 650, 575, 0x667079);
-    this.createActor("jesus", "耶稣", 1510, 520, 0xf2e5bd);
-    this.createActor("guide", "带路的人", 1600, 600, 0x76654e);
-    this.setActorVisible("guide", false);
+  private resetRuntimeState(): void {
+    this.story = new StoryEngine();
+    this.actorRegistry = new ActorRegistry();
+    this.playerController = new PlayerController();
+    this.cutscenes = new CutsceneDirector(this.playerController);
+    this.npcPaths = new NpcPathController();
+    this.visuals.clear();
+    this.completedJourneys.clear();
+    this.areaRuntime = undefined;
+    this.interaction = undefined;
+    this.navigation = undefined;
+    this.movementPath = [];
+    this.pendingActor = undefined;
+    this.nearestActor = undefined;
+    this.houseDoor = undefined;
+    this.started = false;
+    this.paused = false;
+    this.stone = undefined;
+    this.lazarus = undefined;
+    this.decorations = [];
   }
 
-  private createActor(
-    id: ActorId,
-    name: string,
-    x: number,
-    y: number,
-    color: number,
-  ): void {
+  private enterArea(area: AreaId): void {
+    this.clearDecorations();
+    const config = this.areaRuntime?.enter(area);
+    if (!config) {
+      throw new Error(`Area runtime is not available for ${area}.`);
+    }
+    this.actorRegistry.hideAll();
+    for (const placement of config.actors) {
+      this.actorRegistry.move(placement.id, area, placement.position);
+      this.actorRegistry.setVisible(placement.id, placement.visible ?? true);
+      if (placement.visible ?? true) {
+        this.createActorVisual(placement.id);
+      }
+    }
+    this.player.setPosition(config.playerSpawn.x, config.playerSpawn.y);
+    this.stopPlayerMovement();
+    this.nearestActor = undefined;
+    if (area === "tomb-garden") {
+      this.createTombElements();
+    }
+    this.cameras.main.centerOn(this.player.x, this.player.y);
+  }
+
+  private createActorVisual(id: ActorId): void {
+    const actor = this.actorRegistry.require(id).state;
+    const details = ACTORS[id];
     const marker = this.add
       .ellipse(0, 31, 88, 40)
       .setStrokeStyle(4, 0xf4c86a, 0.95)
       .setVisible(false);
     const shadow = this.add.rectangle(0, 35, 60, 18, 0x2b261e, 0.35);
-    const legs = this.add.rectangle(0, 24, 42, 28, color).setStrokeStyle(3, 0x3d3429);
-    const body = this.add.rectangle(0, -7, 56, 52, color).setStrokeStyle(
-      4,
-      id === "jesus" ? 0x8d7b4d : 0xf5ead2,
-    );
+    const legs = this.add
+      .rectangle(0, 24, 42, 28, details.color)
+      .setStrokeStyle(3, 0x3d3429);
+    const body = this.add
+      .rectangle(0, -7, 56, 52, details.color)
+      .setStrokeStyle(4, id === "jesus" ? 0x8d7b4d : 0xf5ead2);
     const head = this.add
       .rectangle(0, -42, 30, 28, 0xd5a574)
       .setStrokeStyle(3, 0x5a4030);
-    const label = this.add
-      .text(0, -68, name, {
-        fontFamily: '"Microsoft YaHei", sans-serif',
-        fontSize: "22px",
-        color: id === "jesus" ? "#2d271b" : "#fffaf0",
-        backgroundColor:
-          id === "jesus" ? "rgba(255,244,208,0.92)" : "rgba(31,27,21,0.86)",
-        padding: { x: 9, y: 5 },
-      })
-      .setOrigin(0.5);
-    const container = this.add.container(x, y, [
+    const container = this.add.container(actor.position.x, actor.position.y, [
       marker,
       shadow,
       legs,
       body,
       head,
-      label,
     ]);
     container.setSize(92, 135);
     container.setInteractive({ useHandCursor: true });
@@ -320,32 +427,42 @@ export class BethanyScene extends Phaser.Scene {
         this.moveTowardActor(id);
       },
     );
+    this.visuals.set(id, { container, marker });
+  }
 
-    this.actors.set(id, { id, name, container, marker });
+  private clearActorVisuals(): void {
+    for (const visual of this.visuals.values()) {
+      visual.container.destroy();
+    }
+    this.visuals.clear();
   }
 
   private createTombElements(): void {
+    const entrance = this.add
+      .ellipse(865, 365, 210, 145, 0x1c1b18)
+      .setStrokeStyle(12, 0x514839)
+      .setDepth(-10);
     this.stone = this.add
-      .ellipse(2885, 470, 145, 165, 0x736b5e)
+      .ellipse(825, 405, 145, 165, 0x736b5e)
       .setStrokeStyle(7, 0x403b34)
-      .setDepth(470);
-
+      .setDepth(405);
     const body = this.add
       .rectangle(0, 0, 54, 92, 0xe7dec8)
       .setStrokeStyle(5, 0xa59a82);
-    const label = this.add
-      .text(0, -68, "拉撒路", {
-        fontFamily: '"Microsoft YaHei", sans-serif',
-        fontSize: "22px",
-        color: "#fffaf0",
-        backgroundColor: "rgba(31,27,21,0.86)",
-        padding: { x: 9, y: 5 },
-      })
-      .setOrigin(0.5);
     this.lazarus = this.add
-      .container(2940, 480, [body, label])
+      .container(880, 480, [body])
       .setDepth(480)
       .setVisible(false);
+    this.decorations = [entrance, this.stone, this.lazarus];
+  }
+
+  private clearDecorations(): void {
+    for (const decoration of this.decorations) {
+      decoration.destroy();
+    }
+    this.decorations = [];
+    this.stone = undefined;
+    this.lazarus = undefined;
   }
 
   private configureInput(): void {
@@ -353,48 +470,69 @@ export class BethanyScene extends Phaser.Scene {
     if (!keyboard) {
       throw new Error("Keyboard input is unavailable.");
     }
-
     this.cursors = keyboard.createCursorKeys();
-    this.movementKeys = keyboard.addKeys("W,A,S,D") as typeof this.movementKeys;
-
+    this.movementKeys = {
+      W: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      A: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      S: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      D: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+    };
     keyboard.on("keydown-SPACE", (event: KeyboardEvent) => {
-      if (event.repeat) {
-        return;
-      }
-      if (this.ui.advanceDialogue()) {
-        return;
-      }
-      if (this.ui.isChoiceOpen()) {
+      if (event.repeat || this.ui.advanceDialogue() || this.ui.isChoiceOpen()) {
         return;
       }
       this.interactWithNearestActor();
     });
     keyboard.on("keydown-ENTER", (event: KeyboardEvent) => {
-      if (!event.repeat) {
-        if (!this.ui.isChoiceOpen()) {
-          this.ui.advanceDialogue();
-        }
+      if (!event.repeat && !this.ui.isChoiceOpen()) {
+        this.ui.advanceDialogue();
       }
     });
     keyboard.on("keydown-ESC", (event: KeyboardEvent) => {
-      if (!event.repeat && this.started && !this.ui.isBlockingOpen()) {
+      if (
+        !event.repeat &&
+        this.started &&
+        !this.ui.isBlockingOpen() &&
+        !this.playerController.isLocked
+      ) {
         this.togglePause();
       }
     });
-
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (
-        !this.started ||
-        this.paused ||
-        this.ui.isBlockingOpen() ||
-        !pointer.leftButtonDown()
-      ) {
+      if (!this.canAcceptPlayerInput() || !pointer.leftButtonDown()) {
         return;
       }
-
       this.pendingActor = undefined;
       this.setMovementPath({ x: pointer.worldX, y: pointer.worldY });
     });
+  }
+
+  private startStory(): void {
+    if (this.started) {
+      return;
+    }
+    this.started = true;
+    this.ui.showGameHud();
+    this.updateObjective();
+    void this.cutscenes.run(async () => {
+      this.audio.setState("dialogue", 1200);
+      this.cameras.main.fadeIn(500, 20, 18, 14);
+      await this.tweenPlayer(10, -8, 550);
+      await this.showDialogue(DIALOGUES.opening);
+      this.story.completeOpening();
+      this.audio.setState("exploration", 2400);
+      this.updateObjective();
+      this.ui.showNotice("计分已经开始。走到门口，沿道路找到耶稣，并准确传达口信。");
+    });
+  }
+
+  private canAcceptPlayerInput(): boolean {
+    return (
+      this.started &&
+      !this.paused &&
+      !this.ui.isBlockingOpen() &&
+      !this.playerController.isLocked
+    );
   }
 
   private updateMovement(): void {
@@ -404,25 +542,15 @@ export class BethanyScene extends Phaser.Scene {
     const vertical =
       Number(this.cursors.down.isDown || this.movementKeys.S.isDown) -
       Number(this.cursors.up.isDown || this.movementKeys.W.isDown);
-
-    if (horizontal !== 0 || vertical !== 0) {
+    const direction = this.playerController.resolveMovement(horizontal, vertical);
+    if (direction.x !== 0 || direction.y !== 0) {
       this.movementPath = [];
       this.pendingActor = undefined;
-      const direction = new Phaser.Math.Vector2(horizontal, vertical).normalize();
-      this.player.setVelocity(
-        direction.x * PLAYER_SPEED,
-        direction.y * PLAYER_SPEED,
-      );
+      this.player.setVelocity(direction.x * PLAYER_SPEED, direction.y * PLAYER_SPEED);
       return;
     }
-
-    if (this.movementPath.length > 0) {
-      const waypoint = this.movementPath[0];
-      if (!waypoint) {
-        this.player.setVelocity(0);
-        return;
-      }
-
+    const waypoint = this.movementPath[0];
+    if (waypoint) {
       const distance = Phaser.Math.Distance.Between(
         this.player.x,
         this.player.y,
@@ -433,141 +561,131 @@ export class BethanyScene extends Phaser.Scene {
         this.movementPath.shift();
         this.player.setVelocity(0);
       } else {
-        this.physics.moveTo(
-          this.player,
-          waypoint.x,
-          waypoint.y,
-          PLAYER_SPEED,
-        );
+        this.physics.moveTo(this.player, waypoint.x, waypoint.y, PLAYER_SPEED);
       }
       return;
     }
-
     this.player.setVelocity(0);
     if (this.pendingActor) {
-      const actor = this.actors.get(this.pendingActor);
-      if (
-        actor &&
-        actor.container.visible &&
-        this.distanceTo(actor) > INTERACTION_DISTANCE
-      ) {
-        this.setMovementPath({
-          x: actor.container.x,
-          y: actor.container.y + 78,
-        });
+      const context = this.interactionContext();
+      if (!this.interaction?.canApproach(this.pendingActor, context)) {
+        this.pendingActor = undefined;
+        return;
+      }
+      const target = this.interaction.targetPosition(this.pendingActor);
+      if (target && !this.interaction.canInteract(this.pendingActor, context)) {
+        this.setMovementPath(target);
       }
     }
   }
 
   private updateInteractionTarget(): void {
-    let nearest: Actor | undefined;
-    let nearestDistance = Number.POSITIVE_INFINITY;
-
-    for (const actor of this.actors.values()) {
-      if (!actor.container.visible) {
-        continue;
-      }
-      const distance = this.distanceTo(actor);
-      if (distance < nearestDistance) {
-        nearest = actor;
-        nearestDistance = distance;
-      }
-    }
-
-    this.nearestActor =
-      nearest && nearestDistance <= INTERACTION_DISTANCE
-        ? nearest.id
-        : undefined;
+    this.nearestActor = this.interaction?.nearest(this.interactionContext());
+    const actor = this.nearestActor
+      ? this.actorRegistry.get(this.nearestActor)?.state
+      : undefined;
     this.ui.setInteractionPrompt(
-      this.nearestActor !== undefined,
-      this.nearestActor
-        ? `SPACE / 点击与${this.actors.get(this.nearestActor)?.name ?? "人物"}互动`
-        : undefined,
+      actor !== undefined,
+      actor ? `SPACE / 点击与${actor.name}互动` : undefined,
     );
-
     if (
       this.pendingActor &&
-      this.nearestActor === this.pendingActor &&
+      this.pendingActor === this.nearestActor &&
       this.movementPath.length === 0
     ) {
-      const actor = this.pendingActor;
+      const actorId = this.pendingActor;
       this.pendingActor = undefined;
-      this.handleActorInteraction(actor);
+      this.handleActorInteraction(actorId);
     }
   }
 
-  private updateDepths(): void {
-    this.player.setDepth(this.player.y);
-    for (const actor of this.actors.values()) {
-      actor.container.setDepth(actor.container.y);
+  private interactionContext() {
+    const area = this.areaRuntime?.currentArea;
+    if (!area) {
+      throw new Error("Cannot interact before entering an area.");
     }
+    return {
+      area,
+      playerPosition: { x: this.player.x, y: this.player.y },
+      stage: this.story.stage,
+      inputLocked: !this.canAcceptPlayerInput(),
+    };
+  }
+
+  private tryHouseDoor(): void {
+    if (this.areaRuntime?.currentArea !== "lazarus-house") {
+      return;
+    }
+    if (
+      Phaser.Math.Distance.Between(this.player.x, this.player.y, 970, 680) >
+      82
+    ) {
+      return;
+    }
+    if (!this.houseDoor) {
+      this.houseDoor = new Trigger<StoryStage>({
+        stage: "deliverMessage",
+        handler: () =>
+          this.cutscenes.run(async () => {
+            this.enterArea("road-to-jesus");
+            this.cameras.main.fadeIn(350, 20, 18, 14);
+            this.ui.showNotice("沿道路前进，找到耶稣。");
+          }),
+      });
+    }
+    const houseDoor = this.houseDoor;
+    void houseDoor.tryActivate(this.story.stage).catch(() => {
+      this.ui.showNotice("转场未完成，请再次靠近门口。");
+    });
+  }
+
+  private setMovementPath(target: Point): void {
+    const path = this.navigation?.findPath(
+      { x: this.player.x, y: this.player.y },
+      target,
+    );
+    if (!path || path.length === 0) {
+      this.movementPath = [];
+      this.ui.showNotice("那里无法到达，请点击道路上的位置。", 1800);
+      return;
+    }
+    this.movementPath = path;
   }
 
   private moveTowardActor(id: ActorId): void {
-    if (!this.started || this.paused || this.ui.isBlockingOpen()) {
+    if (!this.canAcceptPlayerInput()) {
       return;
     }
-
-    const actor = this.actors.get(id);
-    if (!actor?.container.visible) {
+    const context = this.interactionContext();
+    if (!this.interaction?.canApproach(id, context)) {
       return;
     }
-
     this.pendingActor = id;
-    if (this.distanceTo(actor) <= INTERACTION_DISTANCE) {
-      this.movementPath = [];
+    if (this.nearestActor === id) {
       this.pendingActor = undefined;
       this.handleActorInteraction(id);
       return;
     }
-
-    this.setMovementPath({
-      x: actor.container.x,
-      y: actor.container.y + 78,
-    });
+    const target = this.interaction.targetPosition(id);
+    if (target) {
+      this.setMovementPath(target);
+    }
   }
 
   private interactWithNearestActor(): void {
-    if (
-      !this.started ||
-      this.paused ||
-      this.ui.isBlockingOpen() ||
-      !this.nearestActor
-    ) {
+    if (!this.canAcceptPlayerInput() || !this.nearestActor) {
       return;
     }
     this.handleActorInteraction(this.nearestActor);
   }
 
   private handleActorInteraction(id: ActorId): void {
+    this.stopPlayerMovement();
     switch (this.story.stage) {
       case "deliverMessage":
-        if (id !== "jesus") {
-          const result = this.story.answerQuestion(
-            "find-jesus",
-            id,
-            "jesus",
-          );
-          this.ui.setScore(this.story.score);
-          this.ui.showNotice(
-            `${result.message} 当前任务是找到耶稣。`,
-          );
-          return;
+        if (id === "jesus") {
+          void this.deliverMessage();
         }
-        this.audio.setState("dialogue", 1800);
-        this.askQuestion(QUESTIONS.message, () => {
-          this.story.deliverMessage();
-          this.updateObjective();
-          this.showDialogue(DIALOGUES.messageJourney, () => {
-            this.story.arriveAtBethany();
-            this.resetAfterJourney();
-            this.audio.setState("exploration", 2400);
-            this.updateObjective();
-            this.ui.showNotice(
-              "耶稣来到伯大尼附近。现在请小组根据经文判断谁先出去迎接他。",
-            );
-          });
-        });
         return;
       case "chooseMartha":
       case "chooseMary":
@@ -576,81 +694,55 @@ export class BethanyScene extends Phaser.Scene {
         return;
       case "followMartha":
         if (id === "martha" && this.completedJourneys.has("martha")) {
-          this.story.arriveAtMartha();
-          this.audio.setState("dialogue", 1800);
-          this.updateObjective();
-          this.showDialogue(DIALOGUES.marthaBeforeQuestion, () => {
-            this.askQuestion(QUESTIONS.marthaResurrection, () => {
-              this.showDialogue(DIALOGUES.marthaCore, () => {
-                this.showDialogue(DIALOGUES.marthaReturns, () => {
-                  this.story.completeMarthaDialogue();
-                  this.resetAtHomeForMary();
-                  this.audio.setState("exploration", 2400);
-                  this.updateObjective();
-                });
-              });
-            });
-          });
-        } else {
-          this.ui.showNotice("马大仍在前往村外。请跟随她，并在她停下后靠近。");
+          void this.runMarthaSequence();
         }
         return;
       case "followMary":
         if (id === "mary" && this.completedJourneys.has("mary")) {
-          this.story.arriveAtMary();
-          this.audio.setState("dialogue", 1800);
-          this.updateObjective();
-          this.showDialogue(DIALOGUES.mary, () => {
-            this.story.completeMaryDialogue();
-            this.prepareGuideDecision();
-            this.updateObjective();
-          });
-        } else {
-          this.ui.showNotice("马利亚正在前往耶稣那里。请跟随她和安慰她的人。");
+          void this.runMarySequence();
         }
         return;
       case "followGuide":
         if (id === "guide" && this.completedJourneys.has("guide")) {
-          this.story.arriveAtTomb();
-          this.audio.setState("dialogue", 2200);
-          this.prepareTombScene();
-          this.updateObjective();
-          this.showDialogue(DIALOGUES.tomb, () => this.revealLazarus());
-        } else {
-          this.ui.showNotice("带路的人还在前往坟墓。请继续跟随。");
+          void this.runTombSequence();
         }
         return;
       default:
-        this.ui.showNotice("请按照画面上方的当前经文线索继续。");
+        return;
     }
+  }
+
+  private async deliverMessage(): Promise<void> {
+    await this.cutscenes.run(async () => {
+      this.audio.setState("dialogue", 1800);
+      await this.askQuestion(QUESTIONS.message);
+      this.story.deliverMessage();
+      this.updateObjective();
+      await this.showDialogue(DIALOGUES.messageJourney);
+      this.enterArea("bethany-village");
+      this.story.arriveAtBethany();
+      this.audio.setState("exploration", 2400);
+      this.updateObjective();
+      this.ui.showNotice("耶稣来到伯大尼附近。根据经文判断谁先出去迎接他。");
+    });
   }
 
   private handleDecision(id: ActorId): void {
     const result = this.story.interact(id);
     this.ui.setScore(this.story.score);
-    const penaltyText =
-      result.penalty > 0 ? `（经文观察分 -${result.penalty}）` : "";
+    const penaltyText = result.penalty > 0 ? `（经文观察分 -${result.penalty}）` : "";
     this.ui.showNotice(`${result.message}${penaltyText}`);
-
     if (result.revealHint) {
       this.highlightExpectedActor();
     }
-
     if (result.kind !== "correct") {
       return;
     }
-
     this.updateObjective();
-    if (
-      this.story.stage === "followMartha" ||
-      this.story.stage === "followMary" ||
-      this.story.stage === "followGuide"
-    ) {
-      this.audio.setState("exploration", 2200);
-    }
+    this.audio.setState("exploration", 2200);
     switch (this.story.stage) {
       case "followMartha":
-        this.moveActorAlong(
+        void this.moveActorAlong(
           "martha",
           [
             { x: 880, y: 610 },
@@ -659,9 +751,9 @@ export class BethanyScene extends Phaser.Scene {
           ],
           () => this.completedJourneys.add("martha"),
         );
-        break;
+        return;
       case "followMary":
-        this.moveActorAlong(
+        void this.moveActorAlong(
           "mary",
           [
             { x: 820, y: 620 },
@@ -671,7 +763,7 @@ export class BethanyScene extends Phaser.Scene {
           () => this.completedJourneys.add("mary"),
         );
         this.time.delayedCall(650, () => {
-          this.moveActorAlong(
+          void this.moveActorAlong(
             "mourner",
             [
               { x: 810, y: 690 },
@@ -681,49 +773,120 @@ export class BethanyScene extends Phaser.Scene {
             () => undefined,
           );
         });
-        break;
+        return;
       case "followGuide":
-        this.moveActorAlong(
+        void this.moveActorAlong(
           "guide",
           [
-            { x: 1940, y: 540 },
-            { x: 2260, y: 525 },
-            { x: 2570, y: 510 },
-            { x: 2770, y: 500 },
+            { x: 1640, y: 590 },
+            { x: 1710, y: 545 },
+            { x: 1770, y: 510 },
           ],
           () => this.completedJourneys.add("guide"),
         );
-        break;
+        return;
       default:
-        break;
+        return;
     }
   }
 
-  private resetAtHomeForMary(): void {
+  private async moveActorAlong(
+    id: ActorId,
+    points: readonly Point[],
+    onComplete: () => void,
+  ): Promise<void> {
+    const completed = await this.npcPaths.follow(id, points, this.npcPathAdapter());
+    if (completed) {
+      onComplete();
+    }
+  }
+
+  private npcPathAdapter(): NpcPathAdapter {
+    return {
+      positionOf: (id) => this.actorRegistry.get(id)?.state.position,
+      moveTo: (id, target, durationMs) =>
+        new Promise((resolve) => {
+          const visual = this.visuals.get(id);
+          const area = this.areaRuntime?.currentArea;
+          if (!visual || !area) {
+            resolve();
+            return;
+          }
+          this.tweens.add({
+            targets: visual.container,
+            x: target.x,
+            y: target.y,
+            duration: durationMs,
+            ease: "Linear",
+            onUpdate: () => {
+              this.actorRegistry.move(id, area, {
+                x: visual.container.x,
+                y: visual.container.y,
+              });
+            },
+            onComplete: () => {
+              this.actorRegistry.move(id, area, target);
+              resolve();
+            },
+          });
+        }),
+    };
+  }
+
+  private async runMarthaSequence(): Promise<void> {
+    await this.cutscenes.run(async () => {
+      this.story.arriveAtMartha();
+      this.audio.setState("dialogue", 1800);
+      this.updateObjective();
+      await this.showDialogue(DIALOGUES.marthaBeforeQuestion);
+      await this.askQuestion(QUESTIONS.marthaResurrection);
+      await this.showDialogue(DIALOGUES.marthaCore);
+      await this.showDialogue(DIALOGUES.marthaReturns);
+      this.story.completeMarthaDialogue();
+      this.resetForMary();
+      this.audio.setState("exploration", 2400);
+      this.updateObjective();
+    });
+  }
+
+  private async runMarySequence(): Promise<void> {
+    await this.cutscenes.run(async () => {
+      this.story.arriveAtMary();
+      this.audio.setState("dialogue", 1800);
+      this.updateObjective();
+      await this.showDialogue(DIALOGUES.mary);
+      this.story.completeMaryDialogue();
+      this.prepareGuideDecision();
+      this.updateObjective();
+    });
+  }
+
+  private async runTombSequence(): Promise<void> {
+    await this.cutscenes.run(async () => {
+      this.story.arriveAtTomb();
+      this.enterArea("tomb-garden");
+      this.audio.setState("dialogue", 2200);
+      this.updateObjective();
+      await this.showDialogue(DIALOGUES.tomb);
+      await this.revealLazarus();
+    });
+  }
+
+  private resetForMary(): void {
     this.completedJourneys.delete("mary");
-    this.player.setPosition(600, 685);
-    this.player.setVelocity(0);
-    this.movementPath = [];
-    this.pendingActor = undefined;
+    this.stopPlayerMovement();
     this.setActorPosition("martha", 515, 525);
     this.setActorPosition("mary", 405, 565);
     this.setActorPosition("mourner", 650, 575);
+    this.player.setPosition(600, 685);
     this.cameras.main.centerOn(this.player.x, this.player.y);
     this.cameras.main.flash(350, 242, 229, 189);
   }
 
-  private resetAfterJourney(): void {
-    this.player.setPosition(560, 680);
+  private stopPlayerMovement(): void {
     this.player.setVelocity(0);
     this.movementPath = [];
     this.pendingActor = undefined;
-    this.setActorPosition("martha", 520, 525);
-    this.setActorPosition("mary", 405, 565);
-    this.setActorPosition("mourner", 650, 575);
-    this.setActorPosition("jesus", 1510, 520);
-    this.jesusAreaLabel.setText("耶稣停留的村外地点");
-    this.cameras.main.centerOn(this.player.x, this.player.y);
-    this.cameras.main.flash(350, 242, 229, 189);
   }
 
   private prepareGuideDecision(): void {
@@ -735,86 +898,148 @@ export class BethanyScene extends Phaser.Scene {
     this.completedJourneys.delete("guide");
   }
 
-  private prepareTombScene(): void {
-    this.setActorPosition("jesus", 2820, 520);
-    this.setActorPosition("martha", 2740, 600);
-    this.setActorPosition("mary", 2800, 650);
-    this.setActorPosition("mourner", 2680, 670);
-    this.player.setPosition(2640, 590);
-    this.player.setVelocity(0);
-    this.movementPath = [];
-    this.pendingActor = undefined;
-    this.cameras.main.pan(2820, 500, 650, "Sine.easeInOut");
+  private setActorPosition(id: ActorId, x: number, y: number): void {
+    const area = this.areaRuntime?.currentArea;
+    const visual = this.visuals.get(id);
+    if (!area || !visual) {
+      return;
+    }
+    this.actorRegistry.move(id, area, { x, y });
+    visual.container.setPosition(x, y);
   }
 
-  private revealLazarus(): void {
+  private setActorVisible(id: ActorId, visible: boolean): void {
+    this.actorRegistry.setVisible(id, visible);
+    if (visible && !this.visuals.has(id)) {
+      this.createActorVisual(id);
+      return;
+    }
+    const visual = this.visuals.get(id);
+    visual?.container.setVisible(visible).setActive(visible);
+  }
+
+  private async revealLazarus(): Promise<void> {
+    const stone = this.stone;
+    const lazarus = this.lazarus;
+    if (!stone || !lazarus) {
+      throw new Error("The tomb scene is incomplete.");
+    }
     this.audio.setState("revelation", 3000);
-    this.tweens.add({
-      targets: this.stone,
-      x: 2735,
-      duration: 900,
-      ease: "Sine.easeInOut",
-      onComplete: () => {
-        this.lazarus.setVisible(true);
-        this.tweens.add({
-          targets: this.lazarus,
-          y: 525,
-          duration: 800,
-          ease: "Sine.easeOut",
-          onComplete: () => {
-            this.story.completeTomb();
-            this.updateObjective();
-            this.showDialogue(DIALOGUES.epilogue, () => {
-              this.audio.setState("dialogue", 1800);
-              this.askQuestion(QUESTIONS.aftermath, () => {
-                this.story.completeEpilogue();
-                this.audio.setState("revelation", 3000);
-                this.updateObjective();
-                this.ui.showResult(
-                  this.story.score,
-                  this.story.resultLabel(),
-                  () => window.location.reload(),
-                  () => this.returnToStudy(),
-                );
-              });
-            });
-          },
-        });
-      },
+    await new Promise<void>((resolve) => {
+      this.tweens.add({
+        targets: stone,
+        x: 660,
+        duration: 900,
+        ease: "Sine.easeInOut",
+        onComplete: () => resolve(),
+      });
     });
+    lazarus.setVisible(true);
+    await new Promise<void>((resolve) => {
+      this.tweens.add({
+        targets: lazarus,
+        y: 430,
+        duration: 800,
+        ease: "Sine.easeOut",
+        onComplete: () => resolve(),
+      });
+    });
+    this.story.completeTomb();
+    this.updateObjective();
+    await this.showDialogue(DIALOGUES.epilogue);
+    this.audio.setState("dialogue", 1800);
+    await this.askQuestion(QUESTIONS.aftermath);
+    this.story.completeEpilogue();
+    this.audio.setState("revelation", 3000);
+    this.updateObjective();
+    this.ui.showResult(
+      this.story.score,
+      this.story.resultLabel(),
+      () => window.location.reload(),
+      () => this.returnToStudy(),
+    );
   }
 
   private askQuestion(
     question: (typeof QUESTIONS)[keyof typeof QUESTIONS],
-    onCorrect: () => void,
-  ): void {
-    this.player.setVelocity(0);
-    this.movementPath = [];
-    this.pendingActor = undefined;
-    this.ui.showChoice(
-      question,
-      (optionId) => {
-        const result = this.story.answerQuestion(
-          question.id,
-          optionId,
-          question.correctOption,
-        );
-        this.ui.setScore(this.story.score);
-        return result;
-      },
-      onCorrect,
-    );
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      this.ui.showChoice(
+        question,
+        (optionId) => {
+          const result = this.story.answerQuestion(
+            question.id,
+            optionId,
+            question.correctOption,
+          );
+          this.ui.setScore(this.story.score);
+          return result;
+        },
+        resolve,
+      );
+    });
   }
 
-  private showDialogue(
-    lines: readonly DialogueLine[],
-    onComplete: () => void,
-  ): void {
-    this.ui.showDialogue(lines, onComplete, (line) => {
-      if (line.music) {
-        this.audio.setState(line.music, this.musicTransitionDuration(line.music));
-      }
+  private showDialogue(lines: readonly DialogueLine[]): Promise<void> {
+    return new Promise((resolve) => {
+      this.ui.showDialogue(lines, resolve, (line) => {
+        if (line.music) {
+          this.audio.setState(line.music, this.musicTransitionDuration(line.music));
+        }
+      });
     });
+  }
+
+  private tweenPlayer(offsetX: number, offsetY: number, duration: number): Promise<void> {
+    const x = this.player.x;
+    const y = this.player.y;
+    return new Promise((resolve) => {
+      this.tweens.add({
+        targets: this.player,
+        x: x + offsetX,
+        y: y + offsetY,
+        duration,
+        yoyo: true,
+        ease: "Sine.easeInOut",
+        onComplete: () => resolve(),
+      });
+    });
+  }
+
+  private highlightExpectedActor(): void {
+    const expected: Partial<Record<StoryStage, ActorId>> = {
+      chooseMartha: "martha",
+      chooseMary: "mary",
+      chooseGuide: "guide",
+    };
+    const id = expected[this.story.stage];
+    const visual = id ? this.visuals.get(id) : undefined;
+    if (!visual) {
+      return;
+    }
+    visual.marker.setVisible(true).setAlpha(1).setScale(1);
+    this.tweens.add({
+      targets: visual.marker,
+      alpha: 0.25,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 700,
+      yoyo: true,
+      repeat: 4,
+      onComplete: () => visual.marker.setVisible(false),
+    });
+  }
+
+  private updateDepths(): void {
+    this.player.setDepth(this.player.y);
+    for (const visual of this.visuals.values()) {
+      visual.container.setDepth(visual.container.y);
+    }
+  }
+
+  private updateObjective(): void {
+    this.ui.setObjective(OBJECTIVES[this.story.stage]);
+    this.ui.setScore(this.story.score);
   }
 
   private musicTransitionDuration(state: MusicState): number {
@@ -830,110 +1055,11 @@ export class BethanyScene extends Phaser.Scene {
     }
   }
 
-  private moveActorAlong(
-    id: ActorId,
-    points: readonly Point[],
-    onComplete: () => void,
-  ): void {
-    const actor = this.actors.get(id);
-    if (!actor) {
-      return;
-    }
-
-    const moveNext = (index: number): void => {
-      const point = points[index];
-      if (!point) {
-        onComplete();
-        return;
-      }
-
-      const distance = Phaser.Math.Distance.Between(
-        actor.container.x,
-        actor.container.y,
-        point.x,
-        point.y,
-      );
-      this.tweens.add({
-        targets: actor.container,
-        x: point.x,
-        y: point.y,
-        duration: Math.max(400, (distance / 185) * 1000),
-        ease: "Linear",
-        onComplete: () => moveNext(index + 1),
-      });
-    };
-
-    moveNext(0);
-  }
-
-  private highlightExpectedActor(): void {
-    const expected: Partial<Record<typeof this.story.stage, ActorId>> = {
-      chooseMartha: "martha",
-      chooseMary: "mary",
-      chooseGuide: "guide",
-    };
-    const id = expected[this.story.stage];
-    const actor = id ? this.actors.get(id) : undefined;
-    if (!actor) {
-      return;
-    }
-
-    actor.marker.setVisible(true).setAlpha(1).setScale(1);
-    this.tweens.add({
-      targets: actor.marker,
-      alpha: 0.25,
-      scaleX: 1.5,
-      scaleY: 1.5,
-      duration: 700,
-      yoyo: true,
-      repeat: 4,
-      onComplete: () => actor.marker.setVisible(false),
-    });
-  }
-
-  private setMovementPath(target: Point): void {
-    const path = this.navigation.findPath(
-      { x: this.player.x, y: this.player.y },
-      target,
-    );
-    if (path.length === 0) {
-      this.movementPath = [];
-      this.ui.showNotice("那里无法到达，请点击道路上的位置。", 1800);
-      return;
-    }
-    this.movementPath = path;
-  }
-
-  private distanceTo(actor: Actor): number {
-    return Phaser.Math.Distance.Between(
-      this.player.x,
-      this.player.y,
-      actor.container.x,
-      actor.container.y,
-    );
-  }
-
-  private setActorPosition(id: ActorId, x: number, y: number): void {
-    this.actors.get(id)?.container.setPosition(x, y);
-  }
-
-  private setActorVisible(id: ActorId, visible: boolean): void {
-    const actor = this.actors.get(id);
-    actor?.container.setVisible(visible);
-    actor?.container.setActive(visible);
-  }
-
-  private updateObjective(): void {
-    this.ui.setObjective(OBJECTIVES[this.story.stage]);
-    this.ui.setScore(this.story.score);
-  }
-
   private togglePause(): void {
     if (this.paused) {
       this.resumeGame();
       return;
     }
-
     this.paused = true;
     this.player.setVelocity(0);
     this.physics.world.pause();
@@ -965,7 +1091,6 @@ export class BethanyScene extends Phaser.Scene {
         return;
       }
     }
-
     if (document.referrer) {
       const referrer = new URL(document.referrer);
       if (referrer.origin === window.location.origin) {
@@ -973,7 +1098,6 @@ export class BethanyScene extends Phaser.Scene {
         return;
       }
     }
-
     window.location.reload();
   }
 }

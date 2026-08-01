@@ -175,6 +175,10 @@ button.primary {
   padding: 24px 30px 22px;
 }
 
+.dialogue--without-portrait {
+  grid-template-columns: 1fr;
+}
+
 .dialogue-portrait {
   min-height: 280px;
   border-right: 2px solid rgba(244, 200, 106, 0.45);

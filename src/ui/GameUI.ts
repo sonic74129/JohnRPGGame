@@ -382,6 +382,7 @@ export class GameUI {
       },
     };
     const selected = portrait ? portraits[portrait] : undefined;
+    this.dialogue.classList.toggle("dialogue--without-portrait", !selected);
     this.dialoguePortrait.classList.toggle("is-hidden", !selected);
     if (!selected) {
       return;
