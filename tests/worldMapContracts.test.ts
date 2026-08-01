@@ -19,7 +19,18 @@ interface Profile {
 interface WorldMapLayout {
   schemaVersion: string;
   canvas: { width: number; height: number; north: string; safeBorder: number };
-  regions: Record<string, { bounds?: Bounds; center?: Point; points?: Point[] }>;
+  regions: {
+    marthaCompound: { bounds: Bounds; door: Point };
+    village: { bounds: Bounds; center: Point };
+    meetingArea: { bounds: Bounds; center: Point };
+    jesusCamp: { bounds: Bounds; center: Point };
+    tombRoute: { points: Point[] };
+    tombGarden: {
+      bounds: Bounds;
+      center: Point;
+      stoneReserve: { width: number; height: number };
+    };
+  };
   sharedDimensions: {
     roads: { main: Range; secondary: Range };
     villageHouse: { visibleHeight: Range };
@@ -29,7 +40,7 @@ interface WorldMapLayout {
     spriteHeights: number[];
     locations: string[];
     approvedSpriteSources: string[];
-    scores: Record<string, { passesHardCriteria: boolean }>;
+    scores: Record<"A" | "B" | "C", { passesHardCriteria: boolean }>;
   };
   selectedProfile: "A" | "B" | "C";
   lockedScale: Profile & {
