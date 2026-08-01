@@ -17,6 +17,7 @@ export const WORLD_GROUND_ASSET = {
 
 export const WORLD_GROUND_CELL_SIZE = 128;
 export const WORLD_GROUND_FRAME_CROP = 10;
+export const WORLD_GROUND_BASE_FRAME_CROP = 92;
 export const WORLD_GROUND_RENDER_SIZE = 132;
 export const WORLD_GROUND_COLUMNS = WORLD_WIDTH / WORLD_GROUND_CELL_SIZE;
 export const WORLD_GROUND_ROWS = WORLD_HEIGHT / WORLD_GROUND_CELL_SIZE;
@@ -32,12 +33,29 @@ export interface WorldGroundTile {
 export const worldGroundInnerFrame = (frame: number): string =>
   `world-ground-inner-${frame}`;
 
+export const worldGroundBaseFrame = (frame: number): string =>
+  `world-ground-base-${frame}`;
+
 interface Cell {
   readonly column: number;
   readonly row: number;
 }
 
 const cellKey = ({ column, row }: Cell): string => `${column},${row}`;
+
+const cellPattern = ({ column, row }: Cell, salt = 0): number =>
+  (column * 37 + row * 73 + column * row * 17 + salt) >>> 0;
+
+const baseFrame = (cell: Cell): number => {
+  const pattern = cellPattern(cell);
+  return pattern % 2 === 0 ? 0 : 12;
+};
+
+const baseAngle = (cell: Cell): number =>
+  (cellPattern(cell, 19) % 4) * 90;
+
+const straightRoadFrame = (cell: Cell): number =>
+  [2, 5, 10][cellPattern(cell, 41) % 3] ?? 2;
 
 export const worldPointToGroundCell = ({ x, y }: Point): Cell => ({
   column: Math.min(
@@ -105,10 +123,10 @@ const roadFrame = (cell: Cell): Pick<WorldGroundTile, "frame" | "angle"> => {
     return { frame: 7, angle: 0 };
   }
   if (north && south) {
-    return { frame: 2, angle: 0 };
+    return { frame: straightRoadFrame(cell), angle: 0 };
   }
   if (east && west) {
-    return { frame: 2, angle: 90 };
+    return { frame: straightRoadFrame(cell), angle: 90 };
   }
   if (north && east) {
     return { frame: 6, angle: 0 };
@@ -123,7 +141,7 @@ const roadFrame = (cell: Cell): Pick<WorldGroundTile, "frame" | "angle"> => {
     return { frame: 6, angle: 270 };
   }
   return {
-    frame: 2,
+    frame: straightRoadFrame(cell),
     angle: east || west ? 90 : 0,
   };
 };
@@ -134,8 +152,8 @@ for (let row = 0; row < WORLD_GROUND_ROWS; row += 1) {
     baseTiles.push({
       column,
       row,
-      frame: 0,
-      angle: 0,
+      frame: baseFrame({ column, row }),
+      angle: baseAngle({ column, row }),
       layer: "base",
     });
   }

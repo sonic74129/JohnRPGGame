@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import {
   WORLD_GROUND_ASSET,
+  WORLD_GROUND_BASE_FRAME_CROP,
   WORLD_GROUND_COLUMNS,
   WORLD_GROUND_FRAME_CROP,
   WORLD_GROUND_ROAD_CELLS,
   WORLD_GROUND_ROWS,
   WORLD_GROUND_RENDER_SIZE,
   WORLD_GROUND_TILES,
+  worldGroundBaseFrame,
   worldGroundInnerFrame,
   worldPointToGroundCell,
 } from "../src/game/WorldGround";
@@ -59,15 +61,42 @@ describe("approved continuous world ground", () => {
     }
   });
 
-  it("uses one seamless dry-earth frame for every base cell", () => {
+  it("varies approved base frames and rotations deterministically", () => {
     const baseTiles = WORLD_GROUND_TILES.filter(({ layer }) => layer === "base");
-    expect(new Set(baseTiles.map(({ frame }) => frame))).toEqual(new Set([0]));
-    expect(new Set(baseTiles.map(({ angle }) => angle))).toEqual(new Set([0]));
+    const frames = new Set(baseTiles.map(({ frame }) => frame));
+    const angles = new Set(baseTiles.map(({ angle }) => angle));
+
+    expect(frames).toEqual(new Set([0, 12]));
+    expect(angles).toEqual(new Set([0, 90, 180, 270]));
+    expect(baseTiles.slice(0, 6).map(({ frame, angle }) => [frame, angle])).toEqual([
+      [0, 270],
+      [12, 0],
+      [0, 90],
+      [12, 180],
+      [0, 270],
+      [12, 0],
+    ]);
+  });
+
+  it("varies compatible straight-road frames without changing route cells", () => {
+    const straightRoadFrames = new Set(
+      WORLD_GROUND_TILES.filter(
+        ({ layer, frame }) =>
+          layer === "road" && (frame === 2 || frame === 5 || frame === 10),
+      ).map(({ frame }) => frame),
+    );
+
+    expect(straightRoadFrames).toEqual(new Set([2, 5, 10]));
   });
 
   it("crops atlas borders and slightly overlaps adjacent runtime cells", () => {
     expect(WORLD_GROUND_FRAME_CROP).toBe(10);
+    expect(WORLD_GROUND_BASE_FRAME_CROP).toBe(92);
+    expect(WORLD_GROUND_BASE_FRAME_CROP).toBeGreaterThan(
+      WORLD_GROUND_FRAME_CROP,
+    );
     expect(WORLD_GROUND_RENDER_SIZE).toBeGreaterThan(128);
     expect(worldGroundInnerFrame(15)).toBe("world-ground-inner-15");
+    expect(worldGroundBaseFrame(12)).toBe("world-ground-base-12");
   });
 });

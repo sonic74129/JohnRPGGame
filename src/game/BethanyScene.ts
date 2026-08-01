@@ -85,10 +85,12 @@ import {
 } from "./WorldArt";
 import {
   WORLD_GROUND_ASSET,
+  WORLD_GROUND_BASE_FRAME_CROP,
   WORLD_GROUND_CELL_SIZE,
   WORLD_GROUND_FRAME_CROP,
   WORLD_GROUND_RENDER_SIZE,
   WORLD_GROUND_TILES,
+  worldGroundBaseFrame,
   worldGroundInnerFrame,
 } from "./WorldGround";
 import { WorldRuntime, type WorldHost } from "./WorldRuntime";
@@ -362,21 +364,23 @@ export class BethanyScene extends Phaser.Scene {
 
   private createWorldGround(): AreaResource {
     const texture = this.textures.get(WORLD_GROUND_ASSET.key);
-    const innerFrameSize =
-      WORLD_GROUND_ASSET.frameWidth - WORLD_GROUND_FRAME_CROP * 2;
-    for (let frame = 0; frame < WORLD_GROUND_ASSET.frameCount; frame += 1) {
-      const frameName = worldGroundInnerFrame(frame);
-      if (!texture.has(frameName)) {
-        texture.add(
-          frameName,
-          0,
-          (frame % 4) * WORLD_GROUND_ASSET.frameWidth +
-            WORLD_GROUND_FRAME_CROP,
-          Math.floor(frame / 4) * WORLD_GROUND_ASSET.frameHeight +
-            WORLD_GROUND_FRAME_CROP,
-          innerFrameSize,
-          innerFrameSize,
-        );
+    for (const [crop, frameName] of [
+      [WORLD_GROUND_FRAME_CROP, worldGroundInnerFrame],
+      [WORLD_GROUND_BASE_FRAME_CROP, worldGroundBaseFrame],
+    ] as const) {
+      const innerFrameSize = WORLD_GROUND_ASSET.frameWidth - crop * 2;
+      for (let frame = 0; frame < WORLD_GROUND_ASSET.frameCount; frame += 1) {
+        const name = frameName(frame);
+        if (!texture.has(name)) {
+          texture.add(
+            name,
+            0,
+            (frame % 4) * WORLD_GROUND_ASSET.frameWidth + crop,
+            Math.floor(frame / 4) * WORLD_GROUND_ASSET.frameHeight + crop,
+            innerFrameSize,
+            innerFrameSize,
+          );
+        }
       }
     }
     const ground = this.add.container(0, 0).setDepth(-40);
@@ -387,7 +391,9 @@ export class BethanyScene extends Phaser.Scene {
             tile.column * WORLD_GROUND_CELL_SIZE + WORLD_GROUND_CELL_SIZE / 2,
             tile.row * WORLD_GROUND_CELL_SIZE + WORLD_GROUND_CELL_SIZE / 2,
             WORLD_GROUND_ASSET.key,
-            worldGroundInnerFrame(tile.frame),
+            tile.layer === "base"
+              ? worldGroundBaseFrame(tile.frame)
+              : worldGroundInnerFrame(tile.frame),
           )
           .setDisplaySize(WORLD_GROUND_RENDER_SIZE, WORLD_GROUND_RENDER_SIZE)
           .setAngle(tile.angle),
