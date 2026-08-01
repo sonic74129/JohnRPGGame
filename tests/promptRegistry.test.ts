@@ -28,7 +28,12 @@ const REQUIRED_KEYS = [
   "dependsOn",
   "output",
 ] as const;
-const OPTIONAL_KEYS = ["requestWidth", "requestHeight"] as const;
+const OPTIONAL_KEYS = [
+  "promptProfile",
+  "requestWidth",
+  "requestHeight",
+  "transparentBackground",
+] as const;
 
 const ALLOWED_FAMILIES = new Set([
   "master",
@@ -38,8 +43,12 @@ const ALLOWED_FAMILIES = new Set([
   "portrait",
 ]);
 const ALLOWED_OUTPUTS = new Set(["reference", "source", "runtime"]);
+const ALLOWED_PROMPT_PROFILES = new Set([
+  "project",
+  "moderation-safe-environment",
+]);
 const LOCKED_MODEL = "MAI-Image-2.5-Pro@2026-06-19";
-const EXPECTED_PROMPT_COUNT = 33;
+const EXPECTED_PROMPT_COUNT = 34;
 
 type JsonObject = Record<string, unknown>;
 
@@ -58,6 +67,8 @@ interface PromptEntry {
   height: number;
   requestWidth?: number;
   requestHeight?: number;
+  promptProfile?: string;
+  transparentBackground?: true;
   basePromptVersion: string;
   promptVersion: string;
   prompt: string;
@@ -98,14 +109,14 @@ const parsePromptEntry = (value: unknown, source: string): PromptEntry => {
   const entry = value as JsonObject;
   const id = isNonEmptyString(entry.id) ? entry.id : `${source}:unknown`;
 
-  const hasRequestDimensions =
-    entry.requestWidth !== undefined || entry.requestHeight !== undefined;
   expect(Object.keys(entry).sort(), `${id} must use the executable schema`).toEqual(
     [
       ...REQUIRED_KEYS,
-      ...(hasRequestDimensions ? OPTIONAL_KEYS : []),
+      ...OPTIONAL_KEYS.filter((key) => entry[key] !== undefined),
     ].sort(),
   );
+  const hasRequestDimensions =
+    entry.requestWidth !== undefined || entry.requestHeight !== undefined;
   expect(entry.id, `${id}.id must be stable dot notation`).toMatch(
     /^[a-z]+(?:[.-][a-z0-9]+)+$/,
   );
@@ -130,8 +141,18 @@ const parsePromptEntry = (value: unknown, source: string): PromptEntry => {
       `${id} request aspect ratio`,
     ).toBe(Number(entry.height) * Number(entry.requestWidth));
   }
+  const promptProfile = entry.promptProfile ?? "project";
+  expect(
+    ALLOWED_PROMPT_PROFILES.has(promptProfile as string),
+    `${id}.promptProfile`,
+  ).toBe(true);
+  if (entry.transparentBackground !== undefined) {
+    expect(entry.transparentBackground, `${id}.transparentBackground`).toBe(true);
+  }
   expect(entry.basePromptVersion, `${id}.basePromptVersion`).toMatch(/^v\d+$/);
-  expect(entry.promptVersion, `${id}.promptVersion`).toMatch(/^v\d+$/);
+  expect(entry.promptVersion, `${id}.promptVersion`).toMatch(
+    /^v[1-9]\d*(?:\.[1-9]\d*)?$/,
+  );
   expect(isNonEmptyString(entry.prompt), `${id}.prompt`).toBe(true);
   expect([2, 3], `${id}.candidateCount`).toContain(entry.candidateCount);
   expect(isStringArray(entry.dependsOn), `${id}.dependsOn`).toBe(true);
@@ -141,7 +162,7 @@ const parsePromptEntry = (value: unknown, source: string): PromptEntry => {
   if (entry.runtime === true) {
     expect(entry.model).toBe(LOCKED_MODEL);
     expect(entry.basePromptVersion).toMatch(/^v\d+$/);
-    expect(entry.promptVersion).toMatch(/^v\d+$/);
+    expect(entry.promptVersion).toMatch(/^v[1-9]\d*(?:\.[1-9]\d*)?$/);
     expect(acceptance.machine.length).toBeGreaterThan(0);
     expect(acceptance.visual.length).toBeGreaterThan(0);
   }
@@ -179,8 +200,12 @@ describe("MAI prompt registry", () => {
     const commonPrefix = style.commonPrefix as string;
 
     for (const entry of entries) {
-      expect(entry.prompt.startsWith(`${commonPrefix}\n\n`), entry.id).toBe(true);
-      expect(entry.prompt.length, entry.id).toBeGreaterThan(commonPrefix.length);
+      if ((entry.promptProfile ?? "project") === "project") {
+        expect(entry.prompt.startsWith(`${commonPrefix}\n\n`), entry.id).toBe(true);
+        expect(entry.prompt.length, entry.id).toBeGreaterThan(commonPrefix.length);
+      } else {
+        expect(entry.prompt.startsWith(`${commonPrefix}\n\n`), entry.id).toBe(false);
+      }
       expect(entry.prompt, entry.id).not.toMatch(/\b(?:TODO|TBD)\b/i);
     }
   });
@@ -242,23 +267,27 @@ describe("MAI prompt registry", () => {
       requestWidth: 1360,
       requestHeight: 768,
       basePromptVersion: "v1",
-      promptVersion: "v1",
+      promptVersion: "v1.1",
+      promptProfile: "moderation-safe-environment",
       candidateCount: 3,
       output: "source",
     });
     expect(worldMap?.prompt).toContain(
-      "Martha's house is approximately 400 pixels wide and 250 pixels high.",
+      "Main house: about 200 pixels wide and 125 pixels visibly high.",
     );
     expect(worldMap?.prompt).toContain(
-      "Village houses are 260-340 pixels wide and 215-235 pixels high.",
+      "Village houses: 140-165 pixels wide and 108-118 pixels visibly high.",
     );
     expect(worldMap?.prompt).toContain(
-      "Assume approved runtime people are 90 pixels tall.",
+      "Use a 45-pixel reference figure only as an invisible scale guide",
     );
     expect(worldMap?.prompt).toContain(
-      "Sunlight comes from upper left; soft shadows fall consistently toward lower right.",
+      "Sunlight comes from upper left and soft shadows fall consistently toward lower right.",
     );
-    expect(worldMap?.prompt).toContain("No repeated 128-pixel tile pattern.");
+    expect(worldMap?.prompt).toContain(
+      "Main roads: about 90 pixels wide; secondary paths: about 70 pixels wide.",
+    );
+    expect(worldMap?.prompt).toContain("repeated tile patterns");
     expect(worldMap?.prompt).not.toMatch(/\[[^\]]+\]/);
   });
 
