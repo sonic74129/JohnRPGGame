@@ -1,10 +1,105 @@
 import type {
   MapSequenceAdapters,
+  MapSequenceInputSignal,
+  MapSequenceInputSource,
   MapSequenceOperation,
   MapSequenceSchema,
 } from "./MapSequence";
 
+export type PhaserSequenceInputKind = "space" | "enter" | "pointer";
+
+export interface PhaserSequenceInputState {
+  readonly dialogueOpen: boolean;
+  readonly choiceOpen: boolean;
+  readonly sequenceRunning: boolean;
+  readonly uiPointer?: boolean;
+}
+
+export type PhaserSequenceInputRoute =
+  | "advance-dialogue"
+  | "choice"
+  | "skip"
+  | "gameplay"
+  | "ui";
+
+const UI_POINTER_SELECTOR = [
+  "#hud",
+  "#dialogue",
+  "#choice-screen",
+  "#start-screen",
+  "#pause-screen",
+  "#result-screen",
+  "#technical-toast",
+  "#verse-echo",
+  "button",
+  "input",
+  "select",
+  "textarea",
+  "[role='button']",
+].join(",");
+
+export const isUiEventTarget = (target: unknown): boolean => {
+  if (!target || typeof target !== "object") {
+    return false;
+  }
+  const closest = Reflect.get(target, "closest");
+  return (
+    typeof closest === "function" &&
+    Boolean(closest.call(target, UI_POINTER_SELECTOR))
+  );
+};
+
+export const routePhaserSequenceInput = (
+  kind: PhaserSequenceInputKind,
+  state: PhaserSequenceInputState,
+): PhaserSequenceInputRoute => {
+  if (kind === "pointer" && state.uiPointer) {
+    return "ui";
+  }
+  if (state.dialogueOpen) {
+    return kind === "space" ? "advance-dialogue" : "ui";
+  }
+  if (state.choiceOpen) {
+    return "choice";
+  }
+  if (state.sequenceRunning) {
+    return "skip";
+  }
+  return "gameplay";
+};
+
+export class PhaserMapSequenceInputSource implements MapSequenceInputSource {
+  private readonly listeners = new Set<
+    (signal: MapSequenceInputSignal) => void
+  >();
+
+  constructor(private readonly canEmit: () => boolean) {}
+
+  subscribe(listener: (signal: MapSequenceInputSignal) => void): () => void {
+    this.listeners.add(listener);
+    let subscribed = true;
+    return () => {
+      if (!subscribed) {
+        return;
+      }
+      subscribed = false;
+      this.listeners.delete(listener);
+    };
+  }
+
+  emit(signal: MapSequenceInputSignal): boolean {
+    if (!this.canEmit() || this.listeners.size === 0) {
+      return false;
+    }
+    for (const listener of this.listeners) {
+      listener(signal);
+    }
+    return true;
+  }
+}
+
 export interface PhaserSequenceHost<Schema extends MapSequenceSchema> {
+  readonly inputSource: MapSequenceInputSource;
   moveActor(
     actor: Schema["actor"],
     point: Schema["point"],
@@ -79,4 +174,5 @@ export const createPhaserMapSequenceAdapters = <
     finalize: (value) => host.finalize(value),
   },
   acquireInputLock: () => host.acquireInputLock(),
+  inputSource: host.inputSource,
 });

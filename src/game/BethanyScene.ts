@@ -64,7 +64,11 @@ import {
 import { NavigationGrid, type Point, type Rectangle } from "./NavigationGrid";
 import {
   createPhaserMapSequenceAdapters,
+  isUiEventTarget,
+  PhaserMapSequenceInputSource,
+  routePhaserSequenceInput,
   type PhaserSequenceHost,
+  type PhaserSequenceInputKind,
 } from "./PhaserMapSequenceAdapter";
 import { PlayerController } from "./PlayerController";
 import {
@@ -220,6 +224,9 @@ export class BethanyScene extends Phaser.Scene {
   };
   private worldRuntime?: WorldRuntime;
   private sequence?: MapSequence<BethanySequenceSchema>;
+  private readonly sequenceInput = new PhaserMapSequenceInputSource(
+    () => !this.ui.isBlockingOpen(),
+  );
   private navigation?: NavigationGrid;
   private movementPath: Point[] = [];
   private pendingActor?: ActorId;
@@ -788,15 +795,12 @@ export class BethanyScene extends Phaser.Scene {
       if (event.repeat) {
         return;
       }
-      if (this.sequence?.isRunning) {
-        this.ui.dismissBlocking();
-        this.sequence.requestSkip();
-        return;
+      this.routeSequenceInput("space");
+    });
+    keyboard.on("keydown-ENTER", (event: KeyboardEvent) => {
+      if (!event.repeat) {
+        this.routeSequenceInput("enter");
       }
-      if (this.ui.advanceDialogue() || this.ui.isChoiceOpen()) {
-        return;
-      }
-      this.interactWithNearestActor();
     });
     keyboard.on("keydown-ESC", (event: KeyboardEvent) => {
       if (
@@ -809,12 +813,43 @@ export class BethanyScene extends Phaser.Scene {
       }
     });
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (!this.canAcceptPlayerInput() || !pointer.leftButtonDown()) {
+      if (!pointer.leftButtonDown()) {
+        return;
+      }
+      const route = this.routeSequenceInput(
+        "pointer",
+        isUiEventTarget(pointer.event?.target),
+      );
+      if (route !== "gameplay" || !this.canAcceptPlayerInput()) {
         return;
       }
       this.pendingActor = undefined;
       this.setMovementPath({ x: pointer.worldX, y: pointer.worldY });
     });
+  }
+
+  private routeSequenceInput(
+    kind: PhaserSequenceInputKind,
+    uiPointer = false,
+  ): ReturnType<typeof routePhaserSequenceInput> {
+    const route = routePhaserSequenceInput(kind, {
+      dialogueOpen: this.ui.isDialogueOpen(),
+      choiceOpen: this.ui.isChoiceOpen(),
+      sequenceRunning: this.sequence?.isRunning ?? false,
+      uiPointer,
+    });
+    if (route === "advance-dialogue") {
+      this.ui.advanceDialogue();
+    } else if (route === "skip") {
+      this.sequenceInput.emit(
+        kind === "pointer"
+          ? { kind: "pointer" }
+          : { kind: "key", key: kind === "enter" ? "Enter" : "Space" },
+      );
+    } else if (route === "gameplay" && kind === "space") {
+      this.interactWithNearestActor();
+    }
+    return route;
   }
 
   private canAcceptPlayerInput(): boolean {
@@ -1283,6 +1318,7 @@ export class BethanyScene extends Phaser.Scene {
 
   private createSequenceHost(): PhaserSequenceHost<BethanySequenceSchema> {
     return {
+      inputSource: this.sequenceInput,
       moveActor: (actor, point, durationMs) =>
         this.tweenActor(actor, point, durationMs),
       setActorFacing: (actor, facing) => this.setSequenceFacing(actor, facing),
