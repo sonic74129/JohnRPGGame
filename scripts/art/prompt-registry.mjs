@@ -48,6 +48,7 @@ const OPTIONAL_ENTRY_KEYS = [
   "promptProfile",
   "requestHeight",
   "requestWidth",
+  "transparentBackground",
 ].sort();
 const PROMPT_PROFILES = new Set(["project", "moderation-safe-environment"]);
 
@@ -165,6 +166,12 @@ const validateEntry = (entry, source, style) => {
     assert(
       entry.prompt.startsWith(`${style.commonPrefix}\n\n`),
       `${id}.prompt must contain the locked common prefix.`,
+    );
+  }
+  if (entry.transparentBackground !== undefined) {
+    assert(
+      entry.transparentBackground === true,
+      `${id}.transparentBackground must be true when present.`,
     );
   }
   assert(

@@ -31,6 +31,12 @@ const GENERATED_IMAGE_RESIZER = path.join(
   "art",
   "resize-generated-image.py",
 );
+const GENERATED_IMAGE_BACKGROUND_REMOVER = path.join(
+  REPO_ROOT,
+  "scripts",
+  "art",
+  "remove-connected-background.py",
+);
 const MAX_REQUEST_ATTEMPTS = 4;
 const MAX_IMAGE_BUFFER_BYTES = 64 * 1024 * 1024;
 
@@ -129,36 +135,49 @@ const requestCandidate = async ({ endpoint, token, backend, entry }) => {
   throw new Error(`Image generation exhausted retries for ${entry.id}.`);
 };
 
-export const normalizeCandidateImage = (image, entry) => {
-  const requestWidth = entry.requestWidth ?? entry.width;
-  const requestHeight = entry.requestHeight ?? entry.height;
-  if (requestWidth === entry.width && requestHeight === entry.height) {
-    return image;
-  }
-  const result = spawnSync(
-    "python3",
-    [
-      GENERATED_IMAGE_RESIZER,
-      String(requestWidth),
-      String(requestHeight),
-      String(entry.width),
-      String(entry.height),
-    ],
-    {
-      input: image,
-      maxBuffer: MAX_IMAGE_BUFFER_BYTES,
-      stdio: ["pipe", "pipe", "pipe"],
-    },
-  );
+const runImageTransform = (script, image, args, entry) => {
+  const result = spawnSync("python3", [script, ...args], {
+    input: image,
+    maxBuffer: MAX_IMAGE_BUFFER_BYTES,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
   if (result.error) {
     throw result.error;
   }
   if (result.status !== 0) {
     throw new Error(
-      `Generated image normalization failed for ${entry.id}: ${result.stderr.toString("utf8").trim()}`,
+      `Generated image processing failed for ${entry.id}: ${result.stderr.toString("utf8").trim()}`,
     );
   }
   return result.stdout;
+};
+
+export const normalizeCandidateImage = (image, entry) => {
+  const requestWidth = entry.requestWidth ?? entry.width;
+  const requestHeight = entry.requestHeight ?? entry.height;
+  let normalized = image;
+  if (requestWidth !== entry.width || requestHeight !== entry.height) {
+    normalized = runImageTransform(
+      GENERATED_IMAGE_RESIZER,
+      normalized,
+      [
+        String(requestWidth),
+        String(requestHeight),
+        String(entry.width),
+        String(entry.height),
+      ],
+      entry,
+    );
+  }
+  if (entry.transparentBackground === true) {
+    normalized = runImageTransform(
+      GENERATED_IMAGE_BACKGROUND_REMOVER,
+      normalized,
+      [],
+      entry,
+    );
+  }
+  return normalized;
 };
 
 const dryRunPlan = async (entries, mode) =>

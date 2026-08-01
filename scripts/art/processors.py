@@ -308,7 +308,9 @@ def create_contact_sheet(plan: dict) -> None:
     thumbnails = []
     for source in sources:
         with Image.open(source) as image:
-            thumbnail = image.convert("RGB")
+            rgba = image.convert("RGBA")
+            thumbnail = Image.new("RGB", rgba.size, (232, 224, 207))
+            thumbnail.paste(rgba, mask=rgba.getchannel("A"))
             thumbnail.thumbnail(
                 (cell_width, max_edge - label_height - padding * 2),
                 Image.Resampling.LANCZOS,

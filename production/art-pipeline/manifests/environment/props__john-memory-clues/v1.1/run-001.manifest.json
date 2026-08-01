@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "props.john-memory-clues",
+    "family": "environment",
+    "purpose": "Transparent three-cell source atlas for John's three runtime memory-clue object groups.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1.1",
+    "candidateCount": 2,
+    "dependsOn": [],
+    "transparentBackground": true
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "awaiting-review",
+    "createdAt": "2026-08-01T21:51:52.515Z",
+    "updatedAt": "2026-08-01T21:53:03.700Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/environment/props__john-memory-clues/v1.1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/environment/props__john-memory-clues/v1.1/run-001",
+    "selectedSource": "production/art-source/environment/props__john-memory-clues/v1.1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/environment/props__john-memory-clues/v1.1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/environment/props__john-memory-clues/v1.1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "generated",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/props__john-memory-clues/v1.1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T21:52:28.912Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "generated",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/props__john-memory-clues/v1.1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T21:53:03.700Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": null,
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "review",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/candidates/environment/props__john-memory-clues/v1.1/run-001/candidate-01.png",
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/candidates/environment/props__john-memory-clues/v1.1/run-001/candidate-02.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/review/environment/props__john-memory-clues/v1.1/run-001-contact-sheet.jpg"
+    ],
+    "startedAt": "2026-08-01T21:53:41.890273Z",
+    "completedAt": "2026-08-01T21:53:41.971300Z",
+    "failureReason": null
+  }
+}

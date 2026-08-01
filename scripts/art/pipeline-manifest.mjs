@@ -170,6 +170,9 @@ const assertManifestIdentity = (manifest, entry, registryVersion, expectedPaths)
           requestHeight: entry.requestHeight,
           sourceNormalization: "lanczos",
         }),
+    ...(entry.transparentBackground === true
+      ? { transparentBackground: true }
+      : {}),
   };
   for (const [key, value] of Object.entries(expectedAsset)) {
     if (manifest.asset?.[key] !== value) {
@@ -220,6 +223,9 @@ const createManifest = async ({
             requestHeight: entry.requestHeight,
             sourceNormalization: "lanczos",
           }),
+      ...(entry.transparentBackground === true
+        ? { transparentBackground: true }
+        : {}),
     },
     run: {
       number: runNumber,

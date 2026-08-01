@@ -39,7 +39,7 @@ describe("recoverable art registry", () => {
   it("merges the locked split registry and selects one family", async () => {
     const registry = await loadPromptRegistry();
 
-    expect(registry.entries).toHaveLength(33);
+    expect(registry.entries).toHaveLength(34);
     expect(selectPrompts(registry.entries, { family: "master" })).toHaveLength(3);
     expect(
       selectPrompts(registry.entries, {
@@ -73,6 +73,19 @@ describe("recoverable art registry", () => {
     expect(worldMap.prompt).not.toContain(registry.style.commonPrefix);
     expect(worldMap.prompt).toContain("x 90-380, y 440-715");
     expect(worldMap.prompt).toContain("about 90 pixels wide");
+
+    const clueAtlas = registry.entries.find(
+      (entry) => entry.id === "props.john-memory-clues",
+    );
+    expect(clueAtlas).toMatchObject({
+      promptVersion: "v1.2",
+      promptProfile: "moderation-safe-environment",
+      transparentBackground: true,
+      width: 1360,
+      height: 768,
+      candidateCount: 2,
+    });
+    expect(clueAtlas.prompt).not.toContain(registry.style.commonPrefix);
   });
 
   describe("generated image normalization", () => {

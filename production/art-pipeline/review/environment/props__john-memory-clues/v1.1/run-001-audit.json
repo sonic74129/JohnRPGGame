@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "1.0.0",
+  "assetId": "props.john-memory-clues",
+  "promptVersion": "v1.1",
+  "candidates": [
+    {
+      "path": "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/candidates/environment/props__john-memory-clues/v1.1/run-001/candidate-01.png",
+      "width": 1360,
+      "height": 768,
+      "fileBytes": 1005045,
+      "transparentFraction": 0.47849,
+      "cornerTransparentFractions": [
+        0.550347,
+        0.541667,
+        0.739583,
+        0.545139
+      ],
+      "gutters": [
+        {
+          "x": 453,
+          "transparentFraction": 0.574002,
+          "passes": false
+        },
+        {
+          "x": 907,
+          "transparentFraction": 0.571886,
+          "passes": false
+        }
+      ],
+      "cells": [
+        {
+          "index": 1,
+          "foregroundFraction": 0.538376,
+          "foregroundBounds": [
+            0,
+            0,
+            453,
+            768
+          ],
+          "passes": false
+        },
+        {
+          "index": 2,
+          "foregroundFraction": 0.50797,
+          "foregroundBounds": [
+            0,
+            0,
+            454,
+            768
+          ],
+          "passes": false
+        },
+        {
+          "index": 3,
+          "foregroundFraction": 0.518215,
+          "foregroundBounds": [
+            0,
+            0,
+            453,
+            768
+          ],
+          "passes": false
+        }
+      ],
+      "checks": {
+        "dimensions": true,
+        "transparentCanvas": true,
+        "transparentCorners": false,
+        "transparentGutters": false,
+        "threeOccupiedCells": false
+      },
+      "passes": false
+    },
+    {
+      "path": "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/candidates/environment/props__john-memory-clues/v1.1/run-001/candidate-02.png",
+      "width": 1360,
+      "height": 768,
+      "fileBytes": 487158,
+      "transparentFraction": 0.798529,
+      "cornerTransparentFractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gutters": [
+        {
+          "x": 453,
+          "transparentFraction": 0.926595,
+          "passes": true
+        },
+        {
+          "x": 907,
+          "transparentFraction": 1.0,
+          "passes": true
+        }
+      ],
+      "cells": [
+        {
+          "index": 1,
+          "foregroundFraction": 0.243711,
+          "foregroundBounds": [
+            56,
+            208,
+            453,
+            513
+          ],
+          "passes": true
+        },
+        {
+          "index": 2,
+          "foregroundFraction": 0.166595,
+          "foregroundBounds": [
+            0,
+            183,
+            391,
+            525
+          ],
+          "passes": true
+        },
+        {
+          "index": 3,
+          "foregroundFraction": 0.194183,
+          "foregroundBounds": [
+            18,
+            204,
+            382,
+            517
+          ],
+          "passes": true
+        }
+      ],
+      "checks": {
+        "dimensions": true,
+        "transparentCanvas": true,
+        "transparentCorners": true,
+        "transparentGutters": true,
+        "threeOccupiedCells": true
+      },
+      "passes": true
+    }
+  ],
+  "passes": false
+}

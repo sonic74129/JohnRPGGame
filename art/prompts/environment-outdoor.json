@@ -129,5 +129,36 @@
       "master.tomb-garden"
     ],
     "output": "source"
+  },
+  {
+    "id": "props.john-memory-clues",
+    "family": "environment",
+    "purpose": "Transparent three-cell source atlas for John's three runtime memory-clue object groups.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1.2",
+    "promptProfile": "moderation-safe-environment",
+    "transparentBackground": true,
+    "prompt": "Use case: stylized-concept\nAsset type: transparent three-cell game-prop atlas\nOutput: exactly 1360x768 pixels with real transparent alpha; if native alpha is unavailable, use one perfectly uniform pale warm-gray removable background\n\nPrimary request:\nCreate three isolated tabletop-scale object groups in warm hand-painted storybook realism. Use one fixed three-quarter top-down object camera, soft upper-left natural light, clean complete silhouettes and restrained texture. Every object must be easy to recognize beside a 90-pixel map character.\n\nStrict layout:\nDivide the canvas conceptually into three equal vertical cells of about 453x768 pixels. Keep at least 64 pixels of empty transparent or uniform removable padding inside every cell. Place exactly one centered complete group in each cell. Keep all groups separate. Do not draw cell lines or a checkerboard transparency preview.\n\nRequired groups in left-to-right order:\n1. Exactly five large rustic oval barley-style bread loaves arranged as two loaves in a back row and three loaves in a front row, plus exactly two small silver-gray prepared meal items, each with a tapered body and simple fins. All seven items are individually visible; count five loaves before finalizing.\n2. One tall terracotta clay water vessel with two small handles and one simple matching drinking cup.\n3. One low handmade mud-clay bowl beside one medium terracotta clay water vessel.\n\nMaterials and palette:\nWarm bread crust, muted silver-gray meal items, terracotta and earth-brown clay, subtle natural wear and soft detached grounding shadows. Match the warm painted object style of an ancient Mediterranean hill-village game environment.\n\nContent limits:\nObjects only. Omit people, hands, lettering, labels, symbols, interface elements, grids, checkerboards, frames, watermarks, modern packaging, tables, connected scenery, overlapping cells and cropped objects. Do not paint a transparency grid or patterned background.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "The alpha channel leaves corners and gutters transparent while retaining non-empty foreground in all three cells.",
+        "Exactly three visually separated cells are occupied with no labels, grid, frame or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Cell 1 visibly contains five large loaves and two small silver-gray finned meal items.",
+        "Cell 2 visibly contains one handled water vessel and one cup.",
+        "Cell 3 visibly contains one low clay bowl and one water vessel.",
+        "All objects share one three-quarter top-down camera, believable tabletop scale, complete silhouettes and wide extraction gutters."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [],
+    "output": "source"
   }
 ]
