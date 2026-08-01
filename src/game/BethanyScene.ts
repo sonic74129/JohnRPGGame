@@ -39,6 +39,7 @@ import { PlayerController } from "./PlayerController";
 import { ProximityTrigger } from "./ProximityTrigger";
 import { partitionTombDialogue } from "./StoryEvents";
 import { StoryEngine } from "./StoryEngine";
+import { StoryJourney } from "./StoryJourney";
 import { Trigger } from "./Trigger";
 import type { ActorId, DialogueLine, MusicState, StoryStage } from "./types";
 import {
@@ -236,7 +237,7 @@ export class BethanyScene extends Phaser.Scene {
   private cutscenes = new CutsceneDirector(this.playerController);
   private npcPaths = new NpcPathController();
   private readonly visuals = new Map<ActorId, ActorVisual>();
-  private readonly completedJourneys = new Set<ActorId>();
+  private readonly storyJourneys = new StoryJourney();
 
   private ui!: GameUI;
   private audio!: AudioManager;
@@ -656,7 +657,7 @@ export class BethanyScene extends Phaser.Scene {
     this.cutscenes = new CutsceneDirector(this.playerController);
     this.npcPaths = new NpcPathController();
     this.visuals.clear();
-    this.completedJourneys.clear();
+    this.storyJourneys.reset();
     this.areaRuntime = undefined;
     this.worldRuntime = undefined;
     this.interaction = undefined;
@@ -1095,18 +1096,30 @@ export class BethanyScene extends Phaser.Scene {
         this.handleDecision(id);
         return;
       case "followMartha":
-        if (id === "martha" && this.completedJourneys.has("martha")) {
-          void this.runMarthaSequence();
+        if (id === "martha") {
+          this.continueStoryJourney(
+            id,
+            "马大仍在前行。请继续跟随，等她停下后再互动。",
+            () => this.runMarthaSequence(),
+          );
         }
         return;
       case "followMary":
-        if (id === "mary" && this.completedJourneys.has("mary")) {
-          void this.runMarySequence();
+        if (id === "mary") {
+          this.continueStoryJourney(
+            id,
+            "马利亚仍在前行。请继续跟随，等她停下后再互动。",
+            () => this.runMarySequence(),
+          );
         }
         return;
       case "followGuide":
-        if (id === "guide" && this.completedJourneys.has("guide")) {
-          void this.runTombSequence();
+        if (id === "guide") {
+          this.continueStoryJourney(
+            id,
+            "带路的人仍在前行。请继续跟随，等他停下后再互动。",
+            () => this.runTombSequence(),
+          );
         }
         return;
       default:
@@ -1196,25 +1209,25 @@ export class BethanyScene extends Phaser.Scene {
     this.audio.setState("exploration", 2200);
     switch (this.story.stage) {
       case "followMartha":
-        void this.moveActorAlong(
+        void this.startStoryJourney(
           "martha",
           [
             { x: 930, y: 970 },
             { x: 1180, y: 980 },
             { x: 1460, y: 1050 },
           ],
-          () => this.completedJourneys.add("martha"),
+          "马大已经停下。靠近她继续见证。",
         );
         return;
       case "followMary":
-        void this.moveActorAlong(
+        void this.startStoryJourney(
           "mary",
           [
             { x: 960, y: 1030 },
             { x: 1200, y: 1020 },
             { x: 1480, y: 1080 },
           ],
-          () => this.completedJourneys.add("mary"),
+          "马利亚已经来到耶稣那里。靠近她继续见证。",
         );
         this.time.delayedCall(650, () => {
           void this.moveActorAlong(
@@ -1252,6 +1265,35 @@ export class BethanyScene extends Phaser.Scene {
     );
     if (completed && this.currentArea() === area) {
       onComplete();
+    }
+  }
+
+  private async startStoryJourney(
+    id: ActorId,
+    points: readonly Point[],
+    readyNotice: string,
+  ): Promise<void> {
+    this.storyJourneys.begin(id);
+    await this.moveActorAlong(id, points, () => {
+      if (this.storyJourneys.complete(id)) {
+        this.ui.showNotice(readyNotice);
+      }
+    });
+  }
+
+  private continueStoryJourney(
+    id: ActorId,
+    movingNotice: string,
+    onReady: () => Promise<void>,
+  ): void {
+    const status = this.storyJourneys.status(id);
+    if (status === "ready") {
+      this.storyJourneys.reset(id);
+      void onReady();
+      return;
+    }
+    if (status === "moving") {
+      this.ui.showNotice(movingNotice, 1800);
     }
   }
 
@@ -1362,7 +1404,7 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private resetForMary(): void {
-    this.completedJourneys.delete("mary");
+    this.storyJourneys.reset("mary");
     this.stopPlayerMovement();
     this.setActorPosition("martha", 760, 1050);
     this.setActorPosition("mary", 860, 1000);
@@ -1383,7 +1425,7 @@ export class BethanyScene extends Phaser.Scene {
     this.setActorPosition("mourner", 1510, 1150);
     this.setActorPosition("mary", 1480, 1080);
     this.setActorPosition("martha", 1460, 1050);
-    this.completedJourneys.delete("guide");
+    this.storyJourneys.reset("guide");
   }
 
   private async transitionToTombRoad(): Promise<void> {
@@ -1394,12 +1436,12 @@ export class BethanyScene extends Phaser.Scene {
         { x: 1600, y: 500 },
         { x: 1800, y: 430 },
       ] as const;
+      void this.startStoryJourney(
+        "guide",
+        [...tombRoute, { x: 1900, y: 590 }],
+        "带路的人已经到达坟墓。靠近他继续见证。",
+      );
       void Promise.all([
-        this.moveActorAlong(
-          "guide",
-          [...tombRoute, { x: 1900, y: 590 }],
-          () => undefined,
-        ),
         this.moveActorAlong(
           "jesus",
           [
@@ -1440,7 +1482,7 @@ export class BethanyScene extends Phaser.Scene {
           ],
           () => undefined,
         ),
-      ]).then(() => this.completedJourneys.add("guide"));
+      ]);
     });
   }
 
