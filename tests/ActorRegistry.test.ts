@@ -10,16 +10,16 @@ describe("ActorRegistry", () => {
       new Character("martha", "马大", "lazarus-house", { x: 10, y: 20 }),
     );
 
-    actors.move("martha", "bethany-village", { x: 100, y: 200 });
+    actors.move("martha", "bethany-world", { x: 100, y: 200 });
     actors.setVisible("martha", false);
 
-    expect(actors.inArea("bethany-village")).toEqual([]);
+    expect(actors.inArea("bethany-world")).toEqual([]);
     actors.setVisible("martha", true);
-    expect(actors.inArea("bethany-village")).toEqual([
+    expect(actors.inArea("bethany-world")).toEqual([
       {
         id: "martha",
         name: "马大",
-        area: "bethany-village",
+        area: "bethany-world",
         position: { x: 100, y: 200 },
         visible: true,
       },

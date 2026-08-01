@@ -26,10 +26,6 @@ const area = (id: AreaId): AreaConfig => ({
 const areas: Readonly<Record<AreaId, AreaConfig>> = {
   "lazarus-house": area("lazarus-house"),
   "bethany-world": area("bethany-world"),
-  "road-to-jesus": area("road-to-jesus"),
-  "bethany-village": area("bethany-village"),
-  "road-to-tomb": area("road-to-tomb"),
-  "tomb-garden": area("tomb-garden"),
 };
 
 describe("AreaRuntime", () => {
@@ -50,7 +46,7 @@ describe("AreaRuntime", () => {
     const runtime = new AreaRuntime(host, areas);
 
     runtime.enter("lazarus-house");
-    runtime.enter("road-to-jesus");
+    runtime.enter("bethany-world");
 
     expect(destroyed).toEqual(["background:lazarus-house", "obstacle"]);
     expect(clearedActors).toBe(2);
@@ -58,11 +54,11 @@ describe("AreaRuntime", () => {
       [400, 300],
       [400, 300],
     ]);
-    expect(rebuilt).toEqual(["lazarus-house", "road-to-jesus"]);
-    expect(runtime.currentArea).toBe("road-to-jesus");
+    expect(rebuilt).toEqual(["lazarus-house", "bethany-world"]);
+    expect(runtime.currentArea).toBe("bethany-world");
   });
 
-  it("enters the road-to-tomb area as a first-class area", () => {
+  it("exposes the active area's live configuration", () => {
     const destroyed: string[] = [];
     const rebuilt: AreaId[] = [];
     const host: AreaHost = {
@@ -74,10 +70,11 @@ describe("AreaRuntime", () => {
     };
     const runtime = new AreaRuntime(host, areas);
 
-    const config = runtime.enter("road-to-tomb");
+    const config = runtime.enter("lazarus-house");
 
-    expect(config.id).toBe("road-to-tomb");
-    expect(runtime.currentArea).toBe("road-to-tomb");
-    expect(rebuilt).toEqual(["road-to-tomb"]);
+    expect(config.id).toBe("lazarus-house");
+    expect(runtime.config).toBe(config);
+    expect(runtime.currentArea).toBe("lazarus-house");
+    expect(rebuilt).toEqual(["lazarus-house"]);
   });
 });

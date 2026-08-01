@@ -142,83 +142,6 @@ const AREAS: Readonly<Record<AreaId, AreaConfig>> = {
     playerSpawn: WORLD_LANDMARKS.bethanyEntrance,
     actors: [],
   },
-  "road-to-jesus": {
-    id: "road-to-jesus",
-    width: 1360,
-    height: 768,
-    backgroundKey: "art-road-to-jesus",
-    backgroundColor: 0x74684c,
-    obstacles: [
-      { x: 0, y: 0, width: 1360, height: 55 },
-      { x: 0, y: 0, width: 55, height: 768 },
-      { x: 1305, y: 0, width: 55, height: 768 },
-      { x: 0, y: 713, width: 1360, height: 55 },
-    ],
-    playerSpawn: { x: 145, y: 650 },
-    actors: [{ id: "jesus", position: { x: 1120, y: 245 } }],
-  },
-  "bethany-village": {
-    id: "bethany-village",
-    width: 1360,
-    height: 768,
-    backgroundKey: "art-bethany-village",
-    backgroundColor: 0x74684c,
-    obstacles: [
-      { x: 0, y: 0, width: 1360, height: 55 },
-      { x: 0, y: 0, width: 55, height: 768 },
-      { x: 1305, y: 0, width: 55, height: 768 },
-      { x: 0, y: 713, width: 1360, height: 55 },
-    ],
-    playerSpawn: { x: 425, y: 625 },
-    actors: [
-      { id: "martha", position: { x: 400, y: 475 } },
-      { id: "mary", position: { x: 315, y: 535 } },
-      { id: "mourner", position: { x: 570, y: 560 } },
-      { id: "jesus", position: { x: 1080, y: 450 } },
-      { id: "guide", position: { x: 1120, y: 520 }, visible: false },
-    ],
-  },
-  "road-to-tomb": {
-    id: "road-to-tomb",
-    width: 1360,
-    height: 768,
-    backgroundKey: "art-road-to-tomb",
-    backgroundColor: 0x665b46,
-    obstacles: [
-      { x: 0, y: 0, width: 1360, height: 55 },
-      { x: 0, y: 0, width: 55, height: 768 },
-      { x: 1305, y: 0, width: 55, height: 768 },
-      { x: 0, y: 713, width: 1360, height: 55 },
-    ],
-    playerSpawn: { x: 125, y: 675 },
-    actors: [
-      { id: "guide", position: { x: 220, y: 610 } },
-      { id: "jesus", position: { x: 160, y: 570 } },
-      { id: "martha", position: { x: 285, y: 665 } },
-      { id: "mary", position: { x: 350, y: 625 } },
-      { id: "mourner", position: { x: 420, y: 675 } },
-    ],
-  },
-  "tomb-garden": {
-    id: "tomb-garden",
-    width: 1360,
-    height: 768,
-    backgroundKey: "art-tomb",
-    backgroundColor: 0x625b4a,
-    obstacles: [
-      { x: 0, y: 0, width: 1360, height: 55 },
-      { x: 0, y: 0, width: 55, height: 768 },
-      { x: 1305, y: 0, width: 55, height: 768 },
-      { x: 0, y: 713, width: 1360, height: 55 },
-    ],
-    playerSpawn: { x: 520, y: 610 },
-    actors: [
-      { id: "jesus", position: { x: 1015, y: 355 } },
-      { id: "martha", position: { x: 900, y: 480 } },
-      { id: "mary", position: { x: 1015, y: 540 } },
-      { id: "mourner", position: { x: 820, y: 580 } },
-    ],
-  },
 };
 
 const INTERACTION_RULES: InteractionRules = {
@@ -302,10 +225,6 @@ export class BethanyScene extends Phaser.Scene {
       frameWidth: HOUSE_ART.props.frameWidth,
       frameHeight: HOUSE_ART.props.frameHeight,
     });
-    this.load.image("art-road-to-jesus", "assets/art/map-road-to-jesus-clean.png");
-    this.load.image("art-bethany-village", "assets/art/map-village-edge-clean.png");
-    this.load.image("art-road-to-tomb", "assets/art/map-road-to-tomb-clean.png");
-    this.load.image("art-tomb", "assets/art/map-tomb-clean.png");
     for (const asset of Object.values(TOMB_PROP_ASSETS)) {
       this.load.image(asset.key, asset.path);
     }
@@ -699,9 +618,7 @@ export class BethanyScene extends Phaser.Scene {
     );
     this.stopPlayerMovement();
     this.nearestActor = undefined;
-    if (area === "tomb-garden") {
-      this.createTombElements();
-    } else if (area === "lazarus-house") {
+    if (area === "lazarus-house") {
       this.createHouseArt();
       this.createSickLazarus();
       this.createHouseStoryTrigger();

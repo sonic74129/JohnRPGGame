@@ -8,20 +8,20 @@ describe("Interaction", () => {
   it("uses area, distance, stage, and lock state to gate interactions", () => {
     const actors = new ActorRegistry();
     actors.register(
-      new Character("jesus", "耶稣", "road-to-jesus", { x: 100, y: 100 }),
+      new Character("jesus", "耶稣", "bethany-world", { x: 100, y: 100 }),
     );
     const interaction = new Interaction(
       actors,
       {
         jesus: {
-          areas: ["road-to-jesus"],
+          areas: ["bethany-world"],
           stages: ["deliverMessage"],
         },
       },
       50,
     );
     const context: InteractionContext = {
-      area: "road-to-jesus",
+      area: "bethany-world",
       playerPosition: { x: 120, y: 100 },
       stage: "deliverMessage",
       inputLocked: false,
@@ -43,26 +43,26 @@ describe("Interaction", () => {
     ).toBeUndefined();
   });
 
-  it("only makes the guide interactive on the road to the tomb", () => {
+  it("uses story stages to gate guide interaction in the continuous world", () => {
     const actors = new ActorRegistry();
     actors.register(
-      new Character("guide", "带路的人", "road-to-tomb", { x: 200, y: 200 }),
+      new Character("guide", "带路的人", "bethany-world", { x: 200, y: 200 }),
     );
     actors.register(
-      new Character("jesus", "耶稣", "road-to-tomb", { x: 205, y: 200 }),
+      new Character("jesus", "耶稣", "bethany-world", { x: 205, y: 200 }),
     );
     const interaction = new Interaction(
       actors,
       {
         guide: {
-          areas: ["bethany-village", "road-to-tomb"],
+          areas: ["bethany-world"],
           stages: ["chooseGuide", "followGuide"],
         },
       },
       50,
     );
     const context: InteractionContext = {
-      area: "road-to-tomb",
+      area: "bethany-world",
       playerPosition: { x: 220, y: 200 },
       stage: "followGuide",
       inputLocked: false,
