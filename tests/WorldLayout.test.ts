@@ -8,8 +8,10 @@ import {
   WORLD_LANDMARKS,
   WORLD_MAP_FALLBACK_URL,
   WORLD_MAP_RUNTIME_URL,
+  WORLD_NAVIGATION_CLEARANCE,
   WORLD_ROUTES,
   WORLD_SELECTED_PROFILE,
+  WORLD_STRUCTURE_OBSTACLES,
   WORLD_WIDTH,
   createWorldNavigation,
   routeLength,
@@ -43,6 +45,35 @@ describe("JSON-driven continuous Bethany world", () => {
       expect(
         navigation.findPath(WORLD_LANDMARKS.houseDoor, destination).length,
       ).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps click-to-move waypoints clear of player-sized structures", () => {
+    const path = createWorldNavigation().findPath(
+      {
+        x: WORLD_LANDMARKS.bethanyMeeting.x - 160,
+        y: WORLD_LANDMARKS.bethanyMeeting.y + 120,
+      },
+      { x: 650, y: 1192 },
+    );
+
+    expect(path.length).toBeGreaterThan(0);
+    for (const waypoint of path) {
+      for (const obstacle of WORLD_STRUCTURE_OBSTACLES) {
+        const horizontalDistance = Math.max(
+          obstacle.x - waypoint.x,
+          0,
+          waypoint.x - (obstacle.x + obstacle.width),
+        );
+        const verticalDistance = Math.max(
+          obstacle.y - waypoint.y,
+          0,
+          waypoint.y - (obstacle.y + obstacle.height),
+        );
+        expect(Math.hypot(horizontalDistance, verticalDistance)).toBeGreaterThanOrEqual(
+          WORLD_NAVIGATION_CLEARANCE,
+        );
+      }
     }
   });
 

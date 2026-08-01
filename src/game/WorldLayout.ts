@@ -13,6 +13,7 @@ export const WORLD_COLUMNS = Math.ceil(WORLD_WIDTH / WORLD_TILE_SIZE);
 export const WORLD_ROWS = Math.ceil(WORLD_HEIGHT / WORLD_TILE_SIZE);
 export const WORLD_BOUNDARY = worldMapLayout.canvas.safeBorder;
 export const PLAYER_TRAVEL_SPEED = 260;
+export const WORLD_NAVIGATION_CLEARANCE = 40;
 export const WORLD_SELECTED_PROFILE = worldMapLayout.selectedProfile;
 export const WORLD_MAP_SOURCE_KEY = "world-map-source";
 export const WORLD_MAP_FALLBACK_KEY = "world-map-graybox-fallback";
@@ -113,7 +114,7 @@ const boundaryObstacles: readonly Rectangle[] = [
   },
 ];
 
-const structureObstacles: readonly Rectangle[] = [
+export const WORLD_STRUCTURE_OBSTACLES: readonly Rectangle[] = [
   { x: 180, y: 880, width: 250, height: 245 },
   { x: 610, y: 880, width: 150, height: 245 },
   { x: 720, y: 610, width: 300, height: 200 },
@@ -124,7 +125,24 @@ const structureObstacles: readonly Rectangle[] = [
 
 export const WORLD_OBSTACLES: readonly Rectangle[] = [
   ...boundaryObstacles,
-  ...structureObstacles,
+  ...WORLD_STRUCTURE_OBSTACLES,
+];
+
+const inflateRectangle = (
+  obstacle: Rectangle,
+  clearance: number,
+): Rectangle => ({
+  x: obstacle.x - clearance,
+  y: obstacle.y - clearance,
+  width: obstacle.width + clearance * 2,
+  height: obstacle.height + clearance * 2,
+});
+
+export const WORLD_NAVIGATION_OBSTACLES: readonly Rectangle[] = [
+  ...boundaryObstacles,
+  ...WORLD_STRUCTURE_OBSTACLES.map((obstacle) =>
+    inflateRectangle(obstacle, WORLD_NAVIGATION_CLEARANCE),
+  ),
 ];
 
 export const createWorldNavigation = (): NavigationGrid =>
@@ -132,7 +150,7 @@ export const createWorldNavigation = (): NavigationGrid =>
     WORLD_WIDTH,
     WORLD_HEIGHT,
     WORLD_TILE_SIZE,
-    WORLD_OBSTACLES,
+    WORLD_NAVIGATION_OBSTACLES,
   );
 
 export const pathLength = (
