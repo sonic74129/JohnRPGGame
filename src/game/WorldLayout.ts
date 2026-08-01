@@ -15,6 +15,9 @@ export const WORLD_BOUNDARY = worldMapLayout.canvas.safeBorder;
 export const PLAYER_TRAVEL_SPEED = 260;
 export const WORLD_SELECTED_PROFILE = worldMapLayout.selectedProfile;
 export const WORLD_MAP_SOURCE_KEY = "world-map-source";
+export const WORLD_MAP_FALLBACK_KEY = "world-map-graybox-fallback";
+export const WORLD_MAP_RUNTIME_URL =
+  "assets/art/environment/environment__world-map/v1.1/run-001/environment__world-map.png";
 export const WORLD_MAP_FALLBACK_URL = new URL(
   "../../production/design-contracts/world-map-graybox-b.png",
   import.meta.url,

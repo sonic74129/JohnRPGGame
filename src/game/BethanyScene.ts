@@ -55,6 +55,12 @@ import {
   type MapSequenceSchema,
   type MapSequenceStep,
 } from "./MapSequence";
+import {
+  isMemoryCarrier,
+  MEMORY_CLUE_ATLAS,
+  MEMORY_CLUE_DISPLAY_SIZE,
+  MEMORY_CLUE_FRAMES,
+} from "./MemoryClueAssets";
 import { NavigationGrid, type Point, type Rectangle } from "./NavigationGrid";
 import {
   createPhaserMapSequenceAdapters,
@@ -81,7 +87,9 @@ import { WorldRuntime, type WorldHost } from "./WorldRuntime";
 import {
   WORLD_HEIGHT,
   WORLD_LANDMARKS,
+  WORLD_MAP_FALLBACK_KEY,
   WORLD_MAP_FALLBACK_URL,
+  WORLD_MAP_RUNTIME_URL,
   WORLD_MAP_SOURCE_KEY,
   WORLD_REGIONS,
   WORLD_ROUTES,
@@ -242,7 +250,9 @@ export class BethanyScene extends Phaser.Scene {
       frameWidth: HOUSE_ART.props.frameWidth,
       frameHeight: HOUSE_ART.props.frameHeight,
     });
-    this.load.image(WORLD_MAP_SOURCE_KEY, WORLD_MAP_FALLBACK_URL);
+    this.load.image(WORLD_MAP_SOURCE_KEY, WORLD_MAP_RUNTIME_URL);
+    this.load.image(WORLD_MAP_FALLBACK_KEY, WORLD_MAP_FALLBACK_URL);
+    this.load.image(MEMORY_CLUE_ATLAS.key, MEMORY_CLUE_ATLAS.path);
     for (const asset of Object.values(TOMB_PROP_ASSETS)) {
       this.load.image(asset.key, asset.path);
     }
@@ -273,6 +283,7 @@ export class BethanyScene extends Phaser.Scene {
       setFilter: (textureKey, filterMode) =>
         this.textures.get(textureKey).setFilter(filterMode),
     });
+    this.createMemoryClueFrames();
     this.createWalkAnimations();
     this.createPlayer();
     this.registerActors();
@@ -409,7 +420,10 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private createWorldSource(): AreaResource {
-    const texture = this.textures.get(WORLD_MAP_SOURCE_KEY);
+    const textureKey = this.textures.exists(WORLD_MAP_SOURCE_KEY)
+      ? WORLD_MAP_SOURCE_KEY
+      : WORLD_MAP_FALLBACK_KEY;
+    const texture = this.textures.get(textureKey);
     const halfWidth = WORLD_WIDTH / 2;
     const halfHeight = WORLD_HEIGHT / 2;
     const frames = [
@@ -435,7 +449,7 @@ export class BethanyScene extends Phaser.Scene {
           .image(
             frame.x + halfWidth / 2,
             frame.y + halfHeight / 2,
-            WORLD_MAP_SOURCE_KEY,
+            textureKey,
             frame.name,
           )
           .setDisplaySize(halfWidth, halfHeight),
@@ -604,8 +618,10 @@ export class BethanyScene extends Phaser.Scene {
       0x1c1814,
       0.32,
     );
+    const clueProp = this.createMemoryClueProp(id);
     const container = this.add.container(actor.position.x, actor.position.y, [
       shadow,
+      ...(clueProp ? [clueProp] : []),
       sprite,
     ]);
     container
@@ -629,6 +645,37 @@ export class BethanyScene extends Phaser.Scene {
         container.visible && Boolean(this.labelTexts.get(id)),
     });
     this.visuals.set(id, { container, sprite, character, label, facing });
+  }
+
+  private createMemoryClueFrames(): void {
+    const texture = this.textures.get(MEMORY_CLUE_ATLAS.key);
+    for (const frame of Object.values(MEMORY_CLUE_FRAMES)) {
+      if (!texture.has(frame.name)) {
+        texture.add(
+          frame.name,
+          0,
+          frame.x,
+          0,
+          frame.width,
+          MEMORY_CLUE_ATLAS.height,
+        );
+      }
+    }
+  }
+
+  private createMemoryClueProp(
+    id: ActorId,
+  ): Phaser.GameObjects.Image | undefined {
+    if (!isMemoryCarrier(id)) {
+      return undefined;
+    }
+    const frame = MEMORY_CLUE_FRAMES[id];
+    return this.add
+      .image(70, -30, MEMORY_CLUE_ATLAS.key, frame.name)
+      .setDisplaySize(
+        MEMORY_CLUE_DISPLAY_SIZE.width,
+        MEMORY_CLUE_DISPLAY_SIZE.height,
+      );
   }
 
   private applyActorScale(

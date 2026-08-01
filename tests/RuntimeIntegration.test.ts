@@ -16,6 +16,8 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain('"world-ne"');
     expect(sceneSource).toContain('"world-sw"');
     expect(sceneSource).toContain('"world-se"');
+    expect(sceneSource).toContain("MEMORY_CLUE_FRAMES");
+    expect(sceneSource).toContain("createMemoryClueProp");
   });
 
   it("uses linear rendering and technical errors", () => {
