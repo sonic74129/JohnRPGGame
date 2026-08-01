@@ -1096,7 +1096,12 @@ export class BethanyScene extends Phaser.Scene {
       await this.askQuestion(QUESTIONS.message);
       this.story.deliverMessage();
       this.updateObjective();
-      await this.showDialogue(DIALOGUES.messageJourney);
+      const arrivalLine = DIALOGUES.messageJourney.at(-1);
+      await this.showDialogue(DIALOGUES.messageJourney.slice(0, -1));
+      await this.travelToBethany();
+      if (arrivalLine) {
+        await this.showDialogue([arrivalLine]);
+      }
       this.moveStoryToVillage();
       this.story.arriveAtBethany();
       this.audio.setState("exploration", 2400);
@@ -1109,9 +1114,47 @@ export class BethanyScene extends Phaser.Scene {
     this.setActorPosition("martha", 760, 1050);
     this.setActorPosition("mary", 860, 1000);
     this.setActorPosition("mourner", 970, 970);
-    this.setActorPosition("jesus", 1480, 1080);
-    this.player.setPosition(1320, 1130);
-    this.cameras.main.centerOn(this.player.x, this.player.y);
+  }
+
+  private async travelToBethany(): Promise<void> {
+    this.audio.setState("exploration", 1800);
+    this.ui.showNotice("两天后，耶稣与报信者一同前往伯大尼。");
+    await Promise.all([
+      this.moveActorAlong(
+        "jesus",
+        [
+          { x: 1860, y: 1270 },
+          { x: 1640, y: 1200 },
+          { x: 1480, y: 1080 },
+        ],
+        () => undefined,
+      ),
+      this.movePlayerAlong([
+        { x: 1820, y: 1340 },
+        { x: 1580, y: 1260 },
+        { x: 1320, y: 1130 },
+      ]),
+    ]);
+  }
+
+  private async movePlayerAlong(points: readonly Point[]): Promise<void> {
+    for (const target of points) {
+      const deltaX = target.x - this.player.x;
+      const deltaY = target.y - this.player.y;
+      this.updatePlayerAnimation(deltaX, deltaY);
+      await new Promise<void>((resolve) => {
+        this.tweens.add({
+          targets: this.player,
+          x: target.x,
+          y: target.y,
+          duration:
+            (Math.hypot(deltaX, deltaY) / PLAYER_SPEED) * 1000,
+          ease: "Linear",
+          onComplete: () => resolve(),
+        });
+      });
+    }
+    this.updatePlayerAnimation(0, 0);
   }
 
   private handleDecision(id: ActorId): void {
