@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 const temporaryDirectories = [];
 const processScript = path.resolve("scripts/process-art.py");
+const PROCESS_TEST_TIMEOUT = 15_000;
 
 const temporaryDirectory = async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "john-rpg-process-"));
@@ -104,7 +105,7 @@ describe("family processing profiles", () => {
         expect(description.selectedResampling).toBe("lanczos");
       }
     },
-    15_000,
+    PROCESS_TEST_TIMEOUT,
   );
 
   it("uses nearest-neighbor only when explicitly requested", () => {
@@ -117,7 +118,7 @@ describe("family processing profiles", () => {
     ]);
     expect(description.default_resampling).toBe("lanczos");
     expect(description.selectedResampling).toBe("nearest");
-  });
+  }, PROCESS_TEST_TIMEOUT);
 });
 
 describe("manifest processing plans", () => {
@@ -152,7 +153,7 @@ describe("manifest processing plans", () => {
       maxBytes: 921600,
     });
     expect(review.sourcePaths).toHaveLength(2);
-  });
+  }, PROCESS_TEST_TIMEOUT);
 
   it("refuses to overwrite an existing planned runtime output", async () => {
     const repoRoot = await temporaryDirectory();
@@ -182,5 +183,5 @@ describe("manifest processing plans", () => {
     );
     expect(result.status).not.toBe(0);
     expect(result.stderr).toMatch(/Refusing to overwrite existing processed output/);
-  });
+  }, PROCESS_TEST_TIMEOUT);
 });
