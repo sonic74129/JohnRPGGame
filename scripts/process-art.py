@@ -112,6 +112,74 @@ def remove_magenta_key(image: Image.Image) -> Image.Image:
     return result
 
 
+def remove_lazarus_chroma_key(image: Image.Image) -> Image.Image:
+    result = image.copy()
+    pixels = result.load()
+    for y in range(result.height):
+        for x in range(result.width):
+            red, green, blue, alpha = pixels[x, y]
+            if (
+                alpha > 0
+                and red > green * 1.45
+                and blue > green * 1.08
+            ):
+                pixels[x, y] = transparent_color()
+    return result
+
+
+def keep_largest_alpha_component(image: Image.Image) -> Image.Image:
+    alpha = image.getchannel("A")
+    visited: set[tuple[int, int]] = set()
+    components: list[list[tuple[int, int]]] = []
+    for y in range(image.height):
+        for x in range(image.width):
+            if (x, y) in visited or alpha.getpixel((x, y)) < 20:
+                continue
+            component: list[tuple[int, int]] = []
+            pending = [(x, y)]
+            visited.add((x, y))
+            while pending:
+                current_x, current_y = pending.pop()
+                component.append((current_x, current_y))
+                for neighbor in (
+                    (current_x + 1, current_y),
+                    (current_x - 1, current_y),
+                    (current_x, current_y + 1),
+                    (current_x, current_y - 1),
+                ):
+                    neighbor_x, neighbor_y = neighbor
+                    if (
+                        0 <= neighbor_x < image.width
+                        and 0 <= neighbor_y < image.height
+                        and neighbor not in visited
+                        and alpha.getpixel(neighbor) >= 20
+                    ):
+                        visited.add(neighbor)
+                        pending.append(neighbor)
+            components.append(component)
+
+    if not components:
+        raise ValueError("No foreground component remained after chroma cleanup.")
+    foreground = max(components, key=len)
+    result = Image.new("RGBA", image.size, transparent_color())
+    source_pixels = image.load()
+    result_pixels = result.load()
+    for x, y in foreground:
+        result_pixels[x, y] = source_pixels[x, y]
+    return result
+
+
+def remove_sick_bed_frame(image: Image.Image) -> Image.Image:
+    result = image.copy()
+    pixels = result.load()
+    cutoff_y = round(result.height * 0.55)
+    cutoff_x = round(result.width * 0.57)
+    for y in range(cutoff_y, result.height):
+        for x in range(cutoff_x):
+            pixels[x, y] = transparent_color()
+    return result
+
+
 def normalize_sprite(image: Image.Image, size: tuple[int, int] = (160, 208)) -> Image.Image:
     cleaned = remove_connected_background(image)
     alpha_box = cleaned.getchannel("A").getbbox()
@@ -204,7 +272,21 @@ def process_lazarus() -> None:
     image = Image.open(SOURCE / "sprite-lazarus-source.png")
     frames = ("sick", "wrapped-idle", "wrapped-step", "restored")
     for column, name in enumerate(frames):
-        frame = normalize_sprite(crop_cell(image, 4, 1, column, 0), (224, 208))
+        cleaned = keep_largest_alpha_component(
+            remove_lazarus_chroma_key(
+                remove_connected_background(
+                    crop_cell(image, 4, 1, column, 0)
+                )
+            )
+        )
+        if name == "sick":
+            cleaned = remove_sick_bed_frame(cleaned)
+            alpha_box = cleaned.getchannel("A").getbbox()
+            if alpha_box is None:
+                raise ValueError("No sick Lazarus foreground remained.")
+            frame = cleaned.crop(alpha_box)
+        else:
+            frame = normalize_sprite(cleaned, (224, 208))
         save_sprite(frame, "lazarus", name)
 
 

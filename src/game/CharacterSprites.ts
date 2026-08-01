@@ -5,6 +5,11 @@ export type WalkingSpriteCharacter = "messenger" | "martha" | "mary" | "jesus";
 export type IdleSpriteCharacter = "mourner-man" | "guide";
 export type SpriteCharacter = WalkingSpriteCharacter | IdleSpriteCharacter;
 export type SpritePose = "idle" | "step-left" | "step-right";
+export type LazarusPose =
+  | "sick"
+  | "wrapped-idle"
+  | "wrapped-step"
+  | "restored";
 
 const WALKING_CHARACTERS: readonly WalkingSpriteCharacter[] = [
   "messenger",
@@ -29,10 +34,10 @@ export const spriteAssetPath = (
   pose: SpritePose,
 ): string => `assets/art/sprites/${character}/${facing}-${pose}.png`;
 
-export const lazarusTextureKey = (pose: "wrapped-idle"): string =>
+export const lazarusTextureKey = (pose: LazarusPose): string =>
   `sprite-lazarus-${pose}`;
 
-export const lazarusAssetPath = (pose: "wrapped-idle"): string =>
+export const lazarusAssetPath = (pose: LazarusPose): string =>
   `assets/art/sprites/lazarus/${pose}.png`;
 
 export const walkAnimationKey = (

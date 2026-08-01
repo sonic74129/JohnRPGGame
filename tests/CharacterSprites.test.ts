@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   hasWalkFrames,
+  lazarusAssetPath,
+  lazarusTextureKey,
   resolveFacing,
   spriteTextureKey,
   walkFrameKeys,
@@ -30,5 +32,13 @@ describe("character sprite helpers", () => {
       spriteTextureKey("martha", "right", "step-right"),
       spriteTextureKey("martha", "right", "idle"),
     ]);
+  });
+
+  it("resolves every Lazarus event pose through one asset contract", () => {
+    expect(lazarusTextureKey("sick")).toBe("sprite-lazarus-sick");
+    expect(lazarusAssetPath("wrapped-step")).toBe(
+      "assets/art/sprites/lazarus/wrapped-step.png",
+    );
+    expect(lazarusTextureKey("restored")).toBe("sprite-lazarus-restored");
   });
 });
