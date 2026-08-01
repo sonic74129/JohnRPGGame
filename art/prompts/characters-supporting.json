@@ -1,0 +1,99 @@
+[
+  {
+    "id": "character.disciples",
+    "family": "character",
+    "purpose": "Source character sheet for Thomas, an older disciple and a younger disciple with distinct silhouettes and consistent first-century identities.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.\n\nThree consistent first-century Jewish men: Thomas in muted brown and charcoal, an older disciple in dusty olive, and a younger disciple in sand and restrained rust. Distinct silhouettes but one shared visual language. Organize one clearly separated row per man and include front, back, left and right idle views; prioritize identity consistency and complete silhouettes over extra walk cells.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Thomas, older disciple and younger disciple each have front, back, left and right views.",
+        "No scenery, labels, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Each man remains internally consistent across all four directions.",
+        "Thomas uses brown and charcoal, the older disciple dusty olive, and the younger disciple sand and restrained rust.",
+        "The three silhouettes are distinct but share the approved character language and body scale.",
+        "Feet share stable anchors and no full-body silhouette is cropped."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "character.witnesses",
+    "family": "character",
+    "purpose": "Source character sheet for four restrained Bethany witnesses used as mourners, guide and older witness in the playable world.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.\n\nFour restrained Bethany witnesses: male mourner in gray-blue, female mourner in muted ochre, male tomb guide in brown, older witness in muted green. Their grief is human and quiet, never theatrical. Organize one clearly separated row per person and include front, back, left and right idle views; prioritize identity consistency and complete silhouettes over extra walk cells.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "All four witnesses each have front, back, left and right views.",
+        "No scenery, labels, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Each witness remains internally consistent across all four directions.",
+        "Gray-blue mourner, ochre mourner, brown guide and muted-green older witness are immediately distinguishable.",
+        "Grief and concern are quiet and human, never caricatured or theatrical.",
+        "Feet share stable anchors, body scale matches approved outdoor characters and no silhouette is cropped."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world",
+      "master.tomb-garden"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "pose.disciples-witnesses",
+    "family": "special-pose",
+    "purpose": "Source sheet of restrained supporting-character actions for listening, following, mourning, guiding, moving the stone and reacting within playable map scenes.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved character identity and game camera.\nCreate isolated in-map story poses with consistent body size and foot anchor: restrained care, concern, listening, rising, kneeling, weeping, prayer, calling and quiet group reaction as appropriate to the named character. These are gameplay sprites for map-based dialogue and staging, not cinematic illustrations. No scenery, no text, no exaggerated theater, no supernatural effects.\n\nCreate quiet listening, cautious following, mourning, pointing the way, helping move the stone, and restrained awe. No celebration pose or magical reaction. Assign each action to the most appropriate approved disciple or witness, keep every identity exact, and do not include the stone or any scenery in the isolated helping pose.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Six requested actions are present and visually separated.",
+        "No stone, scenery, celebration, magical reaction, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Listening, cautious following, mourning, pointing, stone-moving effort and restrained awe are distinct at map scale.",
+        "Each pose exactly matches its approved disciple or witness identity, clothing, body scale and foot anchor.",
+        "Reactions remain quiet, human and non-theatrical.",
+        "Every silhouette is complete and suitable for transparent extraction."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.disciples",
+      "character.witnesses",
+      "master.tomb-garden"
+    ],
+    "output": "source"
+  }
+]

@@ -1,0 +1,97 @@
+[
+  {
+    "id": "environment.world-ground",
+    "family": "environment",
+    "purpose": "Source atlas for seamless dry earth, road, limestone path, sparse grass and rocky-ground pieces used to build one continuous runtime Bethany world.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved Bethany world master exactly for style, camera, palette, materials and lighting.\nCreate reusable production game assets for one continuous outdoor world: seamless earth/road/grass/rock ground pieces plus isolated limestone houses, well, canopy, table, wall segments, doorway threshold, road marker, rocky ledges, tomb entrance and olive tree. Keep every object isolated with consistent camera and scale, no connected cast shadows, no people, no text or UI.\n\nReusable seamless dry earth, dusty road, pale limestone path, sparse grass and rocky-ground pieces with matching edges and no object shadows.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "Ground pieces occupy a regular extraction layout with no labels or gutters baked into the art.",
+        "No people, objects, object shadows, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Dry earth, dusty road, pale limestone path, sparse grass and rocky ground match the approved Bethany world.",
+        "Matching edges tile without visible seams or lighting jumps.",
+        "Road width and surface scale remain consistent across straight, corner, junction and transition pieces.",
+        "Ground texture supports readable enlarged outdoor characters without excessive noise."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "environment.world-objects",
+    "family": "environment",
+    "purpose": "Source atlas of reusable Bethany buildings, landmarks, walls, terrain edges and vegetation for the continuous runtime exterior world.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved Bethany world master exactly for style, camera, palette, materials and lighting.\nCreate reusable production game assets for one continuous outdoor world: seamless earth/road/grass/rock ground pieces plus isolated limestone houses, well, canopy, table, wall segments, doorway threshold, road marker, rocky ledges, tomb entrance and olive tree. Keep every object isolated with consistent camera and scale, no connected cast shadows, no people, no text or UI.\n\nIsolated matching Martha house, two village houses, well, canopy, market table, straight/corner/end walls, threshold, road marker, cliff edge, rocky ledge, open tomb entrance and olive tree.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "All sixteen requested object slots are present and visually separated.",
+        "No people, animals, modern objects, connected cast shadows, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Every object matches the approved Bethany world camera, palette, materials and lighting.",
+        "Martha's house, two village houses, well, canopy, table, walls, threshold, road marker, cliff, ledge, tomb entrance and olive tree have complete uncropped silhouettes.",
+        "Buildings remain coherent with the deliberately enlarged outdoor character scale.",
+        "The open tomb entrance contains no round stone and can connect cleanly to the tomb-garden assets."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world",
+      "master.tomb-garden"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "props.tomb",
+    "family": "environment",
+    "purpose": "Source atlas of respectful burial-garden props for the runtime tomb sequence, kept separate from the environment and from every character.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved Bethany world master exactly for style, camera, palette, materials and lighting.\nCreate reusable production game assets for one continuous outdoor world: seamless earth/road/grass/rock ground pieces plus isolated limestone houses, well, canopy, table, wall segments, doorway threshold, road marker, rocky ledges, tomb entrance and olive tree. Keep every object isolated with consistent camera and scale, no connected cast shadows, no people, no text or UI.\n\nIsolated large round tomb stone, rolled-aside state, cave lip foreground, folded burial cloth, cloth strips, light dust, limestone rubble and sparse plant. Respectful and non-horror.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "All eight requested prop slots are present and visually separated.",
+        "No people, body, horror, supernatural effect, connected scenery, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Round stone, rolled-aside stone, cave lip, cloth, strips, dust, rubble and plant match the approved tomb master.",
+        "Every item has a complete uncropped silhouette and extraction space.",
+        "Burial cloth is respectful, empty and non-horror.",
+        "Stone and cave-lip scale supports the approved enlarged outdoor characters and open tomb entrance."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.tomb-garden",
+      "environment.world-objects"
+    ],
+    "output": "source"
+  }
+]

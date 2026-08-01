@@ -1,0 +1,258 @@
+[
+  {
+    "id": "character.messenger",
+    "family": "character",
+    "purpose": "Source character sheet for the unnamed messenger/player, including four-direction idle and two-step walk poses with one stable identity and foot anchor.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.\n\nThe unnamed adult Jewish messenger/player character wears a blue-gray linen tunic, sand mantle, leather sandals and a small travel satchel. Alert, humble and practical; no heroic armor or weapon.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Four directions each include idle, left-step and right-step poses.",
+        "No scenery, armor, weapon, labels, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "All twelve cells depict one consistent adult Jewish messenger with identical face, clothing and body scale.",
+        "Blue-gray tunic, sand mantle, sandals and satchel are readable in every direction.",
+        "Feet share one stable anchor and no full-body silhouette is cropped.",
+        "The silhouette remains readable at the deliberately enlarged outdoor display scale."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "character.martha",
+    "family": "character",
+    "purpose": "Source character sheet for Martha, including four-direction idle and two-step walk poses with identity and clothing locked for map actions and portraits.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.\n\nMartha is an adult Jewish woman with a practical, composed presence, dark plum outer linen and warm earth-tone underlayers. Keep her face, hair, age and clothing identical across every pose.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Four directions each include idle, left-step and right-step poses.",
+        "No scenery, labels, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "All twelve cells depict one consistent adult Jewish Martha with identical face, hair, age and clothing.",
+        "Dark plum outer linen and warm earth-tone underlayers remain stable in every direction.",
+        "Her practical composed silhouette is distinct from Mary without theatrical acting.",
+        "Feet share one stable anchor and no full-body silhouette is cropped."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "character.mary",
+    "family": "character",
+    "purpose": "Source character sheet for Mary, including four-direction idle and two-step walk poses with identity and clothing locked for map actions and portraits.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.\n\nMary is an adult Jewish woman with a gentle but emotionally direct presence, muted red outer linen and sand-colored underlayers. Keep her face, hair, age and clothing identical across every pose.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Four directions each include idle, left-step and right-step poses.",
+        "No scenery, labels, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "All twelve cells depict one consistent adult Jewish Mary with identical face, hair, age and clothing.",
+        "Muted red outer linen and sand underlayers remain stable in every direction.",
+        "Her gentle emotionally direct silhouette is distinct from Martha without exaggerated acting.",
+        "Feet share one stable anchor and no full-body silhouette is cropped."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "character.jesus",
+    "family": "character",
+    "purpose": "Source character sheet for Jesus, including four-direction idle and two-step walk poses with a respectful stable identity for map actions and portraits.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.\n\nRepresent Jesus respectfully as a first-century Jewish man with Middle Eastern appearance, undyed linen tunic and muted earth-tone mantle. Non-iconographic, no halo, glow, royal costume or Europeanized features.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Four directions each include idle, left-step and right-step poses.",
+        "No scenery, halo, glow, royal costume, labels, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "All twelve cells depict one consistent first-century Jewish man with Middle Eastern appearance.",
+        "Undyed tunic and muted earth-tone mantle remain stable in every direction.",
+        "The design is respectful, human and non-iconographic without Europeanized features.",
+        "Feet share one stable anchor and no full-body silhouette is cropped."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "character.lazarus",
+    "family": "character",
+    "purpose": "Source special-state sheet for Lazarus in sick, wrapped idle, wrapped step and restored states with one stable face and body identity.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.\n\nThe same adult Jewish man Lazarus in every state: weak on his side in simple linen clothing; standing wrapped respectfully in burial cloth with face visible; one careful wrapped step; restored in a simple undyed tunic. No bed baked into the sick pose, no horror, decay or supernatural glow. For this state sheet, create exactly four clean separated cells in the listed order instead of the standard directional walk layout; keep identity, body scale and a consistent standing foot anchor wherever applicable.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Exactly four visually separated states appear in the requested order.",
+        "No bed, scenery, body decay, horror, glow, labels, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Sick, wrapped idle, wrapped step and restored states depict the same adult Jewish man.",
+        "The sick side pose fits a separate runtime bed without including the bed.",
+        "Burial cloth is respectful, face-visible and non-horror in both wrapped states.",
+        "Standing feet share a stable anchor, body scale is consistent and no silhouette is cropped."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.tomb-garden"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "pose.martha",
+    "family": "special-pose",
+    "purpose": "Source sheet of Martha's restrained in-map care, concern, purposeful movement, calling and conviction actions for playable dialogue staging.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved character identity and game camera.\nCreate isolated in-map story poses with consistent body size and foot anchor: restrained care, concern, listening, rising, kneeling, weeping, prayer, calling and quiet group reaction as appropriate to the named character. These are gameplay sprites for map-based dialogue and staging, not cinematic illustrations. No scenery, no text, no exaggerated theater, no supernatural effects.\n\nCreate Martha caring beside a bed, worried idle, walking with purpose, quietly calling Mary, and standing with calm conviction. Keep the acting restrained and readable at map scale. Do not include the bed or any other scenery in the isolated care pose.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Five requested poses are present and visually separated.",
+        "No bed, scenery, text, UI, supernatural effect, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Every pose exactly matches approved Martha identity, clothing, body scale and foot anchor.",
+        "Care, worry, purposeful walk, quiet call and calm conviction are distinct at map scale.",
+        "Acting remains restrained and human without theatrical gesture.",
+        "Every silhouette is complete and suitable for transparent extraction."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.martha",
+      "environment.house-base"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "pose.mary",
+    "family": "special-pose",
+    "purpose": "Source sheet of Mary's restrained in-map care, urgency, movement, kneeling and grief actions for playable dialogue staging.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved character identity and game camera.\nCreate isolated in-map story poses with consistent body size and foot anchor: restrained care, concern, listening, rising, kneeling, weeping, prayer, calling and quiet group reaction as appropriate to the named character. These are gameplay sprites for map-based dialogue and staging, not cinematic illustrations. No scenery, no text, no exaggerated theater, no supernatural effects.\n\nCreate Mary caring beside a bed, rising urgently, walking quickly, kneeling or bowing in grief, and quiet weeping. No theatrical collapse. Do not include the bed or any other scenery in the isolated care pose.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Five requested poses are present and visually separated.",
+        "No bed, scenery, text, UI, supernatural effect, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Every pose exactly matches approved Mary identity, clothing, body scale and foot anchor.",
+        "Care, urgent rise, quick walk, kneeling grief and quiet weeping are distinct at map scale.",
+        "Grief remains restrained without theatrical collapse.",
+        "Every silhouette is complete and suitable for transparent extraction."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.mary",
+      "environment.house-base"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "pose.jesus",
+    "family": "special-pose",
+    "purpose": "Source sheet of Jesus listening, speaking, grieving, praying and calling within playable map dialogue staging.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved character identity and game camera.\nCreate isolated in-map story poses with consistent body size and foot anchor: restrained care, concern, listening, rising, kneeling, weeping, prayer, calling and quiet group reaction as appropriate to the named character. These are gameplay sprites for map-based dialogue and staging, not cinematic illustrations. No scenery, no text, no exaggerated theater, no supernatural effects.\n\nCreate Jesus listening, speaking calmly, visibly grieving, praying with restrained upward attention, and calling toward the tomb with clear but non-theatrical authority.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "Five requested poses are present and visually separated.",
+        "No scenery, halo, glow, magical effect, text, UI, connected shadow, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Every pose exactly matches approved Jesus identity, clothing, body scale and foot anchor.",
+        "Listening, calm speech, visible grief, restrained prayer and authoritative call are distinct at map scale.",
+        "Authority and grief remain deeply human and non-theatrical.",
+        "Every silhouette is complete and suitable for transparent extraction."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.jesus",
+      "master.tomb-garden"
+    ],
+    "output": "source"
+  }
+]

@@ -59,28 +59,27 @@ Theme 1 与 Theme 2 使用处理后的循环版本；Theme 3 不循环。游戏�
 游戏使用文件位于 `public/assets/audio/`，原始母带保存在
 `production/audio-source/`，不会复制到发布包。
 
-## 重新生成美术素材
+## 美术 Prompt Registry
 
-美术生成脚本使用 Microsoft Foundry 的 MAI Image API 和当前 Azure CLI 的
-Entra ID 登录，不读取或保存资源密钥：
+美术提示词已迁移到 `art/prompts/` 的分文件 v1 registry：
 
-```bash
-AZURE_SUBSCRIPTION_ID="<subscription-id>" \
-AZURE_MAI_ENDPOINT="https://<resource>.services.ai.azure.com" \
-AZURE_MAI_DEPLOYMENT="<deployment-name>" \
-npm run art:generate
-```
+- `style.json`：固定后端、通用前缀、家族 prompt、比例契约、退休计划和迭代规则。
+- `masters.json`：室内、伯大尼连续外部世界和墓园美术母版。
+- `environment-interior.json` / `environment-outdoor.json`：运行时环境源资产。
+- `characters-core.json` / `characters-supporting.json`：角色与地图特殊动作源资产。
+- `portraits.json`：与地图身份一致的对话肖像。
 
-提示词位于 `art/prompts.json`，生成结果写入 `public/assets/art/`。脚本会保留
-已经存在的文件，只生成缺少的素材。角色与道具源图保存在
-`production/art-source/`；剧情插画会直接用于相应的关键经文段落。可按类别生成和处理：
+后端固定为 Azure AI Foundry 的 `mai-image-2-5-pro` 部署、
+`MAI-Image-2.5-Pro@2026-06-19`，并使用 Azure CLI / Entra ID；不得切换到
+其他图像模型或保存资源密钥。`art/prompts.json` 仅是退休标记，不能再发送给
+图像后端。生成脚本迁移到新 registry 前不要运行 `npm run art:generate`。
 
-```bash
-ART_CATEGORY=sprite npm run art:generate
-ART_CATEGORY=sprite npm run art:process
-ART_CATEGORY=world npm run art:generate
-ART_CATEGORY=world npm run art:process
-```
+每个 registry 项都包含稳定 ID、用途、运行时标记、模型、尺寸、prompt 版本、
+完整可直接发送的 prompt、机器与人工验收、2–3 个候选限制、依赖和输出类型。
+`v1` 是预写基线；任何 `v2+` 评审一次只能修正一个已观察缺陷，并必须明确
+`Revision target`、`Change only`、`Keep unchanged` 和可测量的 `Acceptance`。
+旧剧情插画、全屏静态过场和独立道路/村庄/墓园背景已退休；剧情只在可玩地图中
+通过走位、动作和对话窗口呈现。
 
 ## 返回查经页面
 
