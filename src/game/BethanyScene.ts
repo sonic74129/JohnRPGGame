@@ -87,6 +87,7 @@ import {
   type StoryActorId,
 } from "./ScriptureContent";
 import { dialogueLinesForBeat } from "./ScriptureDialogue";
+import { applyStoryCompletionPresentation } from "./StoryCompletionPresentation";
 import { StoryEngine } from "./StoryEngine";
 import { TOMB_PROP_ASSETS } from "./TombAssets";
 import type { ActorId, DialogueLine, MusicState } from "./types";
@@ -1961,6 +1962,24 @@ export class BethanyScene extends Phaser.Scene {
 
   private finishStory(): void {
     this.stopPlayerMovement();
+    this.restoreAllSequenceActors();
+    applyStoryCompletionPresentation({
+      setPosition: (actor, position) =>
+        this.setSequencePosition(actor, position),
+      setFacing: (actor, facing) => this.setSequenceFacing(actor, facing),
+    });
+    this.createTombElements();
+    this.stone?.setPosition(
+      WORLD_LANDMARKS.tombEntrance.x + 190,
+      WORLD_LANDMARKS.tombEntrance.y,
+    );
+    this.lazarus
+      ?.setVisible(true)
+      .setFrame(lazarusFrame("restored"))
+      .setPosition(
+        WORLD_LANDMARKS.tombGarden.x,
+        WORLD_LANDMARKS.tombGarden.y + 130,
+      );
     this.ui.showResult(
       this.story.score,
       this.story.resultLabel(),
