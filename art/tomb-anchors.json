@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "candidatePath": "production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-01.png",
+    "runtimeAssetPath": "public/assets/art/environment/environment__world-map/v1.1/run-001/environment__world-map.png",
+    "layoutPath": "art/world-map-layout.json",
+    "debugOverlayPath": "production/design-contracts/tomb-anchor-debug-overlay.png",
+    "canvas": { "width": 2720, "height": 1536 },
+    "gardenBounds": { "xMin": 1950, "xMax": 2580, "yMin": 100, "yMax": 610 }
+  },
+  "tombApproach": { "x": 2020, "y": 450 },
+  "tombMouth": {
+    "center": { "x": 2405, "y": 245 },
+    "visualBounds": { "xMin": 2303, "xMax": 2461, "yMin": 111, "yMax": 272 },
+    "darkOpeningBounds": { "xMin": 2353, "xMax": 2458, "yMin": 142, "yMax": 242 },
+    "pixelEvidence": "Threshold-55 dark component plus coordinate-grid inspection of candidate-01"
+  },
+  "tombGathering": {
+    "center": { "x": 2165, "y": 405 },
+    "groupPositions": {
+      "jesus": { "x": 2250, "y": 330 },
+      "martha": { "x": 2190, "y": 365 },
+      "mary": { "x": 2130, "y": 390 },
+      "mourner": { "x": 2070, "y": 410 },
+      "mournerWoman": { "x": 2110, "y": 465 },
+      "player": { "x": 2240, "y": 455 }
+    }
+  },
+  "stone": {
+    "size": { "width": 120, "height": 120 },
+    "initialBounds": { "xMin": 2320, "xMax": 2440, "yMin": 185, "yMax": 305 },
+    "rolledTarget": {
+      "center": { "x": 2520, "y": 355 },
+      "bounds": { "xMin": 2460, "xMax": 2580, "yMin": 295, "yMax": 415 }
+    },
+    "rollDelta": { "x": 140, "y": 110 },
+    "rollDistance": 178.045
+  },
+  "lazarus": {
+    "hiddenStart": { "x": 2405, "y": 200 },
+    "emergenceTarget": { "x": 2340, "y": 300 },
+    "path": [
+      { "x": 2405, "y": 200 },
+      { "x": 2405, "y": 245 },
+      { "x": 2340, "y": 300 }
+    ]
+  },
+  "cameraFocus": { "x": 2290, "y": 320 },
+  "colliderIntent": {
+    "stoneUsesRectangularBounds": true,
+    "stoneColliderMovesWithRoll": true,
+    "stoneBlocksMouthInitially": true,
+    "mouthPassableAfterRoll": true,
+    "lazarusNonCollidingWhileHidden": true,
+    "lazarusCollidingAfterEmergence": true
+  }
+}
