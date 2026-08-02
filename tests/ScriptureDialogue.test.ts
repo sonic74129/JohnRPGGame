@@ -4,13 +4,19 @@ import {
   dialogueLinesForBeat,
   dialogueLinesForVerse,
 } from "../src/game/ScriptureDialogue";
+import { PORTRAIT_ASSETS } from "../src/game/CharacterAssets";
+import { DIALOGUE_PORTRAIT_ASSIGNMENTS } from "../src/game/DialoguePortraits";
 import { JOHN_11_VERSES } from "../src/game/ScriptureContent";
-import { VERSE_BEATS } from "../src/game/VerseBeats";
+import {
+  VERSE_BEATS,
+  VERSE_BEAT_BY_ID,
+} from "../src/game/VerseBeats";
 
 describe("Scripture dialogue attribution", () => {
   it.each([
     ["john11:34", ["耶稣", "众人"]],
     ["john11:39", ["耶稣", "马大"]],
+    ["john11:44", ["经文", "耶稣"]],
   ] as const)("splits %s without changing its original text", (key, speakers) => {
     const lines = dialogueLinesForVerse(key);
 
@@ -39,5 +45,84 @@ describe("Scripture dialogue attribution", () => {
         beat.verseKeys.map((key) => JOHN_11_VERSES[key].text),
       );
     }
+  });
+
+  it("maps approved portraits by beat context without changing Scripture text", () => {
+    const message = dialogueLinesForBeat(VERSE_BEAT_BY_ID.message);
+    expect(message[0]).toMatchObject({
+      speaker: "报信者",
+      portrait: "messenger",
+      text: JOHN_11_VERSES["john11:3"].text,
+    });
+    expect(message[1]).toMatchObject({
+      speaker: "耶稣",
+      portrait: "jesus-listening",
+    });
+
+    const entrusted = dialogueLinesForBeat(VERSE_BEAT_BY_ID["sisters-send"]);
+    expect(entrusted[0]).toMatchObject({ speaker: "姐妹二人" });
+    expect(entrusted[0]?.portrait).toBeUndefined();
+
+    const returnDialogue = dialogueLinesForBeat(
+      VERSE_BEAT_BY_ID["return-to-judea"],
+    );
+    expect(
+      returnDialogue.find(
+        (line) => line.reference === JOHN_11_VERSES["john11:8"].reference,
+      )?.portrait,
+    ).toBeUndefined();
+    expect(
+      returnDialogue.find(
+        (line) => line.reference === JOHN_11_VERSES["john11:14"].reference,
+      )?.portrait,
+    ).toBe("jesus-declaration");
+
+    expect(dialogueLinesForBeat(VERSE_BEAT_BY_ID["mary-rises"])[0]?.portrait).toBe(
+      "mary-urgent",
+    );
+  });
+
+  it("keeps the bounded portrait plan unique and resolvable", () => {
+    const keys = DIALOGUE_PORTRAIT_ASSIGNMENTS.map(
+      ({ beatId, verseKey, sourceSpeaker }) =>
+        `${beatId}:${verseKey}:${sourceSpeaker}`,
+    );
+    expect(new Set(keys).size).toBe(keys.length);
+
+    for (const assignment of DIALOGUE_PORTRAIT_ASSIGNMENTS) {
+      expect(PORTRAIT_ASSETS).toHaveProperty(assignment.portrait);
+      const lines = dialogueLinesForBeat(
+        VERSE_BEAT_BY_ID[assignment.beatId],
+      );
+      expect(
+        lines.some(
+          (line) =>
+            line.reference === JOHN_11_VERSES[assignment.verseKey].reference &&
+            line.portrait === assignment.portrait &&
+            line.speaker ===
+              ("displayedSpeaker" in assignment
+                ? assignment.displayedSpeaker
+                : assignment.sourceSpeaker),
+        ),
+        `${assignment.beatId}:${assignment.verseKey}:${assignment.sourceSpeaker}`,
+      ).toBe(true);
+    }
+
+    expect(
+      new Set(DIALOGUE_PORTRAIT_ASSIGNMENTS.map(({ portrait }) => portrait)),
+    ).toEqual(
+      new Set([
+        "martha-grieving",
+        "martha-faith",
+        "mary-urgent",
+        "mary-grieving",
+        "jesus-listening",
+        "jesus-declaration",
+        "jesus-weeping",
+        "messenger",
+        "thomas",
+        "witness",
+      ]),
+    );
   });
 });

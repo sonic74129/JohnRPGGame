@@ -93,11 +93,29 @@ describe("approved character asset contracts", () => {
   });
 
   it("uses the 12 individual approved portraits and no legacy panels", () => {
-    expect(Object.keys(PORTRAIT_ASSETS)).toHaveLength(12);
-    for (const path of Object.values(PORTRAIT_ASSETS)) {
+    const entries = Object.entries(PORTRAIT_ASSETS);
+    expect(entries).toHaveLength(12);
+    for (const [key, path] of entries) {
       expect(path).toContain("assets/art/portrait/portrait__");
       expect(path).not.toMatch(/portrait-(martha|mary|jesus|witnesses)\.png$/);
       expect(pngSize(path)).toEqual([1024, 1024]);
+
+      const manifest = JSON.parse(
+        readFileSync(
+          resolve(
+            "production/art-pipeline/manifests/portrait",
+            `portrait__${key}/v1/run-001.manifest.json`,
+          ),
+          "utf8",
+        ),
+      ) as {
+        readonly asset: { readonly id: string };
+        readonly run: { readonly status: string };
+        readonly processing: { readonly status: string };
+      };
+      expect(manifest.asset.id).toBe(`portrait.${key}`);
+      expect(manifest.run.status).toBe("approved");
+      expect(manifest.processing.status).toBe("completed");
     }
   });
 

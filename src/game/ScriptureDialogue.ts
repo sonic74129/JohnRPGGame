@@ -1,4 +1,5 @@
 import { JOHN_11_VERSES, type John11VerseKey } from "./ScriptureContent";
+import { dialoguePortraitAssignment } from "./DialoguePortraits";
 import type { DialogueLine } from "./types";
 import type { VerseBeat } from "./VerseBeats";
 
@@ -28,6 +29,16 @@ const MIXED_SPEAKER_EXCERPTS: Readonly<
     {
       speaker: "马大",
       text: "那死人的姐姐马大对他说：“主啊，他现在必是臭了，因为他死了已经四天了。”",
+    },
+  ],
+  "john11:44": [
+    {
+      speaker: "经文",
+      text: "那死人就出来了，手脚裹着布，脸上包着手巾。",
+    },
+    {
+      speaker: "耶稣",
+      text: "耶稣对他们说：“解开，叫他走！”",
     },
   ],
 };
@@ -72,6 +83,17 @@ export const dialogueLinesForVerse = (
 };
 
 export const dialogueLinesForBeat = (
-  beat: Pick<VerseBeat, "verseKeys">,
+  beat: Pick<VerseBeat, "id" | "verseKeys">,
 ): readonly DialogueLine[] =>
-  beat.verseKeys.flatMap((key) => dialogueLinesForVerse(key));
+  beat.verseKeys.flatMap((key) =>
+    dialogueLinesForVerse(key).map((line) => {
+      const assignment = dialoguePortraitAssignment(beat.id, key, line.speaker);
+      return assignment
+        ? {
+            ...line,
+            speaker: assignment.displayedSpeaker ?? line.speaker,
+            portrait: assignment.portrait,
+          }
+        : line;
+    }),
+  );

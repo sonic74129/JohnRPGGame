@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { PORTRAIT_ASSETS } from "../src/game/CharacterAssets";
+
 const REGISTRY_FILES = [
   "masters.json",
   "environment-interior.json",
@@ -224,6 +226,18 @@ describe("MAI prompt registry", () => {
     expect(entries.every((entry) => [2, 3].includes(entry.candidateCount))).toBe(
       true,
     );
+  });
+
+  it("registers every runtime portrait asset under the matching prompt ID", () => {
+    const promptIds = entries
+      .filter((entry) => entry.family === "portrait")
+      .map((entry) => entry.id)
+      .sort();
+    const runtimeIds = Object.keys(PORTRAIT_ASSETS)
+      .map((key) => `portrait.${key}`)
+      .sort();
+
+    expect(promptIds).toEqual(runtimeIds);
   });
 
   it("contains no story-illustration family or retired generation entry", () => {
