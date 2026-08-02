@@ -20,6 +20,13 @@ import {
 import { ActorRegistry } from "./ActorRegistry";
 import type { AreaResource } from "./AreaRuntime";
 import { getLatestActorVerseEcho } from "./ActorVerseEcho";
+import {
+  TWO_DAY_EXIT_POINTS,
+  TWO_DAY_TRANSITION_STATES,
+  TWO_DAY_WALK_ACTORS,
+  WORLD_HOUSE_EXIT_SPAWN,
+  resolveHouseDoorTransition,
+} from "./BethanyFlow";
 import { Character } from "./Character";
 import {
   CORE_POSE_SHEETS,
@@ -50,13 +57,16 @@ import {
 } from "./DisplayScale";
 import {
   HOUSE_ART,
-  HOUSE_EXIT,
+  HOUSE_DOOR_REENTRY_SPAWN,
   HOUSE_FOREGROUND_PLACEMENTS,
   HOUSE_OBSTACLES,
   HOUSE_PLAYER_SPAWN,
   HOUSE_PROP_PLACEMENTS,
   HOUSE_SICK_LAZARUS_POSITION,
   HOUSE_SICK_LAZARUS_SIZE,
+  HOUSE_SICK_LAZARUS_ANGLE,
+  HOUSE_SICK_LAZARUS_DEPTH,
+  HOUSE_SICK_LAZARUS_FLIP_X,
   HOUSE_STORY_FOCUS,
   type HouseArtPlacement,
 } from "./EnvironmentAssets";
@@ -164,8 +174,7 @@ const WORLD_ACTOR_POSITIONS: Readonly<Record<ActorId, Point>> = {
 type SequenceActor = ActorId | "player" | "lazarus" | "stone-group";
 type EnvironmentState =
   | "none"
-  | "wait-dusk"
-  | "wait-day"
+  | (typeof TWO_DAY_TRANSITION_STATES)[number]
   | "stone-open"
   | "lazarus-emerge";
 type CameraTarget = SequenceActor | Point;
@@ -242,6 +251,8 @@ export class BethanyScene extends Phaser.Scene {
   private resources: AreaResource[] = [];
   private decorations: Phaser.GameObjects.GameObject[] = [];
   private daylightOverlay?: Phaser.GameObjects.Rectangle;
+  private timeSkipCurtain?: Phaser.GameObjects.Rectangle;
+  private timeSkipTitle?: Phaser.GameObjects.Text;
   private stone?: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private stoneCollider?: Phaser.Physics.Arcade.Collider;
   private stoneGroupPose?: Phaser.GameObjects.Sprite;
@@ -352,7 +363,7 @@ export class BethanyScene extends Phaser.Scene {
     this.updateMovement();
     this.updateNearestActor();
     this.tryProximityBeat();
-    this.tryHouseExit();
+    this.tryHouseTransition();
     this.updateDepths();
   }
 
@@ -400,7 +411,7 @@ export class BethanyScene extends Phaser.Scene {
     }
   }
 
-  private enterHouse(): void {
+  private enterHouse(playerSpawn: Point = HOUSE_PLAYER_SPAWN): void {
     this.inWorld = false;
     this.clearSceneResources();
     this.clearActorVisuals();
@@ -417,13 +428,13 @@ export class BethanyScene extends Phaser.Scene {
     this.actorRegistry.hideAll();
     this.placeActor("martha", { x: 690, y: 455 }, true);
     this.placeActor("mary", { x: 705, y: 535 }, true);
-    this.player.setPosition(HOUSE_PLAYER_SPAWN.x, HOUSE_PLAYER_SPAWN.y);
+    this.player.setPosition(playerSpawn.x, playerSpawn.y);
     this.applyActorScale(this.player, "messenger", "indoor");
     this.createSickLazarus();
     this.cameras.main.centerOn(this.player.x, this.player.y);
   }
 
-  private enterWorld(): void {
+  private enterWorld(playerSpawn: Point = WORLD_HOUSE_EXIT_SPAWN): void {
     this.inWorld = true;
     this.clearSceneResources();
     this.clearActorVisuals();
@@ -432,10 +443,7 @@ export class BethanyScene extends Phaser.Scene {
     for (const id of ACTOR_IDS) {
       this.placeActor(id, WORLD_ACTOR_POSITIONS[id], true);
     }
-    this.player.setPosition(
-      FIND_JESUS_STORY_CONTRACT.playerStart.x,
-      FIND_JESUS_STORY_CONTRACT.playerStart.y,
-    );
+    this.player.setPosition(playerSpawn.x, playerSpawn.y);
     this.applyActorScale(this.player, "messenger", "outdoor");
     this.applyBeatPresentation(this.story.beatId, false);
     this.stopPlayerMovement();
@@ -517,6 +525,37 @@ export class BethanyScene extends Phaser.Scene {
         0,
       )
       .setDepth(100000);
+    this.timeSkipCurtain = this.add
+      .rectangle(
+        0,
+        0,
+        this.cameras.main.width,
+        this.cameras.main.height,
+        0x000000,
+        1,
+      )
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setAlpha(0)
+      .setDepth(200000);
+    this.timeSkipTitle = this.add
+      .text(
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        "两天后",
+        {
+          color: "#fffaf0",
+          fontFamily: '"Noto Serif SC", serif',
+          fontSize: "52px",
+          fontStyle: "bold",
+          stroke: "#1b1713",
+          strokeThickness: 5,
+        },
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setAlpha(0)
+      .setDepth(200001);
     return {
       destroy: () => {
         container.destroy();
@@ -524,6 +563,10 @@ export class BethanyScene extends Phaser.Scene {
         houseShadow.destroy();
         this.daylightOverlay?.destroy();
         this.daylightOverlay = undefined;
+        this.timeSkipCurtain?.destroy();
+        this.timeSkipCurtain = undefined;
+        this.timeSkipTitle?.destroy();
+        this.timeSkipTitle = undefined;
       },
     };
   }
@@ -581,7 +624,9 @@ export class BethanyScene extends Phaser.Scene {
         lazarusFrame("sick"),
       )
       .setScale(lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE))
-      .setDepth(HOUSE_STORY_FOCUS.y - 1);
+      .setFlipX(HOUSE_SICK_LAZARUS_FLIP_X)
+      .setAngle(HOUSE_SICK_LAZARUS_ANGLE)
+      .setDepth(HOUSE_SICK_LAZARUS_DEPTH);
     this.lazarusLabel = createActorLabel(this, this.lazarus, {
       text: ACTOR_LABELS.lazarus ?? "拉撒路",
       resolveVisibility: () => Boolean(this.lazarus?.visible),
@@ -1176,18 +1221,16 @@ export class BethanyScene extends Phaser.Scene {
     }
   }
 
-  private tryHouseExit(): void {
-    if (
-      !this.inWorld &&
-      this.story.beatId === "find-jesus" &&
-      Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        HOUSE_EXIT.x,
-        HOUSE_EXIT.y,
-      ) <= 82
-    ) {
+  private tryHouseTransition(): void {
+    const transition = resolveHouseDoorTransition(
+      this.inWorld,
+      this.story.beatId,
+      this.player,
+    );
+    if (transition === "enter-world") {
       this.enterWorld();
+    } else if (transition === "enter-house") {
+      this.enterHouse(HOUSE_DOOR_REENTRY_SPAWN);
     }
   }
 
@@ -1276,9 +1319,15 @@ export class BethanyScene extends Phaser.Scene {
     switch (beatId) {
       case "two-day-wait":
         return [
-          { kind: "environment", state: "wait-dusk", durationMs: 900 },
-          { kind: "camera-hold", durationMs: 700 },
-          { kind: "environment", state: "wait-day", durationMs: 900 },
+          {
+            kind: "parallel",
+            branches: TWO_DAY_WALK_ACTORS.map((actor) => [
+              move(actor, [TWO_DAY_EXIT_POINTS[actor]], 1_200),
+            ]),
+          },
+          { kind: "environment", state: "time-skip-black", durationMs: 650 },
+          { kind: "environment", state: "time-skip-title", durationMs: 1_100 },
+          { kind: "environment", state: "time-skip-return", durationMs: 650 },
         ];
       case "message":
         return [
@@ -1694,16 +1743,26 @@ export class BethanyScene extends Phaser.Scene {
       void operation.finished.then(() => this.setLazarusEmerged(false));
       return operation;
     }
-    if (state === "wait-dusk" || state === "wait-day") {
-      const overlay = this.daylightOverlay;
-      if (!overlay) {
+    if (state === "time-skip-black") {
+      this.timeSkipTitle?.setAlpha(0);
+      const curtain = this.timeSkipCurtain;
+      if (!curtain) {
         return this.delayOperation(durationMs);
       }
-      return this.tweenGameObject(
-        overlay,
-        { alpha: state === "wait-dusk" ? 0.36 : 0 },
-        durationMs,
-      );
+      return this.tweenGameObject(curtain, { alpha: 1 }, durationMs);
+    }
+    if (state === "time-skip-title") {
+      this.timeSkipTitle?.setAlpha(1);
+      return this.delayOperation(durationMs);
+    }
+    if (state === "time-skip-return") {
+      this.restoreTwoDayCamp();
+      this.timeSkipTitle?.setAlpha(0);
+      const curtain = this.timeSkipCurtain;
+      if (!curtain) {
+        return this.delayOperation(durationMs);
+      }
+      return this.tweenGameObject(curtain, { alpha: 0 }, durationMs);
     }
     return this.delayOperation(durationMs);
   }
@@ -1861,6 +1920,9 @@ export class BethanyScene extends Phaser.Scene {
     this.applyFinalPositions(beatId);
     if (beatId === "two-day-wait") {
       this.daylightOverlay?.setAlpha(0);
+      this.restoreTwoDayCamp();
+      this.timeSkipTitle?.setAlpha(0);
+      this.timeSkipCurtain?.setAlpha(0);
     }
     for (const id of ACTOR_IDS) {
       const visible = state.actors.visibleActorIds.includes(id);
@@ -1886,6 +1948,12 @@ export class BethanyScene extends Phaser.Scene {
       this.setLazarusEmerged(true);
     }
     this.followPlayerCamera();
+  }
+
+  private restoreTwoDayCamp(): void {
+    for (const actor of TWO_DAY_WALK_ACTORS) {
+      this.setSequencePosition(actor, WORLD_ACTOR_POSITIONS[actor]);
+    }
   }
 
   private applyFinalPositions(beatId: VerseBeatId): void {
@@ -2198,7 +2266,7 @@ export class BethanyScene extends Phaser.Scene {
       visual.container.setDepth(visual.container.y);
     }
     if (this.lazarus?.visible) {
-      this.lazarus.setDepth(this.lazarus.y);
+      this.lazarus.setDepth(HOUSE_SICK_LAZARUS_DEPTH);
     }
   }
 

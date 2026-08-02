@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  DEFAULT_CHARACTER_SCALE,
   DEFAULT_DISPLAY_SCALE,
   LINEAR_RENDER_CONFIG,
   OUTDOOR_DISPLAY_HEIGHTS,
@@ -23,11 +24,12 @@ describe("display scale contract", () => {
       outdoor90: 90,
       outdoor96: 96,
     });
-    expect(DEFAULT_DISPLAY_SCALE.outdoorVisibleHeight).toBe(90);
-    expect(DEFAULT_DISPLAY_SCALE.indoorVisibleHeight).toBe(128);
+    expect(DEFAULT_DISPLAY_SCALE.characterScale).toBe(DEFAULT_CHARACTER_SCALE);
+    expect(DEFAULT_DISPLAY_SCALE.outdoorVisibleHeight).toBe(135);
+    expect(DEFAULT_DISPLAY_SCALE.indoorVisibleHeight).toBe(192);
     expect(DEFAULT_DISPLAY_SCALE.sickLazarusBox).toEqual({
-      width: 160,
-      height: 108,
+      width: 240,
+      height: 162,
     });
   });
 
@@ -47,9 +49,9 @@ describe("display scale contract", () => {
           sourceBounds: { width: 200, height: 400 },
         }),
       ).toEqual({
-        scale: 0.24,
-        visibleWidth: 48,
-        visibleHeight: 96,
+        scale: 0.36,
+        visibleWidth: 72,
+        visibleHeight: 144,
       });
     }
   });
@@ -63,17 +65,17 @@ describe("display scale contract", () => {
       sourceBounds: { width: 320, height: 180 },
     });
 
-    expect(sick.maximumWidth).toBe(160);
-    expect(sick.maximumHeight).toBe(108);
-    expect(sick.visibleWidth).toBe(160);
-    expect(sick.visibleHeight).toBe(90);
+    expect(sick.maximumWidth).toBe(240);
+    expect(sick.maximumHeight).toBe(162);
+    expect(sick.visibleWidth).toBe(240);
+    expect(sick.visibleHeight).toBe(135);
     expect(
       resolveTargetVisibleHeight(contract, {
         kind: "lazarus",
         area: "outdoor",
         state: "restored",
       }),
-    ).toBe(84);
+    ).toBe(126);
   });
 
   it("exports linear render and texture-filter adapters", () => {

@@ -43,19 +43,23 @@ export const HOUSE_ART = {
 } as const;
 
 export const INTERIOR_CHARACTER_SIZE = {
-  width: 96,
-  height: 128,
+  width: 144,
+  height: 192,
 } as const;
 
 export const HOUSE_SICK_LAZARUS_SIZE = {
-  width: 160,
-  height: 108,
+  width: 240,
+  height: 162,
 } as const;
 
 export const HOUSE_PLAYER_SPAWN: Point = { x: 390, y: 540 };
 export const HOUSE_EXIT: Point = { x: 245, y: 445 };
+export const HOUSE_DOOR_REENTRY_SPAWN: Point = { x: 341, y: 445 };
 export const HOUSE_STORY_FOCUS: Point = { x: 535, y: 485 };
-export const HOUSE_SICK_LAZARUS_POSITION: Point = { x: 535, y: 385 };
+export const HOUSE_SICK_LAZARUS_POSITION: Point = { x: 535, y: 355 };
+export const HOUSE_SICK_LAZARUS_DEPTH = HOUSE_STORY_FOCUS.y - 1;
+export const HOUSE_SICK_LAZARUS_ANGLE = -8;
+export const HOUSE_SICK_LAZARUS_FLIP_X = true;
 
 export const HOUSE_FOREGROUND_PLACEMENTS: readonly HouseArtPlacement[] = [
   {

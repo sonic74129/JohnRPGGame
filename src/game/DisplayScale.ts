@@ -4,6 +4,8 @@ export const OUTDOOR_DISPLAY_HEIGHTS = {
   outdoor96: 96,
 } as const;
 
+export const DEFAULT_CHARACTER_SCALE = 1.5;
+
 export type OutdoorDisplayProfile = keyof typeof OUTDOOR_DISPLAY_HEIGHTS;
 export type DisplayArea = "indoor" | "outdoor";
 export type ActorPresentationKind =
@@ -22,6 +24,7 @@ export interface VisibleContentBounds {
 }
 
 export interface DisplayScaleContract {
+  readonly characterScale: number;
   readonly outdoorProfile: OutdoorDisplayProfile;
   readonly outdoorVisibleHeight: number;
   readonly indoorVisibleHeight: number;
@@ -55,18 +58,27 @@ export interface ResolvedDisplayMetrics {
 export const createDisplayScaleContract = (
   outdoorProfile: OutdoorDisplayProfile = "outdoor90",
   overrides: {
+    readonly characterScale?: number;
     readonly indoorVisibleHeight?: number;
     readonly sickLazarusBox?: {
       readonly width: number;
       readonly height: number;
     };
   } = {},
-): DisplayScaleContract => ({
-  outdoorProfile,
-  outdoorVisibleHeight: OUTDOOR_DISPLAY_HEIGHTS[outdoorProfile],
-  indoorVisibleHeight: overrides.indoorVisibleHeight ?? 128,
-  sickLazarusBox: overrides.sickLazarusBox ?? { width: 160, height: 108 },
-});
+): DisplayScaleContract => {
+  const characterScale = overrides.characterScale ?? DEFAULT_CHARACTER_SCALE;
+  return {
+    characterScale,
+    outdoorProfile,
+    outdoorVisibleHeight:
+      OUTDOOR_DISPLAY_HEIGHTS[outdoorProfile] * characterScale,
+    indoorVisibleHeight: overrides.indoorVisibleHeight ?? 128 * characterScale,
+    sickLazarusBox: overrides.sickLazarusBox ?? {
+      width: 160 * characterScale,
+      height: 108 * characterScale,
+    },
+  };
+};
 
 export const DEFAULT_DISPLAY_SCALE = createDisplayScaleContract();
 

@@ -28,10 +28,21 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain("showTechnicalError");
   });
 
-  it("normalizes the two-day waiting overlay in the shared final state", () => {
-    expect(sceneSource).toMatch(
-      /beatId === "two-day-wait"[\s\S]{0,120}daylightOverlay\?\.setAlpha\(0\)/,
-    );
+  it("walks the camp group off-map before the full-screen two-day card", () => {
+    expect(sceneSource).toContain("TWO_DAY_EXIT_POINTS[actor]");
+    expect(sceneSource).toContain('state: "time-skip-black"');
+    expect(sceneSource).toContain('state: "time-skip-title"');
+    expect(sceneSource).toContain('state: "time-skip-return"');
+    expect(sceneSource).toContain('"两天后"');
+    expect(sceneSource).toContain("this.restoreTwoDayCamp()");
+    expect(sceneSource).not.toContain('state: "wait-dusk"');
+  });
+
+  it("keeps sick Lazarus above the bed during per-frame depth updates", () => {
+    expect(
+      sceneSource.match(/this\.lazarus\.setDepth\(HOUSE_SICK_LAZARUS_DEPTH\)/g),
+    ).toHaveLength(1);
+    expect(sceneSource).not.toContain("this.lazarus.setDepth(this.lazarus.y)");
   });
 
   it("restores player camera follow through the shared final state", () => {
@@ -50,7 +61,8 @@ describe("unified runtime integration", () => {
   });
 
   it("wires the dispersed Find Jesus contract without legacy clustering", () => {
-    expect(sceneSource).toContain("FIND_JESUS_STORY_CONTRACT.playerStart");
+    expect(sceneSource).toContain("WORLD_HOUSE_EXIT_SPAWN");
+    expect(sceneSource).not.toContain("FIND_JESUS_STORY_CONTRACT.playerStart");
     expect(sceneSource).toContain("FIND_JESUS_MEMORY_CARRIERS[nearest]");
     expect(sceneSource).toContain('mode: "natural-story"');
     expect(sceneSource).toContain("carrier.interactionStory.join");

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   HOUSE_ART,
+  HOUSE_DOOR_REENTRY_SPAWN,
   HOUSE_EXIT,
   HOUSE_FOREGROUND_PLACEMENTS,
   HOUSE_OBSTACLES,
@@ -9,6 +10,9 @@ import {
   HOUSE_PROP_PLACEMENTS,
   HOUSE_SICK_LAZARUS_POSITION,
   HOUSE_SICK_LAZARUS_SIZE,
+  HOUSE_SICK_LAZARUS_ANGLE,
+  HOUSE_SICK_LAZARUS_DEPTH,
+  HOUSE_SICK_LAZARUS_FLIP_X,
   INTERIOR_CHARACTER_SIZE,
 } from "../src/game/EnvironmentAssets";
 
@@ -73,23 +77,29 @@ describe("approved indoor environment contract", () => {
     expect(bed).toBeDefined();
     expect(table).toBeDefined();
     expect(door!.sourceBounds.height * door!.scale).toBeGreaterThan(
-      INTERIOR_CHARACTER_SIZE.height * 1.4,
+      INTERIOR_CHARACTER_SIZE.height * 0.9,
     );
     expect(door!.sourceBounds.height * door!.scale).toBeLessThan(
-      INTERIOR_CHARACTER_SIZE.height * 2,
+      INTERIOR_CHARACTER_SIZE.height * 1.1,
     );
     expect(bed!.sourceBounds.width * bed!.scale).toBeGreaterThan(
-      HOUSE_SICK_LAZARUS_SIZE.width * 1.2,
+      HOUSE_SICK_LAZARUS_SIZE.width * 1.05,
     );
     expect(HOUSE_SICK_LAZARUS_POSITION.y).toBeLessThan(bed!.anchor.y);
+    expect(HOUSE_SICK_LAZARUS_DEPTH).toBeGreaterThan(bed!.depth);
+    expect(HOUSE_SICK_LAZARUS_ANGLE).toBeLessThan(0);
+    expect(HOUSE_SICK_LAZARUS_FLIP_X).toBe(true);
     expect(table!.sourceBounds.width * table!.scale).toBeGreaterThan(
-      INTERIOR_CHARACTER_SIZE.width * 1.5,
+      INTERIOR_CHARACTER_SIZE.width,
     );
   });
 
   it("keeps the spawn and exterior doorway clear of furniture collision", () => {
     const furniture = HOUSE_OBSTACLES.slice(4);
     expect(furniture.some((bounds) => contains(HOUSE_PLAYER_SPAWN, bounds))).toBe(false);
+    expect(
+      furniture.some((bounds) => contains(HOUSE_DOOR_REENTRY_SPAWN, bounds)),
+    ).toBe(false);
     expect(furniture.some((bounds) => contains(HOUSE_EXIT, bounds))).toBe(false);
   });
 
