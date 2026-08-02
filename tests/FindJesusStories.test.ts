@@ -111,9 +111,9 @@ describe("Find Jesus natural-story contract", () => {
         (id) => FIND_JESUS_MEMORY_CARRIERS[id].proximityObservation,
       ),
     ).toEqual([
-      "这个人拿着饼和鱼。",
-      "这个人身旁放着水器和杯。",
-      "这个人带着泥碗和水器。",
+      "提饼篮的人望着鱼和饼，像在思量五个饼和两条鱼怎能喂饱众人。",
+      "守水缸的村民望着缸中清水，像在思量水为何会变成酒。",
+      "端泥碗的村民望着泥和水，像在思量那位重见光明的人。",
     ]);
     expect(
       FIND_JESUS_MEMORY_CARRIER_IDS.map(
@@ -121,8 +121,15 @@ describe("Find Jesus natural-story contract", () => {
       ),
     ).toEqual(["bread/fish", "water/cup", "mud-bowl/water"]);
 
+    expect(
+      FIND_JESUS_MEMORY_CARRIER_IDS.map(
+        (id) => FIND_JESUS_MEMORY_CARRIERS[id].temporaryLabel,
+      ),
+    ).toEqual(["提饼篮的人", "守水缸的村民", "端泥碗的村民"]);
+
     for (const carrier of Object.values(FIND_JESUS_MEMORY_CARRIERS)) {
-      expect(carrier.temporaryLabel).toBe("路人");
+      expect(carrier.temporaryLabel).not.toContain("路人");
+      expect(carrier.proximityObservation).toMatch(/像在思量/);
       expect(carrier.chronology).toBe("outside-john-11");
     }
   });
@@ -155,6 +162,30 @@ describe("Find Jesus natural-story contract", () => {
       expect(story.referenceOnlyEnding).toBe(true);
       expect(story.displayFullVerse).toBe(false);
       expect(narrative).not.toContain(story.reference);
+      expect(
+        story.interactionStory.at(-1)?.endsWith(story.jesusDirection.hint),
+      ).toBe(true);
+      expect(story.jesusDirection.hint).toContain("耶稣");
+      expect(story.jesusDirection.hint).toContain(
+        story.jesusDirection.destination,
+      );
+    }
+  });
+
+  it("gives geographically consistent directions to Jesus' camp", () => {
+    const camp = FIND_JESUS_STORY_CONTRACT.reservedCamp.center;
+
+    for (const carrier of Object.values(FIND_JESUS_MEMORY_CARRIERS)) {
+      const eastward = camp.x - carrier.placement.x;
+      const southward = camp.y - carrier.placement.y;
+
+      expect(eastward).toBeGreaterThan(0);
+      if (carrier.jesusDirection.heading === "东") {
+        expect(Math.abs(southward)).toBeLessThan(eastward * 0.2);
+      } else {
+        expect(southward).toBeGreaterThan(0);
+        expect(southward).toBeGreaterThanOrEqual(eastward * 0.2);
+      }
     }
   });
 

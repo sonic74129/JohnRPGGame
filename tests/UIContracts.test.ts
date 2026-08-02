@@ -87,6 +87,8 @@ describe("minimal UI contract", () => {
     expect(html).toContain('id="verse-echo"');
     expect(styles).toContain(".technical-toast");
     expect(styles).toContain('.verse-echo[data-mode="player-memory"]');
+    expect(uiSource).toContain('"沿途见闻"');
+    expect(uiSource).not.toContain("路人所述");
   });
 
   it("uses default canvas interpolation rather than pixelated CSS", () => {

@@ -55,6 +55,9 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain('mode: "natural-story"');
     expect(sceneSource).toContain("carrier.interactionStory.join");
     expect(sceneSource).toContain("carrier.proximityObservation");
+    expect(sceneSource).toContain(
+      "FIND_JESUS_MEMORY_CARRIERS[id].temporaryLabel",
+    );
     expect(sceneSource).toContain("FIND_JESUS_STORY_CONTRACT.onJesusSelected");
     expect(sceneSource).not.toContain("{ x: 2100, y: 1160 }");
     expect(sceneSource).not.toContain("{ x: 2260, y: 1130 }");

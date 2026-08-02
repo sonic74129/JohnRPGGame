@@ -523,7 +523,7 @@ export const FIND_JESUS_MEMORIES: Readonly<
 export const FIND_JESUS_CONTRACT = {
   kind: "player-memory-bridge",
   chronology: "outside-john-11",
-  temporaryLabel: "路人",
+  temporaryLabel: "陌生旅人",
   disguisedActorIds: ["jesus", ...MEMORY_CARRIER_IDS],
   normallyLabeledActorIds: [
     "thomas",

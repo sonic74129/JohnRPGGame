@@ -7,6 +7,7 @@ import {
   type RecallQuestionId,
   type StoryActorId,
 } from "./ScriptureContent";
+import { FIND_JESUS_MEMORY_CARRIERS } from "./FindJesusStories";
 
 export const VERSE_BEAT_IDS = [
   "illness",
@@ -248,7 +249,7 @@ export const VERSE_BEATS: readonly VerseBeat[] = [
         kind: "inspect-memory",
         verseKeys: [],
         description:
-          "玩家可回想约翰福音 6:9、2:7–9 或 9:6–7；线索人物不说话。",
+          "玩家可与携带相应物件的人交谈，听他们转述约翰福音 6:9–13、2:7–9 或 9:6–7，并获得耶稣所在方位。",
       },
       {
         source: "approved-player-memory-bridge",
@@ -273,9 +274,12 @@ export const VERSE_BEATS: readonly VerseBeat[] = [
       visibleActorIds: FIND_JESUS_ACTORS,
       labelOverrides: {
         jesus: FIND_JESUS_CONTRACT.temporaryLabel,
-        "memory-carrier-bread": FIND_JESUS_CONTRACT.temporaryLabel,
-        "memory-carrier-water": FIND_JESUS_CONTRACT.temporaryLabel,
-        "memory-carrier-mud": FIND_JESUS_CONTRACT.temporaryLabel,
+        "memory-carrier-bread":
+          FIND_JESUS_MEMORY_CARRIERS["memory-carrier-bread"].temporaryLabel,
+        "memory-carrier-water":
+          FIND_JESUS_MEMORY_CARRIERS["memory-carrier-water"].temporaryLabel,
+        "memory-carrier-mud":
+          FIND_JESUS_MEMORY_CARRIERS["memory-carrier-mud"].temporaryLabel,
       },
     },
     finalState: {

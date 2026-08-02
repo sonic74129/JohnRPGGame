@@ -306,7 +306,7 @@ export class GameUI {
       presentation.mode === "player-memory"
         ? "玩家回想"
         : presentation.mode === "natural-story"
-          ? "路人所述"
+          ? "沿途见闻"
           : "经文回看";
     this.verseEchoSpeaker.textContent =
       presentation.mode === "player-memory" ? "" : presentation.speaker;

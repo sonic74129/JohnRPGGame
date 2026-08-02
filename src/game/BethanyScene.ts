@@ -384,10 +384,13 @@ export class BethanyScene extends Phaser.Scene {
 
   private registerActors(): void {
     for (const id of ACTOR_IDS) {
+      const initialLabel = isMemoryCarrier(id)
+        ? FIND_JESUS_MEMORY_CARRIERS[id].temporaryLabel
+        : ACTOR_LABELS[id] ?? FIND_JESUS_CONTRACT.temporaryLabel;
       this.actorRegistry.register(
         new Character(
           id,
-          ACTOR_LABELS[id] ?? FIND_JESUS_CONTRACT.temporaryLabel,
+          initialLabel,
           "lazarus-house",
           { x: 0, y: 0 },
           false,

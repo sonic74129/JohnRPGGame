@@ -158,10 +158,15 @@ describe("VerseBeats", () => {
   });
 
   it("applies findJesus temporary labels and removes carriers before message", () => {
-    expect(getActorLabel("find-jesus", "jesus")).toBe("路人");
-    MEMORY_CARRIER_IDS.forEach((actorId) => {
+    expect(getActorLabel("find-jesus", "jesus")).toBe("陌生旅人");
+    const carrierLabels = [
+      "提饼篮的人",
+      "守水缸的村民",
+      "端泥碗的村民",
+    ];
+    MEMORY_CARRIER_IDS.forEach((actorId, index) => {
       expect(getActorVisibility("find-jesus", actorId)).toBe("visible");
-      expect(getActorLabel("find-jesus", actorId)).toBe("路人");
+      expect(getActorLabel("find-jesus", actorId)).toBe(carrierLabels[index]);
       expect(getFinalActorVisibility("find-jesus", actorId)).toBe("hidden");
       expect(getFinalActorLabel("find-jesus", actorId)).toBeNull();
       expect(getActorVisibility("message", actorId)).toBe("hidden");
