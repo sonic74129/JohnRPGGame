@@ -89,4 +89,16 @@ describe("minimal UI contract", () => {
     expect(styles).not.toContain("image-rendering: pixelated");
     expect(styles).not.toContain("dramatization");
   });
+
+  it("keeps narrow cards and portraitless dialogue within the viewport", () => {
+    const narrowStyles =
+      styles.match(/@media \(max-width: 720px\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
+
+    expect(narrowStyles).toMatch(
+      /\.choice-card,\s*\.modal-card\s*\{\s*width: 100%;\s*\}/,
+    );
+    expect(narrowStyles).toMatch(
+      /\.dialogue--without-portrait\s*\{\s*grid-template-columns: 1fr;\s*\}/,
+    );
+  });
 });

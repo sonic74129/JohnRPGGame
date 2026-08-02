@@ -441,6 +441,11 @@ blockquote cite {
 }
 
 @media (max-width: 720px) {
+  .choice-card,
+  .modal-card {
+    width: 100%;
+  }
+
   .hud {
     inset: 12px 12px auto;
   }
@@ -468,6 +473,10 @@ blockquote cite {
     width: calc(100vw - 32px);
     min-height: 148px;
     padding: 0;
+  }
+
+  .dialogue--without-portrait {
+    grid-template-columns: 1fr;
   }
 
   .dialogue-portrait {
