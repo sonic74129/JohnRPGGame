@@ -8,6 +8,7 @@ import {
 } from "../audio/VoiceManifest";
 import {
   createActorLabel,
+  resolveActorLabelVisibility,
   type ActorLabelController,
 } from "../ui/ActorLabel";
 import { GameUI } from "../ui/GameUI";
@@ -33,7 +34,9 @@ import {
   hasWalkFrames,
   lazarusFrame,
   lazarusScaleToFit,
+  lazarusScaleToFitRotated,
   lazarusTextureKey,
+  lazarusVisibleBounds,
   resolveFacing,
   spriteFrame,
   spriteSheet,
@@ -50,15 +53,18 @@ import {
 } from "./DisplayScale";
 import {
   HOUSE_ART,
+  HOUSE_SICK_LAZARUS_DEPTH,
   HOUSE_EXIT,
   HOUSE_FOREGROUND_PLACEMENTS,
   HOUSE_OBSTACLES,
   HOUSE_PLAYER_SPAWN,
   HOUSE_PROP_PLACEMENTS,
   HOUSE_SICK_LAZARUS_POSITION,
+  HOUSE_SICK_LAZARUS_PRESENTATION,
   HOUSE_SICK_LAZARUS_SIZE,
   HOUSE_STORY_FOCUS,
   type HouseArtPlacement,
+  resolveLazarusDepth,
 } from "./EnvironmentAssets";
 import {
   FIND_JESUS_MEMORY_CARRIERS,
@@ -570,20 +576,37 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private createSickLazarus(): void {
-    this.lazarus = this.add
+    const lazarus = this.add
       .sprite(
         HOUSE_SICK_LAZARUS_POSITION.x,
         HOUSE_SICK_LAZARUS_POSITION.y,
         lazarusTextureKey(),
         lazarusFrame("sick"),
       )
-      .setScale(lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE))
-      .setDepth(HOUSE_STORY_FOCUS.y - 1);
-    this.lazarusLabel = createActorLabel(this, this.lazarus, {
+      .setScale(
+        lazarusScaleToFitRotated(
+          "sick",
+          HOUSE_SICK_LAZARUS_SIZE,
+          HOUSE_SICK_LAZARUS_PRESENTATION.angle,
+        ),
+      )
+      .setActive(HOUSE_SICK_LAZARUS_PRESENTATION.active)
+      .setAngle(HOUSE_SICK_LAZARUS_PRESENTATION.angle)
+      .setVisible(HOUSE_SICK_LAZARUS_PRESENTATION.visible)
+      .setDepth(HOUSE_SICK_LAZARUS_DEPTH);
+    this.lazarus = lazarus;
+    this.lazarusLabel = createActorLabel(this, lazarus, {
       text: ACTOR_LABELS.lazarus ?? "拉撒路",
-      resolveVisibility: () => Boolean(this.lazarus?.visible),
+      resolveVisibleBounds: () =>
+        lazarusVisibleBounds(
+          "sick",
+          lazarus,
+          lazarus.scaleX,
+          lazarus.angle,
+        ),
+      resolveVisibility: () => resolveActorLabelVisibility(lazarus),
     });
-    this.decorations.push(this.lazarus);
+    this.decorations.push(lazarus);
   }
 
   private createTombElements(): void {
@@ -2195,7 +2218,7 @@ export class BethanyScene extends Phaser.Scene {
       visual.container.setDepth(visual.container.y);
     }
     if (this.lazarus?.visible) {
-      this.lazarus.setDepth(this.lazarus.y);
+      this.lazarus.setDepth(resolveLazarusDepth(this.inWorld, this.lazarus.y));
     }
   }
 

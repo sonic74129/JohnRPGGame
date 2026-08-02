@@ -162,16 +162,36 @@ export const LAZARUS_CONTENT_BOUNDS: Readonly<
   Record<
     LazarusPose,
     {
+      readonly x: number;
+      readonly y: number;
       readonly width: number;
       readonly height: number;
       readonly originY: number;
     }
   >
 > = {
-  sick: { width: 387, height: 176, originY: 0.5 },
-  "wrapped-idle": { width: 155, height: 524, originY: 535 / 544 },
-  "wrapped-step": { width: 196, height: 503, originY: 535 / 544 },
-  restored: { width: 181, height: 526, originY: 535 / 544 },
+  sick: { x: 6, y: 183, width: 387, height: 176, originY: 0.5 },
+  "wrapped-idle": {
+    x: 122,
+    y: 12,
+    width: 155,
+    height: 524,
+    originY: 535 / 544,
+  },
+  "wrapped-step": {
+    x: 102,
+    y: 30,
+    width: 196,
+    height: 503,
+    originY: 535 / 544,
+  },
+  restored: {
+    x: 109,
+    y: 9,
+    width: 181,
+    height: 526,
+    originY: 535 / 544,
+  },
 };
 
 export const lazarusFrame = (pose: LazarusPose): number =>

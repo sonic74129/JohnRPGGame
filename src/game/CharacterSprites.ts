@@ -88,6 +88,56 @@ export const lazarusAssetPath = (): string => LAZARUS_SHEET.path;
 
 export { lazarusFrame };
 
+export const lazarusScaleToFitRotated = (
+  pose: LazarusPose,
+  maximum: { readonly width: number; readonly height: number },
+  angleDegrees: number,
+): number => {
+  const bounds = LAZARUS_CONTENT_BOUNDS[pose];
+  const angle = (angleDegrees * Math.PI) / 180;
+  const cosine = Math.abs(Math.cos(angle));
+  const sine = Math.abs(Math.sin(angle));
+  const rotatedWidth = bounds.width * cosine + bounds.height * sine;
+  const rotatedHeight = bounds.width * sine + bounds.height * cosine;
+  return Math.min(maximum.width / rotatedWidth, maximum.height / rotatedHeight);
+};
+
+export const lazarusVisibleBounds = (
+  pose: LazarusPose,
+  position: { readonly x: number; readonly y: number },
+  scale: number,
+  angleDegrees = 0,
+): { readonly x: number; readonly y: number; readonly width: number; readonly height: number } => {
+  const bounds = LAZARUS_CONTENT_BOUNDS[pose];
+  const angle = (angleDegrees * Math.PI) / 180;
+  const cosine = Math.cos(angle);
+  const sine = Math.sin(angle);
+  const left = (bounds.x - LAZARUS_SHEET.frameWidth / 2) * scale;
+  const top =
+    (bounds.y - LAZARUS_SHEET.frameHeight * bounds.originY) * scale;
+  const right = left + bounds.width * scale;
+  const bottom = top + bounds.height * scale;
+  const corners = [
+    { x: left, y: top },
+    { x: right, y: top },
+    { x: left, y: bottom },
+    { x: right, y: bottom },
+  ].map(({ x, y }) => ({
+    x: position.x + x * cosine - y * sine,
+    y: position.y + x * sine + y * cosine,
+  }));
+  const xValues = corners.map(({ x }) => x);
+  const yValues = corners.map(({ y }) => y);
+  const x = Math.min(...xValues);
+  const y = Math.min(...yValues);
+  return {
+    x,
+    y,
+    width: Math.max(...xValues) - x,
+    height: Math.max(...yValues) - y,
+  };
+};
+
 export const walkAnimationKey = (
   character: WalkingSpriteCharacter,
   facing: Facing,

@@ -52,10 +52,27 @@ export const HOUSE_SICK_LAZARUS_SIZE = {
   height: 108,
 } as const;
 
+export const HOUSE_BED_MATTRESS_BOUNDS: Rectangle = {
+  x: 405,
+  y: 270,
+  width: 230,
+  height: 170,
+};
+export const HOUSE_BED_DEPTH = 470;
+export const HOUSE_SICK_LAZARUS_DEPTH = HOUSE_BED_DEPTH + 1;
+export const HOUSE_SICK_LAZARUS_PRESENTATION = {
+  active: true,
+  angle: 135,
+  visible: true,
+} as const;
+
 export const HOUSE_PLAYER_SPAWN: Point = { x: 390, y: 540 };
 export const HOUSE_EXIT: Point = { x: 245, y: 445 };
 export const HOUSE_STORY_FOCUS: Point = { x: 535, y: 485 };
-export const HOUSE_SICK_LAZARUS_POSITION: Point = { x: 535, y: 385 };
+export const HOUSE_SICK_LAZARUS_POSITION: Point = { x: 520, y: 355 };
+
+export const resolveLazarusDepth = (inWorld: boolean, y: number): number =>
+  inWorld ? y : HOUSE_SICK_LAZARUS_DEPTH;
 
 export const HOUSE_FOREGROUND_PLACEMENTS: readonly HouseArtPlacement[] = [
   {
@@ -74,7 +91,7 @@ export const HOUSE_FOREGROUND_PLACEMENTS: readonly HouseArtPlacement[] = [
     sourceBounds: { x: 12, y: 216, width: 260, height: 296 },
     anchor: { x: 535, y: 505 },
     scale: 1,
-    depth: 470,
+    depth: HOUSE_BED_DEPTH,
     collision: { x: 395, y: 365, width: 280, height: 125 },
   },
   {

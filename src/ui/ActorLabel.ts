@@ -50,6 +50,11 @@ export const resolveActorLabelPosition = (
   y: bounds.y - gap,
 });
 
+export const resolveActorLabelVisibility = (actor: {
+  readonly active: boolean;
+  readonly visible: boolean;
+}): boolean => actor.active && actor.visible;
+
 export const createActorLabel = (
   scene: Phaser.Scene,
   actor: Phaser.GameObjects.GameObject & {
@@ -77,7 +82,7 @@ export const createActorLabel = (
       .setPosition(position.x, position.y)
       .setDepth(actor.depth + 1)
       .setVisible(
-        options.resolveVisibility?.() ?? (actor.active && actor.visible),
+        options.resolveVisibility?.() ?? resolveActorLabelVisibility(actor),
       );
   };
 
