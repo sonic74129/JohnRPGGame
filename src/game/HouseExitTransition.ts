@@ -5,6 +5,40 @@ import type { VerseBeatId } from "./VerseBeats";
 
 export const HOUSE_EXIT_TRIGGER_RADIUS = 82;
 
+export interface HouseExitTransitionHost {
+  acquireInputLock(): () => void;
+  fadeOut(): Promise<void>;
+  enterWorld(): void;
+  fadeIn(): Promise<void>;
+}
+
+export class HouseExitTransition {
+  private transitioning = false;
+
+  get active(): boolean {
+    return this.transitioning;
+  }
+
+  async run(host: HouseExitTransitionHost): Promise<boolean> {
+    if (this.transitioning) {
+      return false;
+    }
+
+    this.transitioning = true;
+    let releaseInput = (): void => undefined;
+    try {
+      releaseInput = host.acquireInputLock();
+      await host.fadeOut();
+      host.enterWorld();
+      await host.fadeIn();
+      return true;
+    } finally {
+      releaseInput();
+      this.transitioning = false;
+    }
+  }
+}
+
 export const shouldAwaitHouseExitAfterSequence = (
   completedBeatId: VerseBeatId,
   status: MapSequenceResult["status"],

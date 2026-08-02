@@ -70,6 +70,7 @@ import {
   FIND_JESUS_STORY_CONTRACT,
 } from "./FindJesusStories";
 import {
+  HouseExitTransition,
   shouldAwaitHouseExitAfterSequence,
   shouldEnterWorldFromHouse,
 } from "./HouseExitTransition";
@@ -133,6 +134,7 @@ import {
 
 const PLAYER_SPEED = 260;
 const INTERACTION_DISTANCE = 125;
+const HOUSE_EXIT_FADE_DURATION_MS = 280;
 const EXTERIOR_CHARACTER_HEIGHT = DEFAULT_DISPLAY_SCALE.outdoorVisibleHeight;
 
 const ACTOR_IDS = [
@@ -219,6 +221,7 @@ export class BethanyScene extends Phaser.Scene {
   private story = new StoryEngine();
   private actorRegistry = new ActorRegistry();
   private playerController = new PlayerController();
+  private readonly houseExitTransition = new HouseExitTransition();
   private readonly visuals = new Map<ActorId, ActorVisual>();
   private readonly labelTexts = new Map<ActorId, string | null>();
 
@@ -1202,14 +1205,44 @@ export class BethanyScene extends Phaser.Scene {
 
   private tryHouseExit(): void {
     if (
-      shouldEnterWorldFromHouse({
+      this.houseExitTransition.active ||
+      !shouldEnterWorldFromHouse({
         inWorld: this.inWorld,
         beatId: this.story.beatId,
         playerPosition: { x: this.player.x, y: this.player.y },
       })
     ) {
-      this.enterWorld();
+      return;
     }
+    this.stopPlayerMovement();
+    void this.houseExitTransition
+      .run({
+        acquireInputLock: () => this.playerController.lock(),
+        fadeOut: () => this.fadeHouseExitCamera("out"),
+        enterWorld: () => this.enterWorld(),
+        fadeIn: () => this.fadeHouseExitCamera("in"),
+      })
+      .catch((error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : "无法完成场景切换。";
+        this.ui.showTechnicalError(message, "transition");
+      });
+  }
+
+  private fadeHouseExitCamera(direction: "out" | "in"): Promise<void> {
+    const camera = this.cameras.main;
+    const completeEvent =
+      direction === "out"
+        ? Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE
+        : Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE;
+    return new Promise((resolve) => {
+      camera.once(completeEvent, () => resolve());
+      if (direction === "out") {
+        camera.fadeOut(HOUSE_EXIT_FADE_DURATION_MS, 20, 18, 14);
+      } else {
+        camera.fadeIn(HOUSE_EXIT_FADE_DURATION_MS, 20, 18, 14);
+      }
+    });
   }
 
   private async runActiveBeat(): Promise<void> {
