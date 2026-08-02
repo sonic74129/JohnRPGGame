@@ -54,7 +54,6 @@ import {
 import {
   HOUSE_ART,
   HOUSE_SICK_LAZARUS_DEPTH,
-  HOUSE_EXIT,
   HOUSE_FOREGROUND_PLACEMENTS,
   HOUSE_OBSTACLES,
   HOUSE_PLAYER_SPAWN,
@@ -70,6 +69,10 @@ import {
   FIND_JESUS_MEMORY_CARRIERS,
   FIND_JESUS_STORY_CONTRACT,
 } from "./FindJesusStories";
+import {
+  shouldAwaitHouseExitAfterSequence,
+  shouldEnterWorldFromHouse,
+} from "./HouseExitTransition";
 import {
   MapSequence,
   type MapSequenceDefinition,
@@ -104,7 +107,7 @@ import {
 import { dialogueLinesForBeat } from "./ScriptureDialogue";
 import { applyStoryCompletionPresentation } from "./StoryCompletionPresentation";
 import { StoryEngine } from "./StoryEngine";
-import { STAGE_GOALS } from "./StageGoals";
+import { resolveStageGoal } from "./StageGoals";
 import { TOMB_ANCHORS } from "./TombAnchors";
 import { TOMB_PROP_ASSETS } from "./TombAssets";
 import type { ActorId, DialogueLine, MusicState } from "./types";
@@ -441,6 +444,7 @@ export class BethanyScene extends Phaser.Scene {
     );
     this.applyActorScale(this.player, "messenger", "outdoor");
     this.applyBeatPresentation(this.story.beatId, false);
+    this.syncHud();
     this.stopPlayerMovement();
     this.cameras.main.centerOn(this.player.x, this.player.y);
   }
@@ -1198,14 +1202,11 @@ export class BethanyScene extends Phaser.Scene {
 
   private tryHouseExit(): void {
     if (
-      !this.inWorld &&
-      this.story.beatId === "find-jesus" &&
-      Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        HOUSE_EXIT.x,
-        HOUSE_EXIT.y,
-      ) <= 82
+      shouldEnterWorldFromHouse({
+        inWorld: this.inWorld,
+        beatId: this.story.beatId,
+        playerPosition: { x: this.player.x, y: this.player.y },
+      })
     ) {
       this.enterWorld();
     }
@@ -1220,14 +1221,17 @@ export class BethanyScene extends Phaser.Scene {
     this.stopPlayerMovement();
     try {
       const definition = this.sequenceDefinition(beat);
-      await this.sequence?.run(definition);
+      const result = await this.sequence?.run(definition);
       if (this.story.isComplete) {
         this.finishStory();
         return;
       }
       this.syncHud();
-      if (beat.id === "sisters-send" && !this.inWorld) {
-        this.enterWorld();
+      if (
+        result &&
+        shouldAwaitHouseExitAfterSequence(beat.id, result.status)
+      ) {
+        return;
       }
       const next = this.story.beat;
       if (
@@ -2142,7 +2146,9 @@ export class BethanyScene extends Phaser.Scene {
       (key) => JOHN_11_VERSES[key].reference,
     );
     this.ui.setReference(references.join("、") || "约翰福音");
-    this.ui.setStageGoal(STAGE_GOALS[this.story.beatId]);
+    this.ui.setStageGoal(
+      resolveStageGoal(this.story.beatId, { inWorld: this.inWorld }),
+    );
     this.ui.setScore(this.story.score);
   }
 

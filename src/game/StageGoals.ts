@@ -13,29 +13,39 @@ export const STAGE_GOAL_TEXT_MAX_LENGTH = 8;
 export const STAGE_GOAL_IDS = VERSE_BEAT_IDS;
 
 export const STAGE_GOALS = {
-  illness: goal("illness", "manual", "走近拉撒路"),
-  "sisters-send": goal("sisters-send", "manual", "与马大交谈"),
-  "find-jesus": goal("find-jesus", "manual", "寻找耶稣"),
+  illness: goal("illness", "manual", "查看床边"),
+  "sisters-send": goal("sisters-send", "manual", "听取口信"),
+  "find-jesus": goal("find-jesus", "manual", "查看四周"),
   message: goal("message", "manual", "传达口信"),
   "two-day-wait": goal("two-day-wait", "watch", "观看"),
-  "return-to-judea": goal("return-to-judea", "manual", "跟随耶稣"),
-  thomas: goal("thomas", "watch", "聆听多马"),
-  "four-days": goal("four-days", "manual", "回到伯大尼"),
-  "martha-goes": goal("martha-goes", "manual", "寻找马大"),
-  "martha-hope": goal("martha-hope", "manual", "与马大交谈"),
-  "resurrection-life": goal("resurrection-life", "watch", "聆听耶稣"),
-  "martha-confession": goal("martha-confession", "watch", "聆听马大"),
-  "martha-calls": goal("martha-calls", "manual", "寻找马利亚"),
-  "mary-rises": goal("mary-rises", "manual", "跟随马利亚"),
-  "mary-at-feet": goal("mary-at-feet", "manual", "走近马利亚"),
+  "return-to-judea": goal("return-to-judea", "manual", "继续前行"),
+  thomas: goal("thomas", "watch", "留心聆听"),
+  "four-days": goal("four-days", "manual", "回到村中"),
+  "martha-goes": goal("martha-goes", "manual", "查看周围"),
+  "martha-hope": goal("martha-hope", "manual", "继续交谈"),
+  "resurrection-life": goal("resurrection-life", "watch", "留心聆听"),
+  "martha-confession": goal("martha-confession", "watch", "留心聆听"),
+  "martha-calls": goal("martha-calls", "manual", "留心聆听"),
+  "mary-rises": goal("mary-rises", "manual", "留心观察"),
+  "mary-at-feet": goal("mary-at-feet", "manual", "走近相聚处"),
   "jesus-weeps": goal("jesus-weeps", "manual", "跟随众人"),
-  "come-and-see": goal("come-and-see", "manual", "前往墓园"),
+  "come-and-see": goal("come-and-see", "manual", "继续前行"),
   "tomb-arrival": goal("tomb-arrival", "manual", "走近洞口"),
-  "stone-dialogue": goal("stone-dialogue", "watch", "聆听耶稣"),
-  "stone-and-prayer": goal("stone-and-prayer", "manual", "移开石头"),
+  "stone-dialogue": goal("stone-dialogue", "watch", "留心聆听"),
+  "stone-and-prayer": goal("stone-and-prayer", "manual", "查看洞口"),
   "call-and-emergence": goal("call-and-emergence", "watch", "看向洞口"),
-  responses: goal("responses", "manual", "与众人交谈"),
+  responses: goal("responses", "manual", "查看周围"),
 } satisfies Readonly<Record<VerseBeatId, StageGoal>>;
+
+const HOUSE_EXIT_GOAL = goal("find-jesus", "manual", "走向门口");
+
+export const resolveStageGoal = (
+  beatId: VerseBeatId,
+  context: { readonly inWorld: boolean },
+): StageGoal =>
+  beatId === "find-jesus" && !context.inWorld
+    ? HOUSE_EXIT_GOAL
+    : STAGE_GOALS[beatId];
 
 function goal(
   beatId: VerseBeatId,
