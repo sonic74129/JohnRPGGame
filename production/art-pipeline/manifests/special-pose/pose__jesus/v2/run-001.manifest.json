@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "pose.jesus",
+    "family": "special-pose",
+    "purpose": "Source sheet of Jesus listening, speaking, grieving, praying and calling within playable map dialogue staging.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.jesus",
+      "master.tomb-garden"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T17:05:33.007Z",
+    "updatedAt": "2026-08-01T17:09:56.586Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/special-pose/pose__jesus/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/special-pose/pose__jesus/v2/run-001",
+    "selectedSource": "production/art-source/characters/core/pose__jesus/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/pose__jesus/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/special-pose/pose__jesus/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__jesus/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T17:06:09.549Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__jesus/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T17:09:01.650Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 2,
+    "sourcePath": "production/art-pipeline/candidates/special-pose/pose__jesus/v2/run-001/candidate-02.png",
+    "selectedSourcePath": "production/art-source/characters/core/pose__jesus/v2/run-001-selected.png",
+    "reason": "Candidate 02 scored 68/70: exact five-pose order, stable approved Jesus identity and earth-tone clothing, distinct listening/speaking/grief/prayer/call actions, complete aligned silhouettes, and no tomb, scenery, text, iconography, or effects.",
+    "selectedAt": "2026-08-01T17:09:56.585Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "listening",
+      "calm-speaking",
+      "visible-grief",
+      "restrained-prayer",
+      "authoritative-call"
+    ],
+    "rows": [
+      "pose"
+    ]
+  },
+  "normalization": {
+    "componentCount": 5,
+    "sheetSize": [
+      1520,
+      576
+    ],
+    "cellSize": [
+      304,
+      576
+    ],
+    "groundBaseline": 565,
+    "perFrameScaling": false,
+    "backgroundRemoval": "Flat warm background RGB (245, 223, 188) converted to antialiased alpha; partial-alpha RGB unmatted against the measured background, bright connected matte remnants removed from the structural silhouette, and disconnected remnants discarded.",
+    "alignment": "All five unscaled poses are horizontally centered and translated so their alpha>=32 bottom lands at cell y=565."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/pose__jesus/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/pose__jesus/v2/run-001/pose__jesus.png"
+    ],
+    "startedAt": "2026-08-01T17:10:13.135861Z",
+    "completedAt": "2026-08-01T17:10:13.600332Z",
+    "failureReason": null
+  }
+}

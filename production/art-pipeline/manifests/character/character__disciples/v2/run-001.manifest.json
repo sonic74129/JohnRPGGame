@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "character.disciples",
+    "family": "character",
+    "purpose": "Source character sheet for Thomas, an older disciple and a younger disciple with distinct silhouettes and consistent first-century identities.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:28:39.019Z",
+    "updatedAt": "2026-08-01T15:31:12.451Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/character/character__disciples/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/character/character__disciples/v2/run-001",
+    "selectedSource": "production/art-source/character/character__disciples/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/character/character__disciples/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/character/character__disciples/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__disciples/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:29:17.337Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__disciples/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:29:49.472Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/character/character__disciples/v2/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/character/character__disciples/v2/run-001-selected.png",
+    "reason": "Only passing v2 candidate: all three identities preserve the locked palettes and readable map scale, and each row contains clear front, back, left-profile, and right-profile views with stable foot anchors and no prohibited content.",
+    "selectedAt": "2026-08-01T15:31:12.451Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fantastic-meme/production/art-source/character/character__disciples/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fantastic-meme/public/assets/art/character/character__disciples/v2/run-001/character__disciples.png"
+    ],
+    "startedAt": "2026-08-01T15:31:19.449085Z",
+    "completedAt": "2026-08-01T15:31:20.237282Z",
+    "failureReason": null
+  },
+  "runtimeMapping": {
+    "columns": [
+      "front",
+      "back",
+      "left",
+      "right"
+    ],
+    "rows": [
+      "thomas",
+      "older-disciple",
+      "younger-disciple"
+    ],
+    "ignoredSourceColumns": [
+      4
+    ]
+  },
+  "normalization": {
+    "componentCount": 12,
+    "sheetSize": [
+      512,
+      747
+    ],
+    "cellSize": [
+      128,
+      249
+    ],
+    "perFrameScaling": false,
+    "mirroredFrames": [],
+    "backgroundRemoval": "Deterministic background-to-alpha cleanup from the approved source.",
+    "alignment": "Approved figures retain source scale, are centered horizontally, and share a bottom baseline with eight transparent pixels."
+  }
+}

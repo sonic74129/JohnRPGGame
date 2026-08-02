@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.jesus-declaration",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Jesus speaking with quiet authority and clarity.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.jesus"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:33:49.505Z",
+    "updatedAt": "2026-08-01T16:37:01.178Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__jesus-declaration/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__jesus-declaration/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__jesus-declaration/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__jesus-declaration/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__jesus-declaration/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__jesus-declaration/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:35:39.842Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__jesus-declaration/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:36:19.149Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__jesus-declaration/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__jesus-declaration/v1/run-001-selected.png",
+    "reason": "Candidate 01 scored 89/100: identity 18, emotion 18, style 17, UI 18, cleanliness 18. Slightly parted lips mid-speech and a direct, steady gaze read clearly as quiet authority and clarity while remaining calm and non-theatrical; exact map identity (dark curly hair, full beard, cream tunic, gray mantle) against a clean warm limestone wall. Candidate 02 scored 75/100, below threshold: its closed-mouth smile did not read as speaking/declaring, and a wood-framed object visible in the upper-right background resembled the explicitly excluded 'frame' content, hurting style and cleanliness scores.",
+    "selectedAt": "2026-08-01T16:37:01.177Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__jesus-declaration/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__jesus-declaration/v1/run-001/portrait__jesus-declaration.png"
+    ],
+    "startedAt": "2026-08-01T16:37:08.967328Z",
+    "completedAt": "2026-08-01T16:37:09.652966Z",
+    "failureReason": null
+  }
+}

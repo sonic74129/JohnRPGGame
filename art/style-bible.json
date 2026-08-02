@@ -1,0 +1,385 @@
+{
+  "schemaVersion": "1.0.0",
+  "title": "JohnRPGGame Bethany Art Style Bible",
+  "purpose": "Sole visual handoff contract for production environment, character, special-pose and portrait workers. Workers must not rely on session history.",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "authentication": "Azure CLI / Entra ID"
+  },
+  "usage": {
+    "referenceOnly": true,
+    "mastersAreRuntimeAssets": false,
+    "allowedConsumers": [
+      "environment-interior",
+      "environment-outdoor",
+      "characters-core",
+      "characters-supporting",
+      "special-pose",
+      "portraits"
+    ],
+    "forbiddenUses": [
+      "public asset",
+      "runtime background",
+      "story illustration",
+      "chapter illustration",
+      "full-screen cinematic",
+      "UI artwork"
+    ],
+    "workerRule": "Read this file and the owned prompt registry entry before generation. Match the approved masters; do not invent a separate style."
+  },
+  "visualLanguage": {
+    "name": "Warm gently cartooned storybook realism",
+    "principles": [
+      "Prioritize overall beauty, clarity and human warmth.",
+      "Use friendly simplified silhouettes and appealing proportions without chibi anatomy.",
+      "Keep faces, bodies and gestures believable, restrained and respectful.",
+      "Render stone, clay, wood, linen, skin, earth and vegetation with credible material response and subtle hand-painted texture.",
+      "Use clean shapes and readable value grouping suitable for gameplay, clicking and projection.",
+      "Stage narrative through map characters, poses and portraits rather than cinematic stills."
+    ],
+    "finish": "Polished hand-painted game art with clean forms, subtle texture and no forced pixel-art treatment.",
+    "emotionalTone": [
+      "reverent",
+      "human",
+      "warm",
+      "emotionally restrained",
+      "non-theatrical"
+    ]
+  },
+  "camera": {
+    "mapView": "Consistent three-quarter top-down RPG view.",
+    "mapRules": [
+      "Show enough floor or ground to make routes, interaction areas and character placement readable.",
+      "Keep verticals, roof planes, doorways, furniture and props internally consistent across assets.",
+      "Favor cutaway or layered depth that can be decomposed into base, actor and foreground-occlusion layers.",
+      "Do not switch to eye-level cinematic, side-on platformer, orthographic plan or dramatic perspective views."
+    ],
+    "portraitException": "Dialogue portraits are chest-up close views, but must preserve the map character's identity, palette, materials and light direction."
+  },
+  "palette": {
+    "rule": "Use this shared restrained palette. Hex values are production anchors, not flat-fill requirements.",
+    "colors": [
+      {
+        "name": "warm limestone",
+        "hex": "#D2B887",
+        "roles": [
+          "walls",
+          "rock",
+          "paths",
+          "light ground"
+        ]
+      },
+      {
+        "name": "terracotta",
+        "hex": "#A85F3E",
+        "roles": [
+          "roof accents",
+          "pottery",
+          "warm clothing accents"
+        ]
+      },
+      {
+        "name": "dusty olive",
+        "hex": "#66704B",
+        "roles": [
+          "olive foliage",
+          "muted clothing",
+          "vegetation"
+        ]
+      },
+      {
+        "name": "muted blue",
+        "hex": "#526C73",
+        "roles": [
+          "messenger clothing",
+          "cool fabric accents",
+          "shadow balance"
+        ]
+      },
+      {
+        "name": "dark plum",
+        "hex": "#5A3D4B",
+        "roles": [
+          "Martha outer linen",
+          "deep warm accents"
+        ]
+      },
+      {
+        "name": "sand",
+        "hex": "#C5A16E",
+        "roles": [
+          "roads",
+          "mantles",
+          "dry earth"
+        ]
+      },
+      {
+        "name": "natural linen",
+        "hex": "#E2D2B2",
+        "roles": [
+          "undyed garments",
+          "bedding",
+          "light cloth"
+        ]
+      },
+      {
+        "name": "deep warm shadow",
+        "hex": "#3C352F",
+        "roles": [
+          "tomb interiors",
+          "occlusion",
+          "value separation"
+        ]
+      }
+    ],
+    "avoid": [
+      "neon saturation",
+      "cold blue fantasy grading",
+      "pure black crushed shadows",
+      "uniform sepia wash",
+      "unmotivated emissive colors"
+    ]
+  },
+  "materials": {
+    "limestone": "Warm, irregular, hand-set blocks with softened edges, restrained chips and readable joints; never glossy marble.",
+    "clayAndTerracotta": "Matte fired surfaces with subtle warm variation; pottery remains human-scaled and practical.",
+    "wood": "Simple hand-worked olive or local wood with visible grain and restrained wear; no ornate later-period furniture.",
+    "linenAndWool": "Natural weave, soft folds and muted dyes; clothing remains practical and first-century plausible.",
+    "earthAndRoad": "Dry compacted earth, pale stone and sparse grass with non-repeating natural variation and clear walkable values.",
+    "vegetation": "Dusty olive foliage, sparse Mediterranean plants and restrained flowers; no lush fantasy garden.",
+    "skinAndHair": "Believable Middle Eastern complexions, natural hair texture and softly simplified facial planes.",
+    "tomb": "Dry carved limestone and rock-cut architecture with a dark natural interior; respectful, clean and non-horror."
+  },
+  "scaleContracts": {
+    "interior": {
+      "rule": "Use believable human-relative proportions.",
+      "requirements": [
+        "A standing adult fits naturally through the door with modest clearance.",
+        "The low bed supports one adult without appearing oversized or child-sized.",
+        "Tables, stools and shelves sit at practical human working and sitting heights.",
+        "Oil lamps, cups, bowls, jars, baskets and folded linen remain graspable household objects.",
+        "Keep a broad readable walkable floor and separate foreground occluders from the base room.",
+        "Do not bake characters, character shadows or movable story props into runtime environments."
+      ]
+    },
+    "outdoor": {
+      "rule": "Prioritize character readability over literal architecture scale while preserving a coherent environment.",
+      "requirements": [
+        "Characters are deliberately enlarged relative to compact village houses and may visually approach the height of a small house facade.",
+        "The same character keeps identical face, age, hair, clothing colors and identity indoors and outdoors.",
+        "Roads, thresholds, wells, walls, tomb openings and gathering areas remain navigable and interaction-readable.",
+        "Use only a few figures in environment references; production environment assets contain no baked people or connected character shadows."
+      ]
+    },
+    "portrait": {
+      "rule": "The portrait is a detailed close-up of the approved map character, not a separate realistic actor or cinematic illustration.",
+      "requirements": [
+        "Preserve face shape, age, hair, complexion, clothing layers, colors, materials and light direction.",
+        "Keep expression readable at UI size and emotionally restrained.",
+        "Use an unobtrusive background with no frame, border, text or iconography."
+      ]
+    }
+  },
+  "characterIdentities": {
+    "messenger": {
+      "identity": "Unnamed adult Jewish messenger and player character; alert, humble and practical.",
+      "clothing": "Muted blue-gray linen tunic, sand mantle, leather sandals and a small travel satchel.",
+      "avoid": [
+        "heroic armor",
+        "weapon",
+        "royal styling"
+      ]
+    },
+    "martha": {
+      "identity": "Adult Jewish woman with a practical, composed presence.",
+      "clothing": "Dark plum outer linen with warm earth-tone underlayers.",
+      "acting": "Concern, grief and conviction remain grounded and restrained."
+    },
+    "mary": {
+      "identity": "Adult Jewish woman with a gentle but emotionally direct presence.",
+      "clothing": "Muted red outer linen with sand-colored underlayers.",
+      "acting": "Tenderness, urgency and grief remain human without theatrical collapse."
+    },
+    "jesus": {
+      "identity": "Respectful first-century Jewish man with Middle Eastern appearance.",
+      "clothing": "Undyed linen tunic and muted earth-tone mantle.",
+      "avoid": [
+        "halo",
+        "glow",
+        "royal costume",
+        "Europeanized features",
+        "iconographic pose"
+      ]
+    },
+    "lazarus": {
+      "identity": "The same adult Jewish man across sick, burial-cloth and restored states.",
+      "continuity": "Preserve face, age, hair and body identity across every state.",
+      "states": [
+        "weak on his side in simple linen clothing",
+        "standing respectfully wrapped in burial cloth with face visible",
+        "taking one careful wrapped step",
+        "restored in a simple undyed tunic"
+      ],
+      "avoid": [
+        "horror",
+        "decay",
+        "body damage",
+        "supernatural glow"
+      ]
+    },
+    "disciples": {
+      "identity": "Three distinct first-century Jewish men sharing one visual language.",
+      "members": [
+        "Thomas in muted brown and charcoal",
+        "older disciple in dusty olive",
+        "younger disciple in sand and restrained rust"
+      ]
+    },
+    "witnesses": {
+      "identity": "Restrained Bethany witnesses with quiet, human grief.",
+      "members": [
+        "male mourner in gray-blue",
+        "female mourner in muted ochre",
+        "male tomb guide in brown",
+        "older witness in muted green"
+      ],
+      "avoid": [
+        "caricature",
+        "theatrical despair",
+        "celebration pose"
+      ]
+    },
+    "continuityRule": "For every named person, face, age, hair, complexion, clothing layers, colors and materials must remain stable across map sprites, special poses and portraits."
+  },
+  "lighting": {
+    "global": "Natural Mediterranean light with soft readable shadow shapes, restrained contrast and no fantasy emission.",
+    "interior": "Soft warm window light plus a restrained oil-lamp accent; preserve readable silhouettes and material color.",
+    "outdoor": "Warm daylight with clear routes, readable characters and gentle olive-tree shadows.",
+    "tombGarden": "Restrained late-afternoon light; the tomb interior is naturally dark and never emits light.",
+    "portraits": "Match the corresponding map character's light direction and color temperature; enhance facial readability without studio glamour."
+  },
+  "decomposition": {
+    "interiorOrder": [
+      "base floor and rear walls",
+      "fixed architecture",
+      "independent household props",
+      "actor layer",
+      "foreground occlusion pieces"
+    ],
+    "outdoorOrder": [
+      "ground and road surfaces",
+      "fixed terrain and architecture",
+      "independent world props and vegetation",
+      "actor layer",
+      "foreground ledges, walls and foliage"
+    ],
+    "rules": [
+      "Keep movable props visually separable with clean silhouettes.",
+      "Avoid connected cast shadows that prevent reuse.",
+      "Keep walkable routes and interaction zones readable before decorative detail.",
+      "The tomb entrance and round sealing stone must remain separate assets."
+    ]
+  },
+  "bannedContent": [
+    "modern objects",
+    "modern architecture",
+    "modern cemetery furniture",
+    "embedded text",
+    "letters",
+    "labels",
+    "UI",
+    "frame",
+    "border",
+    "watermark",
+    "fantasy aura",
+    "halo",
+    "magical beam",
+    "supernatural glow",
+    "fantasy particles",
+    "miracle light effect",
+    "horror",
+    "corpse",
+    "bones",
+    "gore",
+    "decay",
+    "theatrical poses",
+    "cinematic story still",
+    "full-screen illustration",
+    "baked runtime character",
+    "baked character shadow"
+  ],
+  "approvedMasters": [
+    {
+      "id": "master.house-interior",
+      "promptVersion": "v1",
+      "run": "run-001",
+      "candidate": 3,
+      "score": {
+        "value": 73.5,
+        "maximum": 80
+      },
+      "sourcePath": "production/art-source/master/master__house-interior/v1/run-001-selected.png",
+      "manifestPath": "production/art-pipeline/manifests/master/master__house-interior/v1/run-001.manifest.json",
+      "locks": [
+        "core visual language",
+        "indoor camera",
+        "believable furniture and vessel scale",
+        "cutaway decomposition",
+        "warm window and oil-lamp light"
+      ],
+      "knownLimitation": "Walkable floor is adequate rather than expansive; derived runtime layouts must preserve a broader playable floor."
+    },
+    {
+      "id": "master.bethany-world",
+      "promptVersion": "v1",
+      "run": "run-001",
+      "candidate": 3,
+      "score": {
+        "value": 73,
+        "maximum": 80
+      },
+      "sourcePath": "production/art-source/master/master__bethany-world/v1/run-001-selected.png",
+      "manifestPath": "production/art-pipeline/manifests/master/master__bethany-world/v1/run-001.manifest.json",
+      "locks": [
+        "continuous outdoor route language",
+        "village, well, meeting-area and tomb-road composition",
+        "deliberately enlarged outdoor character readability",
+        "warm limestone, olive and sand materials",
+        "natural daylight"
+      ],
+      "knownLimitation": "Roof colors are slightly less terracotta-forward than the indoor palette; derived assets should retain restrained terracotta accents."
+    },
+    {
+      "id": "master.tomb-garden",
+      "promptVersion": "v1",
+      "run": "run-001",
+      "candidate": 2,
+      "score": {
+        "value": 74,
+        "maximum": 80
+      },
+      "sourcePath": "production/art-source/master/master__tomb-garden/v1/run-001-selected.png",
+      "manifestPath": "production/art-pipeline/manifests/master/master__tomb-garden/v1/run-001.manifest.json",
+      "locks": [
+        "respectful non-horror burial garden",
+        "broad gathering area",
+        "separable rock-cut entrance and round stone",
+        "olive and limestone material language",
+        "restrained natural late-afternoon light"
+      ],
+      "knownLimitation": "The tomb facade is modest in frame; derived assets must keep the entrance and stone readable at gameplay scale."
+    }
+  ],
+  "qualityGate": [
+    "Overall composition is attractive and coherent.",
+    "Gently cartooned appeal and believable materials are both present.",
+    "Map assets use the approved three-quarter top-down RPG camera.",
+    "Setting, clothing, architecture and props are first-century plausible.",
+    "Indoor objects use believable human scale; outdoor characters are deliberately enlarged and readable.",
+    "Routes, interaction areas, layers and independent props are decomposable.",
+    "Palette, materials and lighting match the approved masters.",
+    "No banned content appears."
+  ]
+}

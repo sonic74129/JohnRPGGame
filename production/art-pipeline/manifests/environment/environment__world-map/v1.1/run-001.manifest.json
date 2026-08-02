@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "environment.world-map",
+    "family": "environment",
+    "purpose": "Immutable source for one continuous empty playable first-century Bethany world map, preserving the approved geography and locked profile-B environment-to-character scale for later deterministic runtime derivation.",
+    "runtime": true,
+    "output": "source",
+    "width": 2720,
+    "height": 1536,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1.1",
+    "candidateCount": 3,
+    "dependsOn": [
+      "master.bethany-world",
+      "master.tomb-garden"
+    ],
+    "requestWidth": 1360,
+    "requestHeight": 768,
+    "sourceNormalization": "lanczos"
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T21:44:33.326Z",
+    "updatedAt": "2026-08-01T21:49:00.276Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/environment/environment__world-map/v1.1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001",
+    "selectedSource": "production/art-source/environment/environment__world-map/v1.1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/environment/environment__world-map/v1.1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/environment/environment__world-map/v1.1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T21:45:26.938Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T21:46:14.230Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 3,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-03.png",
+      "generatedAt": "2026-08-01T21:46:58.052Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/environment/environment__world-map/v1.1/run-001-selected.png",
+    "reason": "Best locked-layout fidelity: complete natural border, clearest lower-left compound and center-left village hierarchy, broad center-right and lower-right playable clearings, and the most readable connected route to the upper-right cave landmark.",
+    "selectedAt": "2026-08-01T21:49:00.275Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 3,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-source/environment/environment__world-map/v1.1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/public/assets/art/environment/environment__world-map/v1.1/run-001/environment__world-map.png"
+    ],
+    "startedAt": "2026-08-01T21:49:02.821157Z",
+    "completedAt": "2026-08-01T21:49:04.708511Z",
+    "failureReason": null
+  }
+}

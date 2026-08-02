@@ -1,0 +1,14 @@
+{
+  "status": "retired",
+  "registryVersion": "v1",
+  "replacement": [
+    "art/prompts/style.json",
+    "art/prompts/masters.json",
+    "art/prompts/environment-interior.json",
+    "art/prompts/environment-outdoor.json",
+    "art/prompts/characters-core.json",
+    "art/prompts/characters-supporting.json",
+    "art/prompts/portraits.json"
+  ],
+  "message": "The legacy monolithic prompt list is retired. It must not be passed to an image backend. Session 02 will migrate the generation pipeline to the versioned registry."
+}

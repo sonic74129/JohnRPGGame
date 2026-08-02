@@ -1,0 +1,72 @@
+{
+  "tileWidth": 32,
+  "tileHeight": 32,
+  "columns": 4,
+  "rows": 4,
+  "tiles": [
+    {
+      "id": 0,
+      "name": "earth-a"
+    },
+    {
+      "id": 1,
+      "name": "earth-b"
+    },
+    {
+      "id": 2,
+      "name": "earth-grass"
+    },
+    {
+      "id": 3,
+      "name": "earth-rocky"
+    },
+    {
+      "id": 4,
+      "name": "dirt-road-vertical"
+    },
+    {
+      "id": 5,
+      "name": "dirt-road-horizontal"
+    },
+    {
+      "id": 6,
+      "name": "dirt-road-corner-ne"
+    },
+    {
+      "id": 7,
+      "name": "dirt-road-t-s"
+    },
+    {
+      "id": 8,
+      "name": "dirt-road-cross"
+    },
+    {
+      "id": 9,
+      "name": "stone-road-vertical"
+    },
+    {
+      "id": 10,
+      "name": "stone-road-horizontal"
+    },
+    {
+      "id": 11,
+      "name": "stone-road-corner-ne"
+    },
+    {
+      "id": 12,
+      "name": "stone-road-t-s"
+    },
+    {
+      "id": 13,
+      "name": "stone-road-cross"
+    },
+    {
+      "id": 14,
+      "name": "road-transition-vertical"
+    },
+    {
+      "id": 15,
+      "name": "road-transition-horizontal"
+    }
+  ]
+}

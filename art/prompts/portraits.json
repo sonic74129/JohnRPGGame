@@ -1,0 +1,362 @@
+[
+  {
+    "id": "portrait.martha-worried",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Martha expressing practical concern for Lazarus.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Martha is the same adult Jewish woman as the current map sprite, with an olive complexion, oval face, loose dark-brown wavy hair and no head covering. She wears deep muted plum-brown outer linen over warm earth-tone layers. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, clothing, palette, materials and light in every Martha state.\n\nEmotion: worried for Lazarus but practical and composed, with gentle tension around the eyes and mouth.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, dark-plum clothing, materials and light exactly match approved map Martha.",
+        "Worry is readable at dialogue UI size through restrained eye and mouth tension.",
+        "Expression remains practical and composed, not theatrical.",
+        "Rendering feels like a close-up of the same game art, not a separate film style."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.martha"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.martha-grieving",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Martha grieving and questioning while remaining attentive.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Martha is the same adult Jewish woman as the current map sprite, with an olive complexion, oval face, loose dark-brown wavy hair and no head covering. She wears deep muted plum-brown outer linen over warm earth-tone layers. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, clothing, palette, materials and light in every Martha state.\n\nEmotion: grieving and questioning while still attentive, with sorrow but no despair or accusation.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, dark-plum clothing, materials and light exactly match approved map Martha.",
+        "Grief and questioning are readable at dialogue UI size while attention remains focused.",
+        "Sorrow never becomes despair, accusation or caricature.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.martha"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.martha-faith",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Martha speaking with calm grounded conviction.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Martha is the same adult Jewish woman as the current map sprite, with an olive complexion, oval face, loose dark-brown wavy hair and no head covering. She wears deep muted plum-brown outer linen over warm earth-tone layers. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, clothing, palette, materials and light in every Martha state.\n\nEmotion: speaking with calm grounded conviction and restrained human hope rather than triumph.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, dark-plum clothing, materials and light exactly match approved map Martha.",
+        "Calm grounded conviction remains readable at dialogue UI size.",
+        "Hope is restrained and human rather than triumphant.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.martha"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.mary-worried",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Mary watching Lazarus with quiet concern and tenderness.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Mary is the same younger adult Jewish woman as the current map sprite, with an olive complexion, soft oval-to-heart-shaped face, loose auburn-brown wavy hair and no head covering. She wears muted red outer linen over sand and natural-cream layers. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, clothing, palette, materials and light in every Mary state.\n\nEmotion: watching over Lazarus with quiet concern and tenderness.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, muted-red clothing, materials and light exactly match approved map Mary.",
+        "Quiet concern and tenderness are readable at dialogue UI size.",
+        "Expression remains restrained, human and distinct from Martha.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.mary"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.mary-urgent",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Mary alert and ready to rise after hearing that the Teacher is calling.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Mary is the same younger adult Jewish woman as the current map sprite, with an olive complexion, soft oval-to-heart-shaped face, loose auburn-brown wavy hair and no head covering. She wears muted red outer linen over sand and natural-cream layers. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, clothing, palette, materials and light in every Mary state.\n\nEmotion: just hearing that the Teacher is calling, alert, urgent and ready to rise while remaining controlled rather than alarmed.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, muted-red clothing, materials and light exactly match approved map Mary.",
+        "Alert urgency and readiness to rise are readable at dialogue UI size.",
+        "Urgency remains controlled rather than theatrical or alarmed.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.mary"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.mary-grieving",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Mary deeply grieving with visible restrained tears.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Mary is the same younger adult Jewish woman as the current map sprite, with an olive complexion, soft oval-to-heart-shaped face, loose auburn-brown wavy hair and no head covering. She wears muted red outer linen over sand and natural-cream layers. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, clothing, palette, materials and light in every Mary state.\n\nEmotion: deeply grieving with visible restrained tears, humble and human, without spiritual idealization or theatrical collapse.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, muted-red clothing, materials and light exactly match approved map Mary.",
+        "Deep grief and visible tears remain readable at dialogue UI size.",
+        "Mary remains humble and human without spiritual idealization or theatrical collapse.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.mary"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.jesus-listening",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Jesus listening with attentive compassion.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Jesus is the same first-century Jewish man in his early thirties as the current map sprite, with an olive complexion, oval face, shoulder-length dark curly hair and a full neat dark beard. He wears an undyed cream linen tunic with a muted cool earth-gray mantle. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, beard, clothing, palette, materials and light in every Jesus state.\n\nEmotion: listening with attentive compassion and a calm human presence.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no halo, glow, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, undyed clothing, materials and light exactly match approved map Jesus.",
+        "Attentive compassion and calm human presence are readable at dialogue UI size.",
+        "The portrayal remains respectful, first-century Jewish and non-iconographic.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.jesus"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.jesus-declaration",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Jesus speaking with quiet authority and clarity.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Jesus is the same first-century Jewish man in his early thirties as the current map sprite, with an olive complexion, oval face, shoulder-length dark curly hair and a full neat dark beard. He wears an undyed cream linen tunic with a muted cool earth-gray mantle. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, beard, clothing, palette, materials and light in every Jesus state.\n\nEmotion: speaking with quiet authority and clarity while remaining calm, human and non-theatrical; no glow, dramatic gesture or fantasy effect.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no halo, glow, fantasy effect, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, undyed clothing, materials and light exactly match approved map Jesus.",
+        "Quiet authority and clarity are readable at dialogue UI size.",
+        "The expression remains calm, human and non-theatrical.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.jesus"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.jesus-weeping",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Jesus showing visible restrained tears and genuine grief.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Jesus is the same first-century Jewish man in his early thirties as the current map sprite, with an olive complexion, oval face, shoulder-length dark curly hair and a full neat dark beard. He wears an undyed cream linen tunic with a muted cool earth-gray mantle. Use believable linen weave and soft natural Mediterranean light from upper left. Keep this exact face, age, hair, beard, clothing, palette, materials and light in every Jesus state.\n\nEmotion: showing visible restrained tears and genuine grief, deeply human, reverent and non-theatrical.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no halo, glow, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, undyed clothing, materials and light exactly match approved map Jesus.",
+        "Visible restrained tears and genuine grief are readable at dialogue UI size.",
+        "The portrayal remains deeply human, reverent and non-theatrical.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.jesus"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.messenger",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of the messenger listening carefully and ready to carry the sisters' words.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: the messenger is the same young adult Jewish man as the current map sprite, with an olive complexion, dark curly hair and a short dark beard. He wears a muted blue-gray linen tunic, sand mantle and warm earth sash; show only the upper edge of his practical travel satchel strap if visible. Use believable linen and leather texture and soft natural Mediterranean light from upper left. Keep him humble and practical, never heroic, armed or richly dressed.\n\nEmotion: listening carefully and ready to carry the sisters' words, humble and focused.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, blue-gray clothing, sand mantle, materials and light exactly match the approved map messenger.",
+        "Careful listening, humility and focus are readable at dialogue UI size.",
+        "The messenger remains practical rather than heroic.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.messenger"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.thomas",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Thomas showing serious courage despite danger.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: Thomas is the same adult Jewish man in his thirties to early forties as the current map sprite, with a medium olive complexion, sturdy oval face, short medium-brown hair and a light-medium neat beard. He wears practical muted brown and charcoal linen with a sand sash. Use believable linen weave and soft natural Mediterranean light from upper left. Keep him plain, grounded and non-heroic.\n\nEmotion: serious and courageous despite danger, with restrained determination and no aggression, bravado or theatrical heroism.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, brown-and-charcoal clothing, materials and light exactly match approved map Thomas.",
+        "Serious courage and restrained determination are readable at dialogue UI size.",
+        "The expression avoids aggression, bravado or theatrical heroism.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.disciples"
+    ],
+    "output": "runtime"
+  },
+  {
+    "id": "portrait.witness",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of the older Bethany witness thinking uncertainly after seeing Jesus weep.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark.\n\nComposition/camera: one centered chest-up subject at eye level, head and shoulders filling the square with safe margins and a clear face silhouette for a small map-visible dialogue window; no hands, props, scenery, second figure or narrative action.\nBackground: simple softly painted warm limestone and earth tones, quiet and unobtrusive.\nIdentity lock: the older witness is the same elderly Jewish man as the current map sprite, with a weathered olive complexion, deeply aged oval face and full white-gray hair. He wears a practical muted green-gray to blue-gray linen robe with a sand-ochre under-shawl. Use believable linen weave and soft natural Mediterranean light from upper left. He is a single distinct elder, not any figure from the legacy multi-person witness sheet.\n\nEmotion: thoughtful and uncertain after seeing Jesus weep, with no judgmental caricature, hostility or theatrical suspicion.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "One chest-up subject with no text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Face, age, hair, muted-green clothing, materials and light exactly match the approved older map witness.",
+        "Thoughtful uncertainty is readable at dialogue UI size.",
+        "The expression avoids judgmental caricature or hostile suspicion.",
+        "Rendering feels like a close-up of the same game art."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.witnesses"
+    ],
+    "output": "runtime"
+  }
+]

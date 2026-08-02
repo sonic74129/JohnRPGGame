@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.jesus-weeping",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Jesus showing visible restrained tears and genuine grief.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.jesus"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:38:45.928Z",
+    "updatedAt": "2026-08-01T16:41:19.778Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__jesus-weeping/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__jesus-weeping/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__jesus-weeping/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__jesus-weeping/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__jesus-weeping/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__jesus-weeping/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:39:28.845Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__jesus-weeping/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:40:06.981Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__jesus-weeping/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__jesus-weeping/v1/run-001-selected.png",
+    "reason": "Candidate 01 scored 91/100: identity 19, emotion 18, style 18, UI 18, cleanliness 18. A single visible restrained tear, furrowed brow and downcast gaze read as genuine deep grief without theatrical collapse; the warm olive-sage-gray mantle hue matches the already-approved jesus-listening and jesus-declaration portraits more closely than candidate 02, preserving cross-state identity continuity. Candidate 02 scored 86/100: still a solid pass, but its cooler blue-gray mantle tone diverged slightly from the locked identity established in the two other approved Jesus states.",
+    "selectedAt": "2026-08-01T16:41:19.778Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__jesus-weeping/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__jesus-weeping/v1/run-001/portrait__jesus-weeping.png"
+    ],
+    "startedAt": "2026-08-01T16:41:28.881256Z",
+    "completedAt": "2026-08-01T16:41:29.586704Z",
+    "failureReason": null
+  }
+}

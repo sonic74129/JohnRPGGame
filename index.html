@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23252117'/%3E%3Cpath d='M18 14h25a7 7 0 0 1 7 7v31H25a7 7 0 0 1-7-7V14Z' fill='%23f4c86a'/%3E%3Cpath d='M25 14v38M31 25h12M31 33h12' stroke='%23252117' stroke-width='4'/%3E%3C/svg%3E" />
+    <title>伯大尼见证者</title>
+  </head>
+  <body>
+    <main id="app" aria-label="伯大尼见证者游戏">
+      <div id="game-root" tabindex="0" aria-label="游戏画面"></div>
+
+      <header id="hud" class="hud is-hidden" aria-live="polite">
+        <section class="scripture-panel" aria-label="当前经文">
+          <span class="eyebrow">当前经文</span>
+          <strong id="objective-reference" class="reference">约翰福音 11</strong>
+        </section>
+        <div class="hud-actions">
+          <section
+            id="stage-goal"
+            class="stage-goal is-hidden"
+            aria-label="当前阶段目标"
+          >
+            <span id="stage-goal-mode" class="stage-goal-mode">当前目标</span>
+            <strong id="stage-goal-text">走近拉撒路</strong>
+          </section>
+          <section class="score-panel" aria-label="经文观察分">
+            <span class="eyebrow">分数</span>
+            <strong><span id="score">100</span> / 100</strong>
+          </section>
+          <button
+            id="music-toggle"
+            class="music-toggle"
+            type="button"
+            aria-label="切换音乐与语音"
+            aria-pressed="false"
+          >
+            声音：开
+          </button>
+        </div>
+      </header>
+
+      <div id="interaction-prompt" class="interaction-prompt is-hidden">
+        SPACE / 互动
+      </div>
+
+      <section
+        id="dialogue"
+        class="dialogue is-hidden"
+        role="dialog"
+        aria-labelledby="dialogue-speaker"
+      >
+        <div id="dialogue-portrait" class="dialogue-portrait is-hidden" aria-hidden="true"></div>
+        <div class="dialogue-content">
+          <div class="dialogue-heading">
+            <span id="dialogue-kind" class="content-kind"></span>
+            <span id="dialogue-reference" class="reference"></span>
+          </div>
+          <div class="dialogue-speaker-row">
+            <h2 id="dialogue-speaker"></h2>
+            <button
+              id="dialogue-audio"
+              class="dialogue-audio is-hidden"
+              type="button"
+              aria-label="从头重播当前经文语音"
+            >
+              重播语音
+            </button>
+          </div>
+          <p id="dialogue-text"></p>
+          <button id="dialogue-next" type="button">继续　SPACE</button>
+        </div>
+      </section>
+
+      <div
+        id="technical-toast"
+        class="technical-toast is-hidden"
+        role="status"
+        aria-live="polite"
+      ></div>
+
+      <aside
+        id="verse-echo"
+        class="verse-echo is-hidden"
+        role="status"
+        aria-live="polite"
+      >
+        <span id="verse-echo-kind" class="verse-echo-kind"></span>
+        <strong id="verse-echo-speaker"></strong>
+        <p id="verse-echo-text"></p>
+        <span id="verse-echo-reference" class="reference"></span>
+      </aside>
+
+      <section id="choice-screen" class="choice-screen is-hidden" role="dialog" aria-modal="true">
+        <div class="choice-card">
+          <p class="eyebrow">经文观察 · 选择后才会进入剧情</p>
+          <h2 id="choice-question"></h2>
+          <p id="choice-reference" class="reference"></p>
+          <div id="choice-options" class="choice-options"></div>
+          <p id="choice-feedback" class="choice-feedback" role="status" aria-live="assertive"></p>
+        </div>
+      </section>
+
+      <section id="start-screen" class="modal-screen">
+        <div class="modal-card start-card">
+          <p class="eyebrow">约翰福音第 11 章</p>
+          <h1>伯大尼见证者</h1>
+          <div class="button-row">
+            <button id="start-game" class="primary" type="button">开始游戏</button>
+            <button id="start-fullscreen" type="button">全屏开始</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="pause-screen" class="modal-screen is-hidden" role="dialog" aria-modal="true">
+        <div class="modal-card">
+          <p class="eyebrow">主持人菜单</p>
+          <h2>游戏已暂停</h2>
+          <details class="about-notice">
+            <summary>版本与文本说明</summary>
+            <p class="prototype-warning">
+              经文采用和合本简体原型文本，正式使用前须由教会逐字审核。原型中的内容类型会与经文原句明确区分。
+            </p>
+          </details>
+          <div class="button-stack">
+            <button id="resume-game" class="primary" type="button">继续游戏</button>
+            <button id="restart-game" type="button">重新开始</button>
+            <button id="exit-game" type="button">离开游戏</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="result-screen" class="modal-screen is-hidden" role="dialog" aria-modal="true">
+        <div class="modal-card result-card">
+          <p class="eyebrow">本组完成了伯大尼的见证旅程</p>
+          <h2 id="result-title">经文脉络清楚</h2>
+          <div class="final-score"><span id="final-score">100</span><small>/ 100</small></div>
+          <blockquote>
+            “复活在我，生命也在我……你信这话么？”
+            <cite>约翰福音 11:25–26｜和合本</cite>
+          </blockquote>
+          <div class="button-row">
+            <button id="result-restart" type="button">再玩一次</button>
+            <button id="result-exit" class="primary" type="button">返回查经</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

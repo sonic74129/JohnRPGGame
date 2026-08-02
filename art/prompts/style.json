@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "resource": "ai-johnrpg-sonic-74129",
+    "region": "East US",
+    "deployment": "mai-image-2-5-pro",
+    "model": "MAI-Image-2.5-Pro",
+    "modelVersion": "2026-06-19",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19",
+    "authentication": "Azure CLI / Entra ID",
+    "disallowedAlternatives": [
+      "OpenAI Image API",
+      "Imagegen CLI",
+      "Any image model other than the locked Azure AI Foundry deployment"
+    ]
+  },
+  "basePromptVersion": "v1",
+  "commonPrefix": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark",
+  "familyPrompts": {
+    "master.indoor": "Use the common project style.\nCreate a beautiful complete art-direction scene of a modest first-century Bethany stone house in a three-quarter top-down RPG view. Show Lazarus resting on a low bed, Martha and Mary nearby, and enough visible floor for gameplay. Door, bed, table, stools, shelf, lamp, pottery, water bowl, linen and baskets must have believable scale relative to the people. Use layered depth with clear foreground and background objects, warm window light and restrained oil-lamp glow. This image is an art-direction reference only, not a runtime story illustration. No text, no UI, no supernatural effect.",
+    "master.outdoor": "Use the approved indoor master style, palette, materials and character identities.\nCreate a beautiful complete art-direction scene of a continuous first-century Bethany RPG world in a three-quarter top-down view: family house, small village houses, open meeting area, road toward Jesus, olive trees, low walls, village well, road toward a hillside tomb and readable walkable routes. Include a few approved characters only to prove gameplay readability. Deliberately enlarge outdoor characters relative to small buildings so they remain easy to identify, while preserving a coherent charming game composition. This image is a production reference only and will not appear as a story illustration.",
+    "master.tomb": "Use the approved project style and outdoor scale contract.\nCreate a solemn but beautiful first-century hillside burial garden in a three-quarter top-down RPG view, with an open rock-cut tomb entrance, movable round stone as a separate visual element, olive trees, sparse plants, rocky ground and a broad gathering area. Use restrained late-afternoon light, readable character space and no supernatural glow, horror or body. This image is an environment reference only.",
+    "environment.interior": "Use the approved house master exactly for style, camera, palette, materials and scale.\nCreate a production-ready empty house environment for a three-quarter top-down RPG. No people and no baked character shadows. Keep a broad walkable floor. Separate the output conceptually into: base floor/back walls, independent household props, and foreground occlusion pieces. Preserve believable human-to-door, bed, table, stool and vessel proportions. No text or UI.",
+    "environment.outdoor": "Use the approved Bethany world master exactly for style, camera, palette, materials and lighting.\nCreate reusable production game assets for one continuous outdoor world: seamless earth/road/grass/rock ground pieces plus isolated limestone houses, well, canopy, table, wall segments, doorway threshold, road marker, rocky ledges, tomb entrance and olive tree. Keep every object isolated with consistent camera and scale, no connected cast shadows, no people, no text or UI.",
+    "character": "Use the approved master character identity, clothing, palette and outdoor readability contract.\nCreate a production character sheet on a perfectly flat removable background. Show the same full-body first-century character consistently from front, back, left and right, with idle and two readable walking poses. Use clean separated cells, identical body scale and foot alignment, no scenery, no props except character-specific items, no labels, no text, no connected shadows.",
+    "special-pose": "Use the approved character identity and game camera.\nCreate isolated in-map story poses with consistent body size and foot anchor: restrained care, concern, listening, rising, kneeling, weeping, prayer, calling and quiet group reaction as appropriate to the named character. These are gameplay sprites for map-based dialogue and staging, not cinematic illustrations. No scenery, no text, no exaggerated theater, no supernatural effects.",
+    "portrait": "Use the exact approved map character identity, face, age, hair, clothing colors, materials and lighting.\nCreate a polished dialogue portrait with gently cartooned appeal and believable facial anatomy, chest-up, simple unobtrusive background, readable at UI size, emotionally restrained and reverent. The portrait must feel like a detailed close-up from the same game world, not a separate realistic movie style and not a story illustration. No text, frame, border or watermark."
+  },
+  "scaleContracts": {
+    "interior": "People, doors, beds, tables, stools, shelves, lamps, pottery, bowls, linen and baskets use believable human proportions. The environment is layered so foreground pieces can occlude characters correctly.",
+    "outdoor": "Buildings and roads remain environmentally coherent, while characters are deliberately enlarged for readability and may approach the visual height of a small house. Indoor and outdoor versions preserve the same identity and clothing.",
+    "portrait": "Portrait identity, face, age, hair, clothing colors, materials and lighting must match the approved map character exactly."
+  },
+  "iterationRule": {
+    "versioning": "v1 is the prewritten baseline. Every v2+ revision changes exactly one observed defect and preserves every other accepted detail.",
+    "template": "Revision target: <one observed defect only>\nChange only: <the exact proportion, camera, silhouette, material, lighting or separation problem>\nKeep unchanged: approved character identity, clothing, palette, camera, environment style, composition contract and all other accepted details\nAcceptance: <one measurable visual result>",
+    "requiredReviewRecord": [
+      "promptVersion",
+      "observedDefect",
+      "failedCandidatePaths",
+      "selectionReason",
+      "approvedCandidatePath",
+      "runtimeOutputMapping"
+    ]
+  },
+  "retiredGenerationPlans": [
+    {
+      "scope": "story-and-cinematic-stills",
+      "ids": [
+        "opening-sickroom",
+        "journey-to-jesus",
+        "bethany-village",
+        "tomb-garden",
+        "story-martha-meets-jesus",
+        "story-jesus-weeps",
+        "story-lazarus-comes-out",
+        "story-ending-reflection"
+      ],
+      "reason": "All narrative is staged inside playable maps with character movement, restrained actions and dialogue portraits; no story, chapter or full-screen static illustration is generated."
+    },
+    {
+      "scope": "legacy-independent-map-backgrounds",
+      "ids": [
+        "map-road-to-jesus-clean",
+        "map-village-edge-clean",
+        "map-road-to-tomb-clean",
+        "map-tomb-clean"
+      ],
+      "reason": "The continuous Bethany world master and reusable outdoor runtime assets replace isolated map-background generation."
+    }
+  ]
+}

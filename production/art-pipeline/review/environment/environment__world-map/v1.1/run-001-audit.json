@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "1.0.0",
+  "assetId": "environment.world-map",
+  "promptVersion": "v1.1",
+  "layoutContract": "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/art/world-map-layout.json",
+  "topology": {
+    "checks": {
+      "houseLeftAndBelowVillage": true,
+      "meetingRightOfVillage": true,
+      "campRightAndBelowMeeting": true,
+      "gardenRightAndAboveVillage": true,
+      "uplandRouteMovesEast": true,
+      "uplandRouteMovesNorth": true,
+      "routeEndsAtGardenEdge": true
+    },
+    "passes": true
+  },
+  "candidates": [
+    {
+      "path": "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-01.png",
+      "width": 2720,
+      "height": 1536,
+      "fileBytes": 7249514,
+      "blankFraction": 0.0,
+      "safeBorderBlankFraction": 0.0,
+      "seamRatios": {
+        "vertical25": 0.923,
+        "horizontal25": 1.201,
+        "vertical50": 0.784,
+        "horizontal50": 1.059,
+        "vertical75": 0.963,
+        "horizontal75": 1.142
+      },
+      "regions": {
+        "marthaCompound": {
+          "lumaStdDev": 46.627,
+          "blankFraction": 0.0,
+          "passes": true
+        },
+        "village": {
+          "lumaStdDev": 47.576,
+          "blankFraction": 3.5e-05,
+          "passes": true
+        },
+        "meetingArea": {
+          "lumaStdDev": 46.12,
+          "blankFraction": 1.6e-05,
+          "passes": true
+        },
+        "jesusCamp": {
+          "lumaStdDev": 43.456,
+          "blankFraction": 0.0,
+          "passes": true
+        },
+        "tombGarden": {
+          "lumaStdDev": 50.398,
+          "blankFraction": 4e-05,
+          "passes": true
+        }
+      },
+      "checks": {
+        "dimensions": true,
+        "filledCanvas": true,
+        "filledSafeBorder": true,
+        "continuousPlate": true,
+        "regionalActivity": true
+      },
+      "passes": true
+    },
+    {
+      "path": "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-02.png",
+      "width": 2720,
+      "height": 1536,
+      "fileBytes": 7224778,
+      "blankFraction": 0.0,
+      "safeBorderBlankFraction": 0.0,
+      "seamRatios": {
+        "vertical25": 0.875,
+        "horizontal25": 1.004,
+        "vertical50": 1.063,
+        "horizontal50": 1.363,
+        "vertical75": 0.811,
+        "horizontal75": 1.047
+      },
+      "regions": {
+        "marthaCompound": {
+          "lumaStdDev": 45.301,
+          "blankFraction": 6e-06,
+          "passes": true
+        },
+        "village": {
+          "lumaStdDev": 48.199,
+          "blankFraction": 1.7e-05,
+          "passes": true
+        },
+        "meetingArea": {
+          "lumaStdDev": 45.294,
+          "blankFraction": 0.0,
+          "passes": true
+        },
+        "jesusCamp": {
+          "lumaStdDev": 39.216,
+          "blankFraction": 0.0,
+          "passes": true
+        },
+        "tombGarden": {
+          "lumaStdDev": 46.626,
+          "blankFraction": 2.5e-05,
+          "passes": true
+        }
+      },
+      "checks": {
+        "dimensions": true,
+        "filledCanvas": true,
+        "filledSafeBorder": true,
+        "continuousPlate": true,
+        "regionalActivity": true
+      },
+      "passes": true
+    },
+    {
+      "path": "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-miniature-chainsaw/production/art-pipeline/candidates/environment/environment__world-map/v1.1/run-001/candidate-03.png",
+      "width": 2720,
+      "height": 1536,
+      "fileBytes": 6916101,
+      "blankFraction": 1e-06,
+      "safeBorderBlankFraction": 0.0,
+      "seamRatios": {
+        "vertical25": 0.997,
+        "horizontal25": 1.381,
+        "vertical50": 0.796,
+        "horizontal50": 1.163,
+        "vertical75": 1.104,
+        "horizontal75": 1.072
+      },
+      "regions": {
+        "marthaCompound": {
+          "lumaStdDev": 55.023,
+          "blankFraction": 1.3e-05,
+          "passes": true
+        },
+        "village": {
+          "lumaStdDev": 55.376,
+          "blankFraction": 0.000106,
+          "passes": true
+        },
+        "meetingArea": {
+          "lumaStdDev": 52.557,
+          "blankFraction": 7.8e-05,
+          "passes": true
+        },
+        "jesusCamp": {
+          "lumaStdDev": 47.837,
+          "blankFraction": 0.0,
+          "passes": true
+        },
+        "tombGarden": {
+          "lumaStdDev": 52.224,
+          "blankFraction": 5e-05,
+          "passes": true
+        }
+      },
+      "checks": {
+        "dimensions": true,
+        "filledCanvas": true,
+        "filledSafeBorder": true,
+        "continuousPlate": true,
+        "regionalActivity": true
+      },
+      "passes": true
+    }
+  ],
+  "passes": true
+}

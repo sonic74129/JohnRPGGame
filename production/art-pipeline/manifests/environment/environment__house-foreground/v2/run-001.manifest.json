@@ -1,0 +1,196 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "environment.house-foreground",
+    "family": "environment",
+    "purpose": "Source artwork for separate house foreground occlusion pieces aligned to the approved base so runtime characters can pass behind them.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "environment.house-base"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:50:38.691Z",
+    "updatedAt": "2026-08-01T15:57:12.427Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/environment/environment__house-foreground/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/environment/environment__house-foreground/v2/run-001",
+    "selectedSource": "production/art-source/environment/interior/environment__house-foreground/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/environment/interior/environment__house-foreground/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/environment/environment__house-foreground/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__house-foreground/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:54:36.846Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__house-foreground/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:56:14.302Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 2,
+    "sourcePath": "production/art-pipeline/candidates/environment/environment__house-foreground/v2/run-001/candidate-02.png",
+    "selectedSourcePath": "production/art-source/environment/interior/environment__house-foreground/v2/run-001-selected.png",
+    "reason": "Best approved v2 separation: exactly five clean occluder groups, open doorway, consistent camera and scale, removable plain background, and no connected room scene.",
+    "selectedAt": "2026-08-01T15:57:12.426Z"
+  },
+  "review": {
+    "contactSheet": {
+      "path": "production/art-pipeline/review/environment/environment__house-foreground/v2/run-001-contact-sheet.jpg",
+      "width": 1600,
+      "height": 498,
+      "bytes": 99936
+    },
+    "criteria": [
+      "beauty",
+      "approvedMasterConsistency",
+      "camera",
+      "scale",
+      "materials",
+      "decomposition",
+      "bannedContentCompliance"
+    ],
+    "promptIterations": [
+      {
+        "promptVersion": "v1",
+        "observedDefect": "Connected full-room scenery prevents foreground extraction.",
+        "failedCandidatePaths": [
+          "production/art-pipeline/candidates/environment/environment__house-foreground/v1/run-001/candidate-01.png",
+          "production/art-pipeline/candidates/environment/environment__house-foreground/v1/run-001/candidate-02.png"
+        ],
+        "candidates": [
+          {
+            "candidate": 1,
+            "scores": [
+              8,
+              8,
+              8,
+              7.5,
+              8.5,
+              2,
+              7
+            ],
+            "total": 49,
+            "maximum": 70
+          },
+          {
+            "candidate": 2,
+            "scores": [
+              9,
+              9,
+              9,
+              8.5,
+              9,
+              4,
+              8
+            ],
+            "total": 56.5,
+            "maximum": 70
+          }
+        ]
+      },
+      {
+        "promptVersion": "v2",
+        "observedDefect": null,
+        "failedCandidatePaths": [
+          "production/art-pipeline/candidates/environment/environment__house-foreground/v2/run-001/candidate-01.png"
+        ],
+        "candidates": [
+          {
+            "candidate": 1,
+            "scores": [
+              9,
+              9,
+              9,
+              8.5,
+              9,
+              8,
+              10
+            ],
+            "total": 62.5,
+            "maximum": 70
+          },
+          {
+            "candidate": 2,
+            "scores": [
+              9,
+              9.5,
+              9,
+              9,
+              9.5,
+              9.5,
+              10
+            ],
+            "total": 65.5,
+            "maximum": 70
+          }
+        ],
+        "selectionReason": "Exactly five clean occluder groups, open doorway, consistent camera and scale, removable plain background, and no connected room scene.",
+        "approvedCandidatePath": "production/art-source/environment/interior/environment__house-foreground/v2/run-001-selected.png",
+        "runtimeOutputMapping": "public/assets/art/environment/interior/environment__house-foreground/v2/run-001/environment__house-foreground.png"
+      }
+    ]
+  },
+  "runtimeValidation": {
+    "width": 1360,
+    "height": 768,
+    "mode": "RGBA",
+    "alphaExtrema": [0, 255],
+    "transparentPixels": 836102,
+    "partialAlphaPixels": 20977,
+    "opaquePixels": 187401,
+    "nontransparentBorderPixels": 0,
+    "enclosedDoorwayAlpha": 0,
+    "transparencyCleanup": "Connected plain-background removal including the enclosed doorway, followed by a 0.8-pixel premultiplied alpha feather."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-turbo-system/production/art-source/environment/interior/environment__house-foreground/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-turbo-system/public/assets/art/environment/interior/environment__house-foreground/v2/run-001/environment__house-foreground.png"
+    ],
+    "startedAt": "2026-08-01T15:57:30.823641Z",
+    "completedAt": "2026-08-01T15:57:31.398689Z",
+    "failureReason": null
+  }
+}

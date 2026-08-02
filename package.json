@@ -1,0 +1,24 @@
+{
+  "name": "bethany-witness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "art:generate": "node scripts/generate-art.mjs",
+    "art:process": "python3 scripts/process-art.py",
+    "art:world": "python3 scripts/build-world-ground.py",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:art-pipeline": "vitest run tests/artPipeline.test.mjs tests/artProcessing.test.mjs"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.4"
+  }
+}

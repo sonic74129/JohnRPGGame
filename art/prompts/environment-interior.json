@@ -1,0 +1,95 @@
+[
+  {
+    "id": "environment.house-base",
+    "family": "environment",
+    "purpose": "Source artwork for the empty Lazarus house floor, rear walls and fixed architecture that will be processed into the runtime indoor base layer.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved house master exactly for style, camera, palette, materials and scale.\nCreate a production-ready empty house environment for a three-quarter top-down RPG. No people and no baked character shadows. Keep a broad walkable floor. Separate the output conceptually into: base floor/back walls, independent household props, and foreground occlusion pieces. Preserve believable human-to-door, bed, table, stool and vessel proportions. No text or UI.\n\nEmpty runtime house base with floor, rear walls and fixed architecture only; broad walkable floor; no foreground objects that should cover characters.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "No people, baked character shadows, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Floor, rear walls and fixed architecture match the approved house master exactly.",
+        "The base leaves a broad connected walkable floor and clear doorway access.",
+        "No foreground object that should occlude a character is baked into the base.",
+        "Architecture preserves believable human scale and clean layer boundaries."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "environment.house-foreground",
+    "family": "environment",
+    "purpose": "Source artwork for separate house foreground occlusion pieces aligned to the approved base so runtime characters can pass behind them.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved house master exactly for style, camera, palette, materials and scale.\nCreate a production-ready empty house environment for a three-quarter top-down RPG. No people and no baked character shadows. Keep a broad walkable floor. Separate the output conceptually into: base floor/back walls, independent household props, and foreground occlusion pieces. Preserve believable human-to-door, bed, table, stool and vessel proportions. No text or UI.\n\nSeparate matching foreground occlusion pieces for door frame, bed edge, table edge, shelves and vessels; clean isolated shapes aligned to the approved house base.\n\nRevision target: connected full-room scenery prevents foreground extraction\nChange only: composition and separation; render only the specified occlusion pieces as isolated items on a perfectly flat plain removable background, with no room vignette and no duplicate furniture\nKeep unchanged: approved camera, indoor scale, style, palette, materials, lighting, required occluder identities, and every other accepted detail\nAcceptance: exactly the requested five occluder groups are complete, with at least 80 px of plain background between groups and zero connected room scene",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "No people, connected scenery, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Door frame, bed edge, table edge, shelves and vessels are clean independent occlusion shapes.",
+        "Every piece aligns with the approved house base camera and anchor position.",
+        "Edges are suitable for clean transparency extraction.",
+        "Object scale is believable relative to the approved indoor characters."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "environment.house-base"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "props.house",
+    "family": "environment",
+    "purpose": "Source atlas of reusable household props at believable indoor human scale for placement and occlusion in the runtime house.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved house master exactly for style, camera, palette, materials and scale.\nCreate a production-ready empty house environment for a three-quarter top-down RPG. No people and no baked character shadows. Keep a broad walkable floor. Separate the output conceptually into: base floor/back walls, independent household props, and foreground occlusion pieces. Preserve believable human-to-door, bed, table, stool and vessel proportions. No text or UI.\n\nIsolated matching bed, table, two stools, door, wall shelf, oil lamp, storage jar, water bowl, folded linen, basket and cup, all at believable indoor human scale.\n\nRevision target: connected room scenery and shared atlas cells prevent stable extraction\nChange only: composition and separation; show exactly the twelve requested props once each in a clean 4x3 grid on a perfectly flat plain removable background, with no room vignette and no overlapping slots\nKeep unchanged: approved prop identities, three-quarter camera, indoor scale, style, palette, materials, lighting, and every other accepted detail\nAcceptance: twelve complete silhouettes occupy twelve independent cells with at least 40 px of plain background between cells, including separate water bowl and folded linen cells, and zero connected room scene",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "All twelve requested prop slots are present and visually separated.",
+        "No people, connected cast shadows, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Bed, table, stools, door, shelf, lamp, jar, bowl, linen, basket and cup match the approved house master.",
+        "Each prop has a complete uncropped silhouette and generous extraction space.",
+        "Every prop uses the same three-quarter top-down camera and believable indoor human scale.",
+        "Materials remain recognizable as wood, linen, clay and simple first-century household craft."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "environment.house-base"
+    ],
+    "output": "source"
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "id": "environment.world-ground",
+    "family": "environment",
+    "purpose": "Source atlas for seamless dry earth, road, limestone path, sparse grass and rocky-ground pieces used to build one continuous runtime Bethany world.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved Bethany world master exactly for style, camera, palette, materials and lighting.\nCreate reusable production game assets for one continuous outdoor world: seamless earth/road/grass/rock ground pieces plus isolated limestone houses, well, canopy, table, wall segments, doorway threshold, road marker, rocky ledges, tomb entrance and olive tree. Keep every object isolated with consistent camera and scale, no connected cast shadows, no people, no text or UI.\n\nReusable seamless dry earth, dusty road, pale limestone path, sparse grass and rocky-ground pieces with matching edges and no object shadows.\n\nRevision target: composition and extraction layout only.\nChange only: replace the mixed scenic-object sheet with a strict ground-only 4x4 atlas of sixteen equal cells, containing only edge-matching dry earth, dusty road, pale limestone path, sparse grass and rocky-ground variants, including straight, corner, junction and transition road pieces; no raised tile bases and no scenic objects.\nKeep unchanged: approved palette, three-quarter top-down camera, hand-painted material style, texture scale, natural daylight and all exclusions.\nAcceptance: all sixteen cells are ground surfaces in a regular extraction grid and no buildings, wells, walls, trees, caves, markers, arrows or props appear.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "Ground pieces occupy a regular extraction layout with no labels or gutters baked into the art.",
+        "No people, objects, object shadows, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Dry earth, dusty road, pale limestone path, sparse grass and rocky ground match the approved Bethany world.",
+        "Matching edges tile without visible seams or lighting jumps.",
+        "Road width and surface scale remain consistent across straight, corner, junction and transition pieces.",
+        "Ground texture supports readable enlarged outdoor characters without excessive noise."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "environment.world-objects",
+    "family": "environment",
+    "purpose": "Source atlas of reusable Bethany buildings, landmarks, walls, terrain edges and vegetation for the continuous runtime exterior world.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1024,
+    "height": 1024,
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved Bethany world master exactly for style, camera, palette, materials and lighting.\nCreate reusable production game assets for one continuous outdoor world: seamless earth/road/grass/rock ground pieces plus isolated limestone houses, well, canopy, table, wall segments, doorway threshold, road marker, rocky ledges, tomb entrance and olive tree. Keep every object isolated with consistent camera and scale, no connected cast shadows, no people, no text or UI.\n\nIsolated matching Martha house, two village houses, well, canopy, market table, straight/corner/end walls, threshold, road marker, cliff edge, rocky ledge, open tomb entrance and olive tree.\n\nSTRICT EXTRACTION LAYOUT: show exactly sixteen objects in exactly four equal rows and four equal columns, one complete centered object wholly inside each cell, with wide empty gutters, no grid lines, no labels and no extra objects or ground tiles. Use this row-major order: row 1 Martha house base without its removable roof; separate Martha house roof; village house A; village house B. Row 2 open tomb entrance without a round stone; village well; market canopy; market table. Row 3 straight wall; corner wall; end wall; cliff edge. Row 4 doorway threshold; plain unmarked road marker; rocky ledge; olive tree.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1024x1024.",
+        "All sixteen requested object slots are present and visually separated.",
+        "No people, animals, modern objects, connected cast shadows, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Every object matches the approved Bethany world camera, palette, materials and lighting.",
+        "Martha's house, two village houses, well, canopy, table, walls, threshold, road marker, cliff, ledge, tomb entrance and olive tree have complete uncropped silhouettes.",
+        "Buildings remain coherent with the deliberately enlarged outdoor character scale.",
+        "The open tomb entrance contains no round stone and can connect cleanly to the tomb-garden assets."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world",
+      "master.tomb-garden"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "props.tomb",
+    "family": "environment",
+    "purpose": "Source atlas of respectful burial-garden props for the runtime tomb sequence, kept separate from the environment and from every character.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v3",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved Bethany world and tomb-garden masters exactly for style, three-quarter top-down camera, palette, dry limestone and natural-linen materials, enlarged outdoor character scale and restrained late-afternoon lighting. Match the approved open tomb entrance, but do not include the entrance or any connected scenery.\n\nCreate exactly eight reusable isolated burial-garden props on one plain uniform light background. Keep each object complete, centered and wholly separate with wide empty gutters and no connected cast shadows. Stone and cave-lip scale must fit the approved open tomb entrance and deliberately enlarged outdoor characters; cloth, rubble, dust and plant remain believable human-relative props. Burial cloth must be empty, folded respectfully and non-horror.\n\nSTRICT EXTRACTION LAYOUT: show exactly eight objects in exactly two equal rows and four equal columns, one complete centered object wholly inside each cell, with wide empty gutters, no grid lines, no labels and no extra objects or ground tiles. Use this row-major order: row 1 large round tomb sealing stone; the same round stone in a clearly rolled-aside state; low horizontal foreground stone threshold/ledge only, seen from above, less than one-third cell height, absolutely no doorway, dark opening, arch, cave, hillside, vertical wall, vegetation or tomb entrance; empty folded burial cloth. Row 2 loose empty burial-cloth strips; light dust patch; limestone rubble; sparse Mediterranean plant.\n\nAvoid people, body, corpse, bones, gore, decay, horror, supernatural light or effects, fantasy particles, modern cemetery objects, connected scenery, tomb entrance, cropped silhouettes, text, letters, labels, UI, frame, border and watermark.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "All eight requested prop slots are present and visually separated.",
+        "No people, body, horror, supernatural effect, connected scenery, text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Round stone, rolled-aside stone, cave lip, cloth, strips, dust, rubble and plant match the approved tomb master.",
+        "Every item has a complete uncropped silhouette and extraction space.",
+        "Burial cloth is respectful, empty and non-horror.",
+        "Stone and cave-lip scale supports the approved enlarged outdoor characters and open tomb entrance."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.tomb-garden",
+      "environment.world-objects"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "environment.world-map",
+    "family": "environment",
+    "purpose": "Immutable source for one continuous empty playable first-century Bethany world map, preserving the approved geography and locked profile-B environment-to-character scale for later deterministic runtime derivation.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 2720,
+    "height": 1536,
+    "requestWidth": 1360,
+    "requestHeight": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1.1",
+    "promptProfile": "moderation-safe-environment",
+    "prompt": "Use case: stylized-concept\nAsset type: production-ready continuous overworld environment plate\nOutput: exactly 1360x768 pixels, one uninterrupted landscape, north at the top\n\nPrimary request:\nPaint one cohesive ancient eastern Mediterranean hill village environment in warm hand-painted storybook realism. The image is an empty playable landscape. Roads, buildings, trees, walls, a well, courtyards, market objects, rocky slopes and a peaceful ancient stone garden share one camera, palette, material language, sun direction and object scale.\n\nCamera and rendering:\nUse one fixed three-quarter top-down RPG camera across the entire image. Use polished non-pixel hand-painted art, clean silhouettes and restrained natural texture. Sunlight comes from upper left and soft shadows fall consistently toward lower right.\n\nExact service-canvas geography:\n- Fill the outer 48-pixel safe border with natural terrain.\n- A prominent family house and courtyard occupy x 90-380, y 440-715, with a readable doorway near x 260, y 555.\n- The village occupies x 340-760, y 300-620, centered near x 520, y 450, with two or three modest limestone houses, a well, low walls, a small market canopy and table, and irregular lived-in ground.\n- A quiet village gathering space occupies x 725-925, y 450-610 and remains a broad clear area.\n- A roadside olive clearing occupies x 980-1290, y 515-715, centered near x 1130, y 630, with open standing space and subtle resting objects.\n- An upland route begins near x 725, y 360, curves through x 885, y 280 and x 1010, y 225, then reaches a peaceful ancient stone garden.\n- The stone garden occupies x 975-1290, y 50-305, with a hillside cave landmark centered near x 1110, y 180.\n- Keep a clean 60x60 area directly before the cave opening for a separate round environmental prop.\n- Complete the upper-left with olive terraces, dry limestone, sparse shrubs and a distant road, without adding another destination.\n\nService-canvas scale contract:\nUse a 45-pixel reference figure only as an invisible scale guide; do not paint figures.\n- Main house: about 200 pixels wide and 125 pixels visibly high.\n- Village houses: 140-165 pixels wide and 108-118 pixels visibly high.\n- Door clear height: about 54 pixels.\n- Main roads: about 90 pixels wide; secondary paths: about 70 pixels wide.\n- Olive canopies: about 98 pixels across; well: about 64 pixels; low walls: about 28 pixels high.\n- Cave opening: about 190 pixels wide and 130 pixels visibly high.\n\nPlayable composition:\nConnect the house doorway, village center, gathering space, roadside olive clearing and hillside cave landmark with unmistakable natural walkable routes. Keep the roadside clearing at least 260x150 pixels, the village gathering clearing at least 210x140 pixels and the stone-garden clearing at least 280x180 pixels. Keep roof edges and tree canopies visually separable for later occlusion work.\n\nStyle, palette and materials:\nWarm limestone, terracotta, dusty olive, muted blue-green and sand. Believable dry earth, worn stone, clay, wood and Mediterranean vegetation. Add subtle ground variation, small stones, weeds and shadow changes across the complete canvas.\n\nContent limits:\nEnvironment only. Omit figures, character shadows, lettering, labels, signs, arrows, interface elements, grids, panels, frames, watermarks, contemporary items, special effects, repeated tile patterns, blank areas and sticker-like objects.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 2720x1536.",
+        "The source is one continuous landscape with a filled 96-pixel safe border.",
+        "No people, bodies, character shadows, text, letters, labels, signs, arrows, UI, grid, frame, border or watermark.",
+        "candidateCount produces exactly three review candidates."
+      ],
+      "visual": [
+        "All fixed geography, route points, reserved regions and minimum clearings match art/world-map-layout.json.",
+        "Profile B reads correctly after normalization: 400x250 main house, 215-235-pixel village facades, human-scale doors, 180/140-pixel roads and a 380x260 cave opening.",
+        "The entire map shares one fixed three-quarter top-down camera, upper-left sunlight, lower-right shadows, warm palette and coherent first-century materials.",
+        "The upper-left is complete olive terraces, rock and distant road without becoming another gameplay destination.",
+        "No white void, repeated tile pattern, story illustration, modern item, supernatural glow or mismatched sticker-like object appears."
+      ]
+    },
+    "candidateCount": 3,
+    "dependsOn": [
+      "master.bethany-world",
+      "master.tomb-garden"
+    ],
+    "output": "source"
+  },
+  {
+    "id": "props.john-memory-clues",
+    "family": "environment",
+    "purpose": "Transparent three-cell source atlas for John's three runtime memory-clue object groups.",
+    "runtime": true,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1.2",
+    "promptProfile": "moderation-safe-environment",
+    "transparentBackground": true,
+    "prompt": "Use case: stylized-concept\nAsset type: transparent three-cell game-prop atlas\nOutput: exactly 1360x768 pixels with real transparent alpha; if native alpha is unavailable, use one perfectly uniform pale warm-gray removable background\n\nPrimary request:\nCreate three isolated tabletop-scale object groups in warm hand-painted storybook realism. Use one fixed three-quarter top-down object camera, soft upper-left natural light, clean complete silhouettes and restrained texture. Every object must be easy to recognize beside a 90-pixel map character.\n\nStrict layout:\nDivide the canvas conceptually into three equal vertical cells of about 453x768 pixels. Keep at least 64 pixels of empty transparent or uniform removable padding inside every cell. Place exactly one centered complete group in each cell. Keep all groups separate. Do not draw cell lines or a checkerboard transparency preview.\n\nRequired groups in left-to-right order:\n1. Exactly five large rustic oval barley-style bread loaves arranged as two loaves in a back row and three loaves in a front row, plus exactly two small silver-gray prepared meal items, each with a tapered body and simple fins. All seven items are individually visible; count five loaves before finalizing.\n2. One tall terracotta clay water vessel with two small handles and one simple matching drinking cup.\n3. One low handmade mud-clay bowl beside one medium terracotta clay water vessel.\n\nMaterials and palette:\nWarm bread crust, muted silver-gray meal items, terracotta and earth-brown clay, subtle natural wear and soft detached grounding shadows. Match the warm painted object style of an ancient Mediterranean hill-village game environment.\n\nContent limits:\nObjects only. Omit people, hands, lettering, labels, symbols, interface elements, grids, checkerboards, frames, watermarks, modern packaging, tables, connected scenery, overlapping cells and cropped objects. Do not paint a transparency grid or patterned background.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "The alpha channel leaves corners and gutters transparent while retaining non-empty foreground in all three cells.",
+        "Exactly three visually separated cells are occupied with no labels, grid, frame or watermark.",
+        "candidateCount produces exactly two review candidates."
+      ],
+      "visual": [
+        "Cell 1 visibly contains five large loaves and two small silver-gray finned meal items.",
+        "Cell 2 visibly contains one handled water vessel and one cup.",
+        "Cell 3 visibly contains one low clay bowl and one water vessel.",
+        "All objects share one three-quarter top-down camera, believable tabletop scale, complete silhouettes and wide extraction gutters."
+      ]
+    },
+    "candidateCount": 2,
+    "dependsOn": [],
+    "output": "source"
+  }
+]

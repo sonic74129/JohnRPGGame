@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "jesus-resurrection-life",
+  "textSource": "src/game/ScriptureContent.ts#JOHN_11_VERSES",
+  "verseKeys": ["john11:25", "john11:26"],
+  "textHash": {
+    "algorithm": "sha256",
+    "serialization": "JSON.stringify([[verseKey,text],...])",
+    "value": "dd3b271aa70d0aca9f740848409e0772a77017fe0f4290109353efc3f35acafb"
+  },
+  "synthesis": {
+    "provider": "Azure AI Speech",
+    "resource": "ai-johnrpg-sonic-74129",
+    "region": "eastus",
+    "voice": "zh-CN-Bo:MAI-Voice-2",
+    "voiceStatus": "Preview",
+    "ssml": "jesus-resurrection-life.ssml",
+    "outputFormat": "audio-24khz-160kbitrate-mono-mp3"
+  },
+  "processing": {
+    "tool": "ffmpeg",
+    "trim": "leading and trailing silence only",
+    "loudnessTargetLufs": -16,
+    "truePeakLimitDbtp": -1.5
+  },
+  "asset": {
+    "url": "assets/audio/voice/jesus-resurrection-life.mp3",
+    "mimeType": "audio/mpeg",
+    "durationMs": 16619,
+    "sampleRateHz": 24000,
+    "channels": 1,
+    "bitRateKbps": 160,
+    "integratedLufs": -16.16,
+    "truePeakDbtp": -1.93,
+    "sha256": "9793587e753c152a9aad0c590867407700311f979941265dbd23adadd990a9b2"
+  },
+  "fallback": {
+    "synthesisFallbackUsed": false,
+    "runtime": "silent-scripture-text"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "character.lazarus",
+    "family": "character",
+    "purpose": "Source special-state sheet for Lazarus in sick, wrapped idle, wrapped step and restored states with one stable face and body identity.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.tomb-garden"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:42:24.091Z",
+    "updatedAt": "2026-08-01T16:44:17.869Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/character/character__lazarus/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/character/character__lazarus/v1/run-001",
+    "selectedSource": "production/art-source/characters/core/character__lazarus/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/character__lazarus/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/character/character__lazarus/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__lazarus/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:43:03.402Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__lazarus/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:43:38.735Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/character/character__lazarus/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/characters/core/character__lazarus/v1/run-001-selected.png",
+    "reason": "Candidate 01 scores 65/70: exact ordered four-state sheet, strongest stable Lazarus identity, readable sick/wrapped idle/wrapped step/restored actions, respectful face-visible burial cloth, consistent standing anchors, approved storybook style and no bed, horror, decay or supernatural glow.",
+    "selectedAt": "2026-08-01T16:44:17.868Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "sick",
+      "wrapped-idle",
+      "wrapped-step",
+      "restored"
+    ],
+    "rows": [
+      "state"
+    ]
+  },
+  "normalization": {
+    "componentCount": 4,
+    "sheetSize": [
+      1600,
+      544
+    ],
+    "cellSize": [
+      400,
+      544
+    ],
+    "standingFootBaseline": 535,
+    "sickPoseVerticalAlignment": "center",
+    "perFrameScaling": false,
+    "backgroundRemoval": "Flat beige background converted to antialiased alpha; partial-alpha RGB unmatted against the measured background and disconnected remnants removed while preserving each primary silhouette.",
+    "alignment": "All states are horizontally centered without scaling; the three standing states share alpha>=32 foot baseline y=535 and the sick side pose is vertically centered for separate runtime-bed placement."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/character__lazarus/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/character__lazarus/v1/run-001/character__lazarus.png"
+    ],
+    "startedAt": "2026-08-01T16:44:41.310458Z",
+    "completedAt": "2026-08-01T16:44:42.006251Z",
+    "failureReason": null
+  }
+}

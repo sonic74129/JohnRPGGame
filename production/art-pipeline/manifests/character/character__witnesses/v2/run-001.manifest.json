@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "character.witnesses",
+    "family": "character",
+    "purpose": "Source character sheet for four restrained Bethany witnesses used as mourners, guide and older witness in the playable world.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.bethany-world",
+      "master.tomb-garden"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "resume",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:38:04.683Z",
+    "updatedAt": "2026-08-01T15:53:28.878Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/character/character__witnesses/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/character/character__witnesses/v2/run-001",
+    "selectedSource": "production/art-source/character/character__witnesses/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/character/character__witnesses/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/character/character__witnesses/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__witnesses/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:38:50.544Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 2,
+      "outputPath": "production/art-pipeline/candidates/character/character__witnesses/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:50:31.922Z",
+      "lastFailure": null,
+      "failures": [
+        {
+          "at": "2026-08-01T15:42:09.965Z",
+          "attempt": 1,
+          "reason": "Image generation failed for character.witnesses: 429 {\"error\":{\"code\":\"RateLimitReached\",\"message\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\",\"details\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\"}}"
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/character/character__witnesses/v2/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/character/character__witnesses/v2/run-001-selected.png",
+    "reason": "Only passing candidate: exact four-row identity order and front/back/left/right grid, stable locked palettes, complete map-scale silhouettes, quiet acting, and no prohibited content.",
+    "selectedAt": "2026-08-01T15:53:28.877Z"
+  },
+  "recovery": {
+    "resumeCount": 1,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-cuddly-train/production/art-source/character/character__witnesses/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-cuddly-train/public/assets/art/character/character__witnesses/v2/run-001/character__witnesses.png"
+    ],
+    "startedAt": "2026-08-01T15:53:29.107135Z",
+    "completedAt": "2026-08-01T15:53:29.906684Z",
+    "failureReason": null
+  },
+  "runtimeMapping": {
+    "columns": [
+      "front",
+      "back",
+      "left",
+      "right"
+    ],
+    "rows": [
+      "mourner-man",
+      "mourner-woman",
+      "guide",
+      "older-witness"
+    ]
+  },
+  "normalization": {
+    "componentCount": 16,
+    "sheetSize": [
+      532,
+      776
+    ],
+    "cellSize": [
+      133,
+      194
+    ],
+    "perFrameScaling": false,
+    "mirroredFrames": [],
+    "backgroundRemoval": "Deterministic background-to-alpha cleanup from the approved source.",
+    "alignment": "Approved figures retain source scale, are centered horizontally, and share a bottom baseline with eight transparent pixels."
+  }
+}
