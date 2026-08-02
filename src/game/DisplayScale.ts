@@ -6,6 +6,27 @@ export const OUTDOOR_DISPLAY_HEIGHTS = {
 
 export const DEFAULT_CHARACTER_SCALE = 1.5;
 
+export const ACTOR_SIZE_MULTIPLIERS = {
+  messenger: 1.15,
+  martha: 0.91,
+  mary: 0.91,
+  lazarus: 0.78,
+} as const;
+
+export type ScaledActor = keyof typeof ACTOR_SIZE_MULTIPLIERS;
+
+export const resolveActorSizeMultiplier = (actor: string): number => {
+  switch (actor) {
+    case "messenger":
+    case "martha":
+    case "mary":
+    case "lazarus":
+      return ACTOR_SIZE_MULTIPLIERS[actor];
+    default:
+      return 1;
+  }
+};
+
 export type OutdoorDisplayProfile = keyof typeof OUTDOOR_DISPLAY_HEIGHTS;
 export type DisplayArea = "indoor" | "outdoor";
 export type ActorPresentationKind =

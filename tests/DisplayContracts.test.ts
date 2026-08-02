@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  ACTOR_SIZE_MULTIPLIERS,
   DEFAULT_CHARACTER_SCALE,
   DEFAULT_DISPLAY_SCALE,
   LINEAR_RENDER_CONFIG,
   OUTDOOR_DISPLAY_HEIGHTS,
   applyLinearTextureFiltering,
   createDisplayScaleContract,
+  resolveActorSizeMultiplier,
   resolveDisplayMetrics,
   resolveTargetVisibleHeight,
 } from "../src/game/DisplayScale";
@@ -31,6 +33,20 @@ describe("display scale contract", () => {
       width: 240,
       height: 162,
     });
+  });
+
+  it("normalizes the oversized family character art", () => {
+    expect(ACTOR_SIZE_MULTIPLIERS).toEqual({
+      messenger: 1.15,
+      martha: 0.91,
+      mary: 0.91,
+      lazarus: 0.78,
+    });
+    expect(resolveActorSizeMultiplier("messenger")).toBe(1.15);
+    expect(resolveActorSizeMultiplier("martha")).toBe(0.91);
+    expect(resolveActorSizeMultiplier("mary")).toBe(0.91);
+    expect(resolveActorSizeMultiplier("lazarus")).toBe(0.78);
+    expect(resolveActorSizeMultiplier("jesus")).toBe(1);
   });
 
   it("uses one visible-height rule for base, special, and supporting art", () => {

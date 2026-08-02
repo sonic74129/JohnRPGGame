@@ -53,6 +53,7 @@ import {
 import {
   DEFAULT_DISPLAY_SCALE,
   applyLinearTextureFiltering,
+  resolveActorSizeMultiplier,
   resolveDisplayMetrics,
 } from "./DisplayScale";
 import {
@@ -413,6 +414,7 @@ export class BethanyScene extends Phaser.Scene {
 
   private enterHouse(playerSpawn: Point = HOUSE_PLAYER_SPAWN): void {
     this.inWorld = false;
+    this.worldRuntime?.cleanup();
     this.clearSceneResources();
     this.clearActorVisuals();
     this.physics.world.setBounds(0, 0, HOUSE_ART.width, HOUSE_ART.height);
@@ -624,7 +626,10 @@ export class BethanyScene extends Phaser.Scene {
         lazarusTextureKey(),
         lazarusFrame("sick"),
       )
-      .setScale(lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE))
+      .setScale(
+        lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE) *
+          resolveActorSizeMultiplier("lazarus"),
+      )
       .setFlipX(HOUSE_SICK_LAZARUS_FLIP_X)
       .setAngle(HOUSE_SICK_LAZARUS_ANGLE)
       .setDepth(HOUSE_SICK_LAZARUS_DEPTH);
@@ -672,7 +677,7 @@ export class BethanyScene extends Phaser.Scene {
         lazarusScaleToFit("wrapped-idle", {
           width: EXTERIOR_CHARACTER_HEIGHT,
           height: EXTERIOR_CHARACTER_HEIGHT,
-        }),
+        }) * resolveActorSizeMultiplier("lazarus"),
       )
       .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight)
       .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)
@@ -809,7 +814,7 @@ export class BethanyScene extends Phaser.Scene {
       area,
       sourceBounds: { width: sheet.frameWidth, height: sheet.frameHeight },
     });
-    sprite.setScale(metrics.scale);
+    sprite.setScale(metrics.scale * resolveActorSizeMultiplier(character));
   }
 
   private applyBeatPresentation(
@@ -2090,7 +2095,9 @@ export class BethanyScene extends Phaser.Scene {
       .stop()
       .setTexture(presentation.textureKey, presentation.frame)
       .setOrigin(0.5, presentation.originY)
-      .setScale(metrics.scale);
+      .setScale(
+        metrics.scale * resolveActorSizeMultiplier(presentation.character),
+      );
   }
 
   private startSequenceActorWalk(

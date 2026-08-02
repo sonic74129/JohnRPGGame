@@ -6,13 +6,11 @@ import {
   WORLD_WIDTH,
 } from "./WorldLayout";
 
-export const HOUSE_DOOR_TRIGGER_RADIUS = 82;
+export const HOUSE_DOOR_TRIGGER_RADIUS = 36;
 export const HOUSE_DOOR_BEAT = "find-jesus";
 
-export const WORLD_HOUSE_EXIT_SPAWN: Point = {
-  x: WORLD_LANDMARKS.houseDoor.x,
-  y: WORLD_LANDMARKS.houseDoor.y + HOUSE_DOOR_TRIGGER_RADIUS + 14,
-};
+export const WORLD_HOUSE_EXIT_SPAWN: Point =
+  WORLD_LANDMARKS.marthaCourtyard;
 
 export type HouseDoorTransition = "enter-house" | "enter-world";
 

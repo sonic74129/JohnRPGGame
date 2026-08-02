@@ -85,6 +85,12 @@ describe("unified runtime integration", () => {
     expect(sceneSource).not.toContain("{ x: 2440, y: 1170 }");
   });
 
+  it("cleans up world collisions before rebuilding the house", () => {
+    expect(sceneSource).toMatch(
+      /enterHouse[\s\S]{0,180}this\.worldRuntime\?\.cleanup\(\)[\s\S]{0,120}this\.clearSceneResources\(\)/,
+    );
+  });
+
   it("uses actual tomb anchors for normal and skipped sequence final states", () => {
     expect(sceneSource).toContain("TOMB_ANCHORS.tombMouth.center");
     expect(sceneSource).toContain("TOMB_ANCHORS.stone.initialBounds");

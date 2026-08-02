@@ -15,6 +15,7 @@ import {
 import {
   WORLD_HEIGHT,
   WORLD_LANDMARKS,
+  WORLD_REGIONS,
   WORLD_WIDTH,
 } from "../src/game/WorldLayout";
 
@@ -25,6 +26,7 @@ const distance = (
 
 describe("Bethany first-scene flow", () => {
   it("uses the same doorway for leaving and re-entering during Find Jesus", () => {
+    expect(HOUSE_DOOR_TRIGGER_RADIUS).toBe(36);
     expect(
       resolveHouseDoorTransition(false, "find-jesus", HOUSE_EXIT),
     ).toBe("enter-world");
@@ -38,6 +40,12 @@ describe("Bethany first-scene flow", () => {
     expect(
       resolveHouseDoorTransition(true, "message", WORLD_LANDMARKS.houseDoor),
     ).toBeUndefined();
+    expect(
+      resolveHouseDoorTransition(true, "find-jesus", {
+        x: WORLD_LANDMARKS.houseDoor.x + HOUSE_DOOR_TRIGGER_RADIUS + 1,
+        y: WORLD_LANDMARKS.houseDoor.y,
+      }),
+    ).toBeUndefined();
   });
 
   it("spawns on each doorway side without immediately retriggering travel", () => {
@@ -47,6 +55,19 @@ describe("Bethany first-scene flow", () => {
     expect(
       distance(WORLD_HOUSE_EXIT_SPAWN, WORLD_LANDMARKS.houseDoor),
     ).toBeGreaterThan(HOUSE_DOOR_TRIGGER_RADIUS);
+    expect(WORLD_HOUSE_EXIT_SPAWN).toEqual(WORLD_LANDMARKS.marthaCourtyard);
+    expect(WORLD_HOUSE_EXIT_SPAWN.x).toBeGreaterThan(
+      WORLD_REGIONS.marthaCompound.x,
+    );
+    expect(WORLD_HOUSE_EXIT_SPAWN.x).toBeLessThan(
+      WORLD_REGIONS.marthaCompound.x + WORLD_REGIONS.marthaCompound.width,
+    );
+    expect(WORLD_HOUSE_EXIT_SPAWN.y).toBeGreaterThan(
+      WORLD_REGIONS.marthaCompound.y,
+    );
+    expect(WORLD_HOUSE_EXIT_SPAWN.y).toBeLessThan(
+      WORLD_REGIONS.marthaCompound.y + WORLD_REGIONS.marthaCompound.height,
+    );
   });
 
   it("walks every camp NPC beyond the map before the black title card returns", () => {

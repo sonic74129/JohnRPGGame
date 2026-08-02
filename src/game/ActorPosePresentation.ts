@@ -38,6 +38,7 @@ export type SequenceSpecialPose =
     };
 
 export interface ActorPosePresentation {
+  readonly character: SpriteCharacter;
   readonly textureKey: string;
   readonly frame: number;
   readonly originY: number;
@@ -54,6 +55,7 @@ export const resolveBaseActorPresentation = (
 ): ActorPosePresentation => {
   const sheet = spriteSheet(character);
   return {
+    character,
     textureKey: sheet.key,
     frame: spriteFrame(character, facing, "idle"),
     originY: characterOriginY(character),
@@ -71,6 +73,7 @@ export const resolveSpecialActorPresentation = (
 ): ActorPosePresentation => {
   if (special.kind === "supporting") {
     return {
+      character,
       textureKey: SUPPORTING_ACTION_SHEET.key,
       frame: supportingActionFrame(special.pose),
       originY: 1,
@@ -88,6 +91,7 @@ export const resolveSpecialActorPresentation = (
   }
   const sheet = CORE_POSE_SHEETS[special.character];
   return {
+    character,
     textureKey: sheet.key,
     frame: corePoseFrame(special.character, special.pose),
     originY: corePoseOriginY(special.character),

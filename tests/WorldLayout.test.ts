@@ -44,6 +44,7 @@ describe("JSON-driven continuous Bethany world", () => {
       WORLD_LANDMARKS.tombApproach,
       WORLD_LANDMARKS.tombMouth,
       WORLD_LANDMARKS.tombGarden,
+      WORLD_LANDMARKS.marthaCourtyard,
     ]) {
       expect(
         navigation.findPath(WORLD_LANDMARKS.houseDoor, destination).length,

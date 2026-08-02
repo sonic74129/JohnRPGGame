@@ -55,6 +55,7 @@ const rectangle = (value: {
 
 export const WORLD_LANDMARKS = {
   houseDoor: point(worldMapLayout.regions.marthaCompound.door),
+  marthaCourtyard: { x: 650, y: 1192 },
   villageCenter: point(worldMapLayout.regions.village.center),
   bethanyMeeting: point(worldMapLayout.regions.meetingArea.center),
   jesusCamp: point(worldMapLayout.regions.jesusCamp.center),
