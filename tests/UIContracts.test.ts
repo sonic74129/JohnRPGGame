@@ -116,5 +116,8 @@ describe("minimal UI contract", () => {
       'this.dialogueAudio.classList.toggle("is-hidden", !onReplay)',
     );
     expect(uiSource).toContain("this.dialogueReplay?.()");
+    expect(uiSource).toMatch(
+      /advanceDialogue\(\): boolean \{[\s\S]{0,180}this\.dialogueAdvance\?\.\(\)/,
+    );
   });
 });

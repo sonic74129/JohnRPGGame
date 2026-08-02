@@ -49,6 +49,7 @@ export class GameUI {
   private dialogueComplete?: VoidCallback;
   private dialogueLineChanged?: (line: DialogueLine) => void;
   private dialogueReplay?: VoidCallback;
+  private dialogueAdvance?: VoidCallback;
   private dialogueLocked = false;
   private dialogueTimer?: number;
   private toastTimer?: number;
@@ -161,6 +162,7 @@ export class GameUI {
     onComplete: VoidCallback,
     onLineChanged?: (line: DialogueLine) => void,
     onReplay?: VoidCallback,
+    onAdvance?: VoidCallback,
   ): void {
     if (lines.length === 0) {
       onComplete();
@@ -172,6 +174,7 @@ export class GameUI {
     this.dialogueComplete = onComplete;
     this.dialogueLineChanged = onLineChanged;
     this.dialogueReplay = onReplay;
+    this.dialogueAdvance = onAdvance;
     this.dialogueAudio.classList.toggle("is-hidden", !onReplay);
     this.dialogue.classList.remove("is-hidden");
     this.setStageGoalSuppressed(true);
@@ -184,6 +187,7 @@ export class GameUI {
     if (!this.isDialogueOpen()) {
       return false;
     }
+    this.dialogueAdvance?.();
     if (this.dialogueLocked) {
       return true;
     }
@@ -196,6 +200,7 @@ export class GameUI {
       this.dialogueComplete = undefined;
       this.dialogueLineChanged = undefined;
       this.dialogueReplay = undefined;
+      this.dialogueAdvance = undefined;
       this.setStageGoalSuppressed(false);
       this.focusGame();
       callback?.();
@@ -332,6 +337,7 @@ export class GameUI {
     this.dialogueComplete = undefined;
     this.dialogueLineChanged = undefined;
     this.dialogueReplay = undefined;
+    this.dialogueAdvance = undefined;
     this.dialogueLocked = false;
     this.setStageGoalSuppressed(false);
   }

@@ -909,7 +909,6 @@ export class BethanyScene extends Phaser.Scene {
       uiPointer,
     });
     if (route === "advance-dialogue") {
-      this.voice.handleAdvance();
       this.ui.advanceDialogue();
     } else if (route === "skip") {
       this.voice.handleSkip();
@@ -1800,6 +1799,7 @@ export class BethanyScene extends Phaser.Scene {
         replayCueId
           ? () => void this.playVoiceCue(replayCueId, true)
           : undefined,
+        () => this.voice.handleAdvance(),
       );
       const autoplayCueId = this.autoplayVoiceCueForBeat(beatId);
       if (autoplayCueId) {

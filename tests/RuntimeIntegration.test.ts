@@ -87,6 +87,9 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain('beatId === "illness"');
     expect(sceneSource).toContain('beatId === "resurrection-life"');
     expect(sceneSource).toContain("this.voice.handleAdvance()");
+    expect(sceneSource).toMatch(
+      /showDialogue\([\s\S]{0,500}\(\) => this\.voice\.handleAdvance\(\)/,
+    );
     expect(sceneSource).toContain("this.voice.handleSkip()");
     expect(sceneSource).toContain("this.voice.handleSceneChange()");
     expect(sceneSource).not.toMatch(/memory-carrier[\s\S]{0,120}(autoplay|replay)/);
