@@ -9,6 +9,7 @@ import {
   type John11VerseKey,
 } from "../src/game/ScriptureContent";
 import {
+  computeVoiceTextHash,
   VOICE_CUES,
   VOICE_CUE_IDS,
 } from "../src/audio/VoiceManifest";
@@ -36,6 +37,14 @@ describe("voice manifest", () => {
       );
       expect(cue.sentenceCues[0]?.startMs).toBe(0);
       expect(cue.sentenceCues.at(-1)?.endMs).toBe(cue.durationMs);
+    }
+  });
+
+  it("recomputes both runtime hashes from current ScriptureContent", async () => {
+    for (const cue of Object.values(VOICE_CUES)) {
+      await expect(computeVoiceTextHash(cue.verseKeys)).resolves.toBe(
+        cue.textHash,
+      );
     }
   });
 

@@ -39,6 +39,8 @@ export interface VoiceCue {
   };
 }
 
+export type VoiceTextPair = readonly [John11VerseKey, string];
+
 const OPENING_VERSE_KEYS = [
   "john11:1",
   "john11:2",
@@ -50,8 +52,35 @@ const JESUS_VERSE_KEYS = [
   "john11:26",
 ] as const satisfies readonly John11VerseKey[];
 
+export const voiceTextPairsFor = (
+  verseKeys: readonly John11VerseKey[],
+): readonly VoiceTextPair[] =>
+  verseKeys.map((key) => [key, JOHN_11_VERSES[key].text] as const);
+
+export const serializeVoiceText = (
+  verseKeys: readonly John11VerseKey[],
+): string => JSON.stringify(voiceTextPairsFor(verseKeys));
+
+export const computeVoiceTextHash = async (
+  verseKeys: readonly John11VerseKey[],
+): Promise<string> => {
+  if (!globalThis.crypto?.subtle) {
+    throw new Error("Web Crypto is unavailable for voice text verification");
+  }
+
+  const digest = await globalThis.crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(serializeVoiceText(verseKeys)),
+  );
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
 const exactTextFor = (verseKeys: readonly John11VerseKey[]): string =>
-  verseKeys.map((key) => JOHN_11_VERSES[key].text).join("");
+  voiceTextPairsFor(verseKeys)
+    .map(([, text]) => text)
+    .join("");
 
 const sentenceParts = (text: string): readonly string[] =>
   text.match(/[^。；？]+[。；？](?:”)?/gu) ?? [text];

@@ -1,4 +1,7 @@
+/// <reference types="vite/client" />
+
 import {
+  computeVoiceTextHash,
   VOICE_CUES,
   VOICE_CUE_IDS,
   type VoiceCue,
@@ -36,15 +39,27 @@ export interface VoiceDuckRequest {
 
 export interface VoiceFallbackEvent {
   readonly cue: VoiceCue;
-  readonly reason: "play-failed";
-  readonly error: unknown;
+  readonly reason: "play-failed" | "stale-text" | "hash-unavailable";
+  readonly actualTextHash?: string;
+  readonly error?: unknown;
+}
+
+export interface VoiceDiagnostic {
+  readonly cueId: VoiceCueId;
+  readonly type: "stale-voice-asset" | "voice-hash-unavailable";
+  readonly expectedTextHash: string;
+  readonly actualTextHash?: string;
+  readonly message: string;
 }
 
 export interface VoiceManagerOptions {
   readonly manifest?: Readonly<Record<VoiceCueId, VoiceCue>>;
   readonly createAudio?: VoiceAudioFactory;
+  readonly computeTextHash?: (cue: VoiceCue) => Promise<string>;
+  readonly development?: boolean;
   readonly onDuckRequest?: (request: VoiceDuckRequest) => void;
   readonly onFallback?: (event: VoiceFallbackEvent) => void;
+  readonly onDiagnostic?: (diagnostic: VoiceDiagnostic) => void;
 }
 
 interface ActiveVoice {
@@ -53,13 +68,27 @@ interface ActiveVoice {
   token: number;
 }
 
+interface VoiceVerification {
+  readonly valid: boolean;
+  readonly actualTextHash?: string;
+  readonly error?: unknown;
+}
+
 const createBrowserAudio: VoiceAudioFactory = (source) => new Audio(source);
+const computeCurrentTextHash = (cue: VoiceCue): Promise<string> =>
+  computeVoiceTextHash(cue.verseKeys);
+const reportToConsole = (diagnostic: VoiceDiagnostic): void => {
+  console.warn(diagnostic.message, diagnostic);
+};
 
 export class VoiceManager {
   private readonly manifest: Readonly<Record<VoiceCueId, VoiceCue>>;
   private readonly createAudio: VoiceAudioFactory;
+  private readonly computeTextHash: (cue: VoiceCue) => Promise<string>;
+  private readonly development: boolean;
   private readonly onDuckRequest?: (request: VoiceDuckRequest) => void;
   private readonly onFallback?: (event: VoiceFallbackEvent) => void;
+  private readonly onDiagnostic: (diagnostic: VoiceDiagnostic) => void;
   private readonly audioByCue = new Map<VoiceCueId, VoiceAudioAdapter>();
   private readonly endedHandlers = new Map<VoiceCueId, EventListener>();
   private readonly pauseReasons = new Set<VoicePauseReason>();
@@ -72,8 +101,11 @@ export class VoiceManager {
   constructor(options: VoiceManagerOptions = {}) {
     this.manifest = options.manifest ?? VOICE_CUES;
     this.createAudio = options.createAudio ?? createBrowserAudio;
+    this.computeTextHash = options.computeTextHash ?? computeCurrentTextHash;
+    this.development = options.development ?? import.meta.env.DEV;
     this.onDuckRequest = options.onDuckRequest;
     this.onFallback = options.onFallback;
+    this.onDiagnostic = options.onDiagnostic ?? reportToConsole;
   }
 
   get currentCueId(): VoiceCueId | undefined {
@@ -88,14 +120,29 @@ export class VoiceManager {
     return this.muted;
   }
 
-  preload(cueId?: VoiceCueId): void {
+  async preload(cueId?: VoiceCueId): Promise<readonly VoiceCueId[]> {
     const cueIds = cueId ? [cueId] : VOICE_CUE_IDS;
+    const loaded: VoiceCueId[] = [];
     for (const id of cueIds) {
+      const cue = this.manifest[id];
+      const verification = await this.verifyCue(cue);
+      if (!verification.valid) {
+        this.reportVerificationFailure(cue, verification, false);
+        continue;
+      }
       this.ensureAudio(id).load();
+      loaded.push(id);
     }
+    return loaded;
   }
 
   async unlock(cueId: VoiceCueId = VOICE_CUE_IDS[0]): Promise<boolean> {
+    const cue = this.manifest[cueId];
+    const verification = await this.verifyCue(cue);
+    if (!verification.valid) {
+      this.reportVerificationFailure(cue, verification, false);
+      return false;
+    }
     if (this.unlocked || this.active) {
       this.unlocked = true;
       return true;
@@ -227,15 +274,26 @@ export class VoiceManager {
     this.audioByCue.clear();
   }
 
-  private start(cueId: VoiceCueId): Promise<VoicePlayResult> {
+  private async start(cueId: VoiceCueId): Promise<VoicePlayResult> {
     this.stopActive();
+    const requestToken = ++this.playbackToken;
+    const cue = this.manifest[cueId];
+    const verification = await this.verifyCue(cue);
+    if (requestToken !== this.playbackToken) {
+      return "cancelled";
+    }
+    if (!verification.valid) {
+      this.reportVerificationFailure(cue, verification, true);
+      return "fallback";
+    }
+
     const audio = this.ensureAudio(cueId);
     audio.currentTime = 0;
     audio.muted = this.muted;
     const active: ActiveVoice = {
       cueId,
       audio,
-      token: ++this.playbackToken,
+      token: requestToken,
     };
     this.active = active;
 
@@ -267,6 +325,48 @@ export class VoiceManager {
         error,
       });
       return "fallback";
+    }
+  }
+
+  private async verifyCue(cue: VoiceCue): Promise<VoiceVerification> {
+    try {
+      const actualTextHash = await this.computeTextHash(cue);
+      return {
+        valid: actualTextHash === cue.textHash,
+        actualTextHash,
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        error,
+      };
+    }
+  }
+
+  private reportVerificationFailure(
+    cue: VoiceCue,
+    verification: VoiceVerification,
+    useSubtitleFallback: boolean,
+  ): void {
+    const unavailable = verification.actualTextHash === undefined;
+    if (this.development) {
+      this.onDiagnostic({
+        cueId: cue.id,
+        type: unavailable ? "voice-hash-unavailable" : "stale-voice-asset",
+        expectedTextHash: cue.textHash,
+        actualTextHash: verification.actualTextHash,
+        message: unavailable
+          ? `[VoiceManager] Cannot verify voice text hash for ${cue.id}; skipping audio.`
+          : `[VoiceManager] Stale voice asset ${cue.id}: expected ${cue.textHash}, current ${verification.actualTextHash}; skipping audio.`,
+      });
+    }
+    if (useSubtitleFallback) {
+      this.onFallback?.({
+        cue,
+        reason: unavailable ? "hash-unavailable" : "stale-text",
+        actualTextHash: verification.actualTextHash,
+        error: verification.error,
+      });
     }
   }
 

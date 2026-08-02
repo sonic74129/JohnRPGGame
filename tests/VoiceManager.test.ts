@@ -1,12 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   VoiceManager,
   type VoiceAudioAdapter,
+  type VoiceDiagnostic,
   type VoiceDuckRequest,
   type VoiceFallbackEvent,
+  type VoiceManagerOptions,
 } from "../src/audio/VoiceManager";
-import { VOICE_CUES } from "../src/audio/VoiceManifest";
+import {
+  VOICE_CUES,
+  type VoiceCueId,
+} from "../src/audio/VoiceManifest";
 
 class FakeAudio implements VoiceAudioAdapter {
   readonly source: string;
@@ -62,7 +67,7 @@ describe("VoiceManager", () => {
   it("preloads both cues and exposes a silent start unlock", async () => {
     const { manager, audios } = setup();
 
-    manager.preload();
+    await manager.preload();
     expect(audios.size).toBe(2);
     expect([...audios.values()].every((audio) => audio.preload === "auto")).toBe(
       true,
@@ -107,12 +112,13 @@ describe("VoiceManager", () => {
 
   it("cancels a pending autoplay without disturbing the replacement cue", async () => {
     const { manager, audios, fallbackEvents } = setup();
-    manager.preload("opening-john11-1-3");
+    await manager.preload("opening-john11-1-3");
     const opening = audioFor(audios, "opening-john11-1-3");
     const pending = deferred();
     opening.queuePlay(pending.promise);
 
     const openingResult = manager.autoplay("opening-john11-1-3");
+    await vi.waitFor(() => expect(opening.playCalls).toBe(1));
     expect(await manager.autoplay("jesus-resurrection-life")).toBe("playing");
     pending.resolve();
 
@@ -160,7 +166,7 @@ describe("VoiceManager", () => {
 
   it("uses a nonblocking text fallback and releases ducking on play failure", async () => {
     const { manager, audios, duckRequests, fallbackEvents } = setup();
-    manager.preload("jesus-resurrection-life");
+    await manager.preload("jesus-resurrection-life");
     const jesus = audioFor(audios, "jesus-resurrection-life");
     jesus.queuePlay(Promise.reject(new Error("autoplay blocked")));
 
@@ -202,18 +208,72 @@ describe("VoiceManager", () => {
     expect(manager.currentCueId).toBeUndefined();
     expect(duckRequests.at(-1)?.active).toBe(false);
   });
+
+  it("skips stale audio and falls back to the full current scripture text", async () => {
+    const cueId = "opening-john11-1-3";
+    const currentHash = VOICE_CUES[cueId].textHash;
+    const staleManifest = {
+      ...VOICE_CUES,
+      [cueId]: {
+        ...VOICE_CUES[cueId],
+        textHash: "0".repeat(64),
+      },
+    };
+    const {
+      manager,
+      audios,
+      diagnostics,
+      duckRequests,
+      fallbackEvents,
+    } = setup({
+      manifest: staleManifest,
+      development: true,
+      computeTextHash: async (cue) =>
+        cue.id === cueId ? currentHash : cue.textHash,
+    });
+
+    expect(await manager.preload(cueId)).toEqual([]);
+    expect(audios.has(VOICE_CUES[cueId].url)).toBe(false);
+    expect(await manager.unlock(cueId)).toBe(false);
+
+    expect(await manager.autoplay("jesus-resurrection-life")).toBe("playing");
+    expect(await manager.autoplay(cueId)).toBe("fallback");
+
+    expect(audios.has(VOICE_CUES[cueId].url)).toBe(false);
+    expect(manager.currentCueId).toBeUndefined();
+    expect(duckRequests.map(({ active }) => active)).toEqual([true, false]);
+    expect(fallbackEvents.at(-1)).toMatchObject({
+      reason: "stale-text",
+      actualTextHash: currentHash,
+    });
+    expect(fallbackEvents.at(-1)?.cue.exactText).toBe(
+      VOICE_CUES[cueId].exactText,
+    );
+    expect(diagnostics.at(-1)).toMatchObject({
+      cueId,
+      type: "stale-voice-asset",
+      expectedTextHash: "0".repeat(64),
+      actualTextHash: currentHash,
+    });
+  });
 });
 
-function setup(): {
+function setup(options: HashTestOptions = {}): {
   manager: VoiceManager;
   audios: Map<string, FakeAudio>;
   duckRequests: VoiceDuckRequest[];
   fallbackEvents: VoiceFallbackEvent[];
+  diagnostics: VoiceDiagnostic[];
 } {
   const audios = new Map<string, FakeAudio>();
   const duckRequests: VoiceDuckRequest[] = [];
   const fallbackEvents: VoiceFallbackEvent[] = [];
+  const diagnostics: VoiceDiagnostic[] = [];
   const manager = new VoiceManager({
+    manifest: options.manifest,
+    development: options.development ?? false,
+    computeTextHash:
+      options.computeTextHash ?? (async (cue) => cue.textHash),
     createAudio: (source) => {
       const audio = new FakeAudio(source);
       audios.set(source, audio);
@@ -221,13 +281,19 @@ function setup(): {
     },
     onDuckRequest: (request) => duckRequests.push(request),
     onFallback: (event) => fallbackEvents.push(event),
+    onDiagnostic: (diagnostic) => diagnostics.push(diagnostic),
   });
-  return { manager, audios, duckRequests, fallbackEvents };
+  return { manager, audios, duckRequests, fallbackEvents, diagnostics };
 }
+
+type HashTestOptions = Pick<
+  VoiceManagerOptions,
+  "manifest" | "development" | "computeTextHash"
+>;
 
 function audioFor(
   audios: Map<string, FakeAudio>,
-  cueId: keyof typeof VOICE_CUES,
+  cueId: VoiceCueId,
 ): FakeAudio {
   const audio = audios.get(VOICE_CUES[cueId].url);
   if (!audio) {
