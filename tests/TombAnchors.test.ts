@@ -112,10 +112,15 @@ describe("TombAnchors", () => {
     );
   });
 
-  it("starts Lazarus in the mouth and ends his path outside it", () => {
+  it("fades Lazarus in at the mouth without an above-mouth falling path", () => {
     const { lazarus, tombMouth } = TOMB_ANCHORS;
+    expect(lazarus.hiddenStart).toEqual(tombMouth.center);
     expect(lazarus.path[0]).toEqual(lazarus.hiddenStart);
     expect(lazarus.path.at(-1)).toEqual(lazarus.emergenceTarget);
+    expect(lazarus.entranceFade).toEqual({ fromAlpha: 0, toAlpha: 1 });
+    expect(
+      lazarus.path.every((point) => point.y >= tombMouth.center.y),
+    ).toBe(true);
     expect(pointInside(lazarus.hiddenStart, tombMouth.visualBounds)).toBe(true);
     expect(pointInside(lazarus.emergenceTarget, tombMouth.visualBounds)).toBe(
       false,

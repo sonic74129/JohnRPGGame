@@ -46,6 +46,10 @@ export interface TombAnchorContract {
   readonly lazarus: {
     readonly hiddenStart: TombPoint;
     readonly emergenceTarget: TombPoint;
+    readonly entranceFade: {
+      readonly fromAlpha: number;
+      readonly toAlpha: number;
+    };
     readonly path: readonly TombPoint[];
   };
   readonly cameraFocus: TombPoint;

@@ -37,10 +37,10 @@
     "rollDistance": 178.045
   },
   "lazarus": {
-    "hiddenStart": { "x": 2405, "y": 200 },
+    "hiddenStart": { "x": 2405, "y": 245 },
     "emergenceTarget": { "x": 2340, "y": 300 },
+    "entranceFade": { "fromAlpha": 0, "toAlpha": 1 },
     "path": [
-      { "x": 2405, "y": 200 },
       { "x": 2405, "y": 245 },
       { "x": 2340, "y": 300 }
     ]

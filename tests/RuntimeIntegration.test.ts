@@ -7,6 +7,15 @@ const worldLayoutSource = readFileSync("src/game/WorldLayout.ts", "utf8");
 const mainSource = readFileSync("src/main.ts", "utf8");
 const html = readFileSync("index.html", "utf8");
 
+const sceneMethodSource = (name: string, nextName: string): string => {
+  const start = sceneSource.indexOf(`  private ${name}(`);
+  const end = sceneSource.indexOf(`\n  private ${nextName}(`, start + 1);
+  if (start < 0 || end < 0) {
+    throw new Error(`Unable to isolate BethanyScene.${name}().`);
+  }
+  return sceneSource.slice(start, end);
+};
+
 describe("unified runtime integration", () => {
   it("wires MapSequence, labels, verse echo, and four world quadrants", () => {
     expect(sceneSource).toContain("new MapSequence");
@@ -80,7 +89,6 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain("TOMB_ANCHORS.tombMouth.center");
     expect(sceneSource).toContain("TOMB_ANCHORS.stone.initialBounds");
     expect(sceneSource).toContain("TOMB_ANCHORS.stone.rolledTarget.center");
-    expect(sceneSource).toContain("TOMB_ANCHORS.lazarus.path.slice(1)");
     expect(sceneSource).toContain("TOMB_ANCHORS.lazarus.emergenceTarget");
     expect(sceneSource).toContain("return TOMB_ANCHORS.cameraFocus");
     expect(sceneSource).toMatch(
@@ -93,6 +101,38 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain("lazarus.body.enable = false");
     expect(sceneSource).toContain("lazarus.body.enable = true");
     expect(worldLayoutSource).not.toContain("tombEntrance");
+  });
+
+  it("creates the tomb stone with the world and fades Lazarus from the mouth", () => {
+    const enterWorld = sceneMethodSource("enterWorld", "createWorldHost");
+    const createTombElements = sceneMethodSource(
+      "createTombElements",
+      "placeActor",
+    );
+    const environmentOperation = sceneMethodSource(
+      "environmentOperation",
+      "tweenGameObject",
+    );
+
+    expect(enterWorld).toContain("this.worldRuntime?.activate();");
+    expect(enterWorld).toContain("this.createTombElements();");
+    expect(enterWorld.indexOf("this.createTombElements();")).toBeGreaterThan(
+      enterWorld.indexOf("this.worldRuntime?.activate();"),
+    );
+    expect(createTombElements).toContain("TOMB_PROP_ASSETS.stone.key");
+    expect(createTombElements).toContain("this.setStoneOpen(false);");
+    expect(environmentOperation).toContain('state === "lazarus-emerge"');
+    expect(environmentOperation).toContain("TOMB_ANCHORS.lazarus.hiddenStart.x");
+    expect(environmentOperation).toContain("TOMB_ANCHORS.lazarus.hiddenStart.y");
+    expect(environmentOperation).toContain(
+      ".setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)",
+    );
+    expect(environmentOperation).toContain(
+      "alpha: TOMB_ANCHORS.lazarus.entranceFade.toAlpha",
+    );
+    expect(environmentOperation).not.toContain(
+      "TOMB_ANCHORS.lazarus.path.slice(1)",
+    );
   });
 
   it("integrates approved voice cues with lifecycle stops and a hash gate", () => {

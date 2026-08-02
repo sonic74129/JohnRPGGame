@@ -439,6 +439,7 @@ export class BethanyScene extends Phaser.Scene {
     this.clearSceneResources();
     this.clearActorVisuals();
     this.worldRuntime?.activate();
+    this.createTombElements();
     this.actorRegistry.hideAll();
     for (const id of ACTOR_IDS) {
       this.placeActor(id, WORLD_ACTOR_POSITIONS[id], true);
@@ -674,6 +675,7 @@ export class BethanyScene extends Phaser.Scene {
         }),
       )
       .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight)
+      .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)
       .setImmovable(true)
       .setPushable(false)
       .setDepth(TOMB_ANCHORS.lazarus.hiddenStart.y + 10)
@@ -1729,15 +1731,25 @@ export class BethanyScene extends Phaser.Scene {
     }
     if (state === "lazarus-emerge") {
       this.createTombElements();
-      this.tombLazarus?.setVisible(true);
       const lazarus = this.tombLazarus;
       if (!lazarus) {
         return completedOperation();
       }
+      lazarus
+        .setPosition(
+          TOMB_ANCHORS.lazarus.hiddenStart.x,
+          TOMB_ANCHORS.lazarus.hiddenStart.y,
+        )
+        .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)
+        .setVisible(true);
       lazarus.body.enable = false;
-      const operation = this.tweenGameObjectAlongPath(
+      const operation = this.tweenGameObject(
         lazarus,
-        TOMB_ANCHORS.lazarus.path.slice(1),
+        {
+          x: TOMB_ANCHORS.lazarus.emergenceTarget.x,
+          y: TOMB_ANCHORS.lazarus.emergenceTarget.y,
+          alpha: TOMB_ANCHORS.lazarus.entranceFade.toAlpha,
+        },
         durationMs,
       );
       void operation.finished.then(() => this.setLazarusEmerged(false));
@@ -1792,49 +1804,6 @@ export class BethanyScene extends Phaser.Scene {
       cancel: () => {
         if (!settled) {
           tween.stop();
-          settled = true;
-          resolveFinished();
-        }
-      },
-    };
-  }
-
-  private tweenGameObjectAlongPath(
-    target: Phaser.GameObjects.GameObject,
-    points: readonly Point[],
-    durationMs: number,
-  ): MapSequenceOperation {
-    if (points.length === 0) {
-      return completedOperation();
-    }
-    let settled = false;
-    let currentTween: Phaser.Tweens.Tween | undefined;
-    let resolveFinished = (): void => undefined;
-    const finished = new Promise<void>((resolve) => {
-      resolveFinished = resolve;
-    });
-    const advance = (index: number): void => {
-      const point = points[index];
-      if (!point) {
-        settled = true;
-        resolveFinished();
-        return;
-      }
-      currentTween = this.tweens.add({
-        targets: target,
-        x: point.x,
-        y: point.y,
-        duration: durationMs / points.length,
-        ease: "Sine.easeInOut",
-        onComplete: () => advance(index + 1),
-      });
-    };
-    advance(0);
-    return {
-      finished,
-      cancel: () => {
-        if (!settled) {
-          currentTween?.stop();
           settled = true;
           resolveFinished();
         }
@@ -2338,6 +2307,7 @@ export class BethanyScene extends Phaser.Scene {
         TOMB_ANCHORS.lazarus.hiddenStart.y,
       )
       .setFrame(lazarusFrame("wrapped-idle"))
+      .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)
       .setVisible(false);
     lazarus.body.reset(
       TOMB_ANCHORS.lazarus.hiddenStart.x,
@@ -2357,6 +2327,7 @@ export class BethanyScene extends Phaser.Scene {
         TOMB_ANCHORS.lazarus.emergenceTarget.y,
       )
       .setFrame(lazarusFrame(restored ? "restored" : "wrapped-idle"))
+      .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.toAlpha)
       .setVisible(true);
     lazarus.body.reset(
       TOMB_ANCHORS.lazarus.emergenceTarget.x,
