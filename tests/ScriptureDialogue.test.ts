@@ -60,8 +60,10 @@ describe("Scripture dialogue attribution", () => {
     });
 
     const entrusted = dialogueLinesForBeat(VERSE_BEAT_BY_ID["sisters-send"]);
-    expect(entrusted[0]).toMatchObject({ speaker: "姐妹二人" });
-    expect(entrusted[0]?.portrait).toBeUndefined();
+    expect(entrusted[0]).toMatchObject({
+      speaker: "姐妹二人",
+      portrait: "martha-worried",
+    });
 
     const returnDialogue = dialogueLinesForBeat(
       VERSE_BEAT_BY_ID["return-to-judea"],
@@ -70,7 +72,7 @@ describe("Scripture dialogue attribution", () => {
       returnDialogue.find(
         (line) => line.reference === JOHN_11_VERSES["john11:8"].reference,
       )?.portrait,
-    ).toBeUndefined();
+    ).toBe("thomas");
     expect(
       returnDialogue.find(
         (line) => line.reference === JOHN_11_VERSES["john11:14"].reference,
@@ -80,6 +82,19 @@ describe("Scripture dialogue attribution", () => {
     expect(dialogueLinesForBeat(VERSE_BEAT_BY_ID["mary-rises"])[0]?.portrait).toBe(
       "mary-urgent",
     );
+  });
+
+  it("shows an approved portrait beside every Scripture dialogue line", () => {
+    for (const beat of VERSE_BEATS) {
+      for (const line of dialogueLinesForBeat(beat)) {
+        if (!line.portrait) {
+          throw new Error(
+            `Missing portrait for ${beat.id}:${line.reference}:${line.speaker}`,
+          );
+        }
+        expect(PORTRAIT_ASSETS).toHaveProperty(line.portrait);
+      }
+    }
   });
 
   it("keeps the bounded portrait plan unique and resolvable", () => {
@@ -112,8 +127,10 @@ describe("Scripture dialogue attribution", () => {
       new Set(DIALOGUE_PORTRAIT_ASSIGNMENTS.map(({ portrait }) => portrait)),
     ).toEqual(
       new Set([
+        "martha-worried",
         "martha-grieving",
         "martha-faith",
+        "mary-worried",
         "mary-urgent",
         "mary-grieving",
         "jesus-listening",
