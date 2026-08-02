@@ -4,6 +4,7 @@ interface TrackConfig {
   readonly source: string;
   readonly loop: boolean;
   readonly volume: number;
+  readonly preload: "auto" | "none";
 }
 
 type PlayableMusicState = Exclude<MusicState, "silence">;
@@ -14,16 +15,19 @@ const TRACKS: Record<PlayableMusicState, TrackConfig> = {
     source: "assets/audio/theme-1-morning-loop.mp3",
     loop: true,
     volume: 0.34,
+    preload: "auto",
   },
   dialogue: {
     source: "assets/audio/theme-2-between-lines-loop.mp3",
     loop: true,
     volume: 0.24,
+    preload: "auto",
   },
   revelation: {
     source: "assets/audio/theme-3-quiet-before-dawn.mp3",
     loop: false,
     volume: 0.16,
+    preload: "none",
   },
 };
 
@@ -43,7 +47,7 @@ export class AudioManager {
     ][]) {
       const audio = new Audio(config.source);
       audio.loop = config.loop;
-      audio.preload = "auto";
+      audio.preload = config.preload;
       audio.volume = 0;
       this.tracks.set(state, audio);
     }

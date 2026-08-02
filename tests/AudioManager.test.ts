@@ -53,6 +53,14 @@ describe("AudioManager", () => {
     vi.unstubAllGlobals();
   });
 
+  it("preloads active themes but leaves the unused revelation track lazy", () => {
+    new AudioManager();
+
+    expect(track("theme-1").preload).toBe("auto");
+    expect(track("theme-2").preload).toBe("auto");
+    expect(track("theme-3").preload).toBe("none");
+  });
+
   it("keeps only the latest theme playing after rapid transitions", async () => {
     const audio = new AudioManager();
     await audio.unlock();
