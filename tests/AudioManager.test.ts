@@ -112,6 +112,20 @@ describe("AudioManager", () => {
     expect(track("theme-1").volume).toBeCloseTo(0.34);
   });
 
+  it("ducks music to the requested voice level and restores it", async () => {
+    const audio = new AudioManager();
+    await audio.unlock();
+    audio.setState("exploration", 0);
+
+    audio.setVoiceDuck(true, 0.3);
+    flushFrames();
+    expect(track("theme-1").volume).toBeCloseTo(0.34 * 0.3);
+
+    audio.setVoiceDuck(false);
+    flushFrames();
+    expect(track("theme-1").volume).toBeCloseTo(0.34);
+  });
+
   it("clamps fade progress when a frame timestamp precedes the transition", async () => {
     const audio = new AudioManager();
     await audio.unlock();

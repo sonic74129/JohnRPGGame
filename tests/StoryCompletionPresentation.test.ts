@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { FACINGS } from "../src/game/CharacterAssets";
 import { ACTOR_IDS } from "../src/game/ScriptureContent";
+import { TOMB_ANCHORS } from "../src/game/TombAnchors";
 import {
   STORY_COMPLETION_ACTORS,
   STORY_COMPLETION_PRESENTATION,
@@ -61,5 +62,20 @@ describe("canonical story completion presentation", () => {
     };
 
     expect(run(10)).toEqual(run(1000));
+  });
+
+  it("keeps the final gathering on the shared tomb contract", () => {
+    const positions = TOMB_ANCHORS.tombGathering.groupPositions;
+
+    expect(STORY_COMPLETION_PRESENTATION.player.position).toEqual(
+      positions.player,
+    );
+    expect(STORY_COMPLETION_PRESENTATION.jesus.position).toEqual(
+      positions.jesus,
+    );
+    expect(STORY_COMPLETION_PRESENTATION.martha.position).toEqual(
+      positions.martha,
+    );
+    expect(STORY_COMPLETION_PRESENTATION.mary.position).toEqual(positions.mary);
   });
 });

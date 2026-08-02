@@ -5,6 +5,7 @@ import {
   type Point,
   type Rectangle,
 } from "./NavigationGrid";
+import { TOMB_ANCHORS } from "./TombAnchors";
 
 export const WORLD_TILE_SIZE = 32;
 export const WORLD_WIDTH = worldMapLayout.canvas.width;
@@ -59,8 +60,9 @@ export const WORLD_LANDMARKS = {
   jesusCamp: point(worldMapLayout.regions.jesusCamp.center),
   tombRoadStart: pointAt(worldMapLayout.regions.tombRoute.points, 0),
   tombRoadMiddle: pointAt(worldMapLayout.regions.tombRoute.points, 1),
-  tombEntrance: pointAt(worldMapLayout.regions.tombRoute.points, 2),
-  tombGarden: point(worldMapLayout.regions.tombGarden.center),
+  tombApproach: point(TOMB_ANCHORS.tombApproach),
+  tombMouth: point(TOMB_ANCHORS.tombMouth.center),
+  tombGarden: point(TOMB_ANCHORS.tombGathering.center),
   jerusalemGate: { x: 180, y: 360 },
   bethanyEntrance: point(worldMapLayout.regions.meetingArea.center),
   jesusArrival: point(worldMapLayout.regions.jesusCamp.center),
@@ -81,7 +83,7 @@ export const WORLD_ROUTES = {
       WORLD_LANDMARKS.villageCenter,
       WORLD_LANDMARKS.tombRoadStart,
       WORLD_LANDMARKS.tombRoadMiddle,
-      WORLD_LANDMARKS.tombEntrance,
+      WORLD_LANDMARKS.tombApproach,
       WORLD_LANDMARKS.tombGarden,
     ],
   },
@@ -120,7 +122,6 @@ export const WORLD_STRUCTURE_OBSTACLES: readonly Rectangle[] = [
   { x: 720, y: 610, width: 300, height: 200 },
   { x: 1210, y: 620, width: 290, height: 200 },
   { x: 840, y: 1040, width: 290, height: 180 },
-  { x: 2040, y: 100, width: 430, height: 190 },
 ];
 
 export const WORLD_OBSTACLES: readonly Rectangle[] = [
@@ -145,12 +146,18 @@ export const WORLD_NAVIGATION_OBSTACLES: readonly Rectangle[] = [
   ),
 ];
 
-export const createWorldNavigation = (): NavigationGrid =>
+export const WORLD_TOMB_STONE_OBSTACLE: Rectangle = rectangle(
+  TOMB_ANCHORS.stone.initialBounds,
+);
+
+export const createWorldNavigation = (
+  additionalObstacles: readonly Rectangle[] = [],
+): NavigationGrid =>
   new NavigationGrid(
     WORLD_WIDTH,
     WORLD_HEIGHT,
     WORLD_TILE_SIZE,
-    WORLD_NAVIGATION_OBSTACLES,
+    [...WORLD_NAVIGATION_OBSTACLES, ...additionalObstacles],
   );
 
 export const pathLength = (

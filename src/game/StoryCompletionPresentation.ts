@@ -1,7 +1,8 @@
 import type { Facing } from "./CharacterSprites";
+import { FIND_JESUS_MEMORY_CARRIERS } from "./FindJesusStories";
 import type { Point } from "./NavigationGrid";
+import { TOMB_ANCHORS } from "./TombAnchors";
 import type { ActorId } from "./types";
-import { WORLD_LANDMARKS } from "./WorldLayout";
 
 export type StoryCompletionActor = ActorId | "player";
 
@@ -10,7 +11,7 @@ export interface StoryCompletionTarget {
   setFacing(actor: StoryCompletionActor, facing: Facing): void;
 }
 
-const tomb = WORLD_LANDMARKS.tombGarden;
+const gathering = TOMB_ANCHORS.tombGathering;
 
 export const STORY_COMPLETION_PRESENTATION: Readonly<
   Record<
@@ -22,35 +23,41 @@ export const STORY_COMPLETION_PRESENTATION: Readonly<
   >
 > = {
   player: {
-    position: { x: tomb.x + 80, y: tomb.y + 270 },
+    position: gathering.groupPositions.player,
     facing: "right",
   },
   martha: {
-    position: { x: tomb.x - 120, y: tomb.y + 180 },
+    position: gathering.groupPositions.martha,
     facing: "right",
   },
   mary: {
-    position: { x: tomb.x - 20, y: tomb.y + 180 },
+    position: gathering.groupPositions.mary,
     facing: "right",
   },
   mourner: {
-    position: { x: tomb.x + 80, y: tomb.y + 180 },
+    position: gathering.groupPositions.mourner,
     facing: "right",
   },
   "mourner-woman": {
-    position: { x: tomb.x - 220, y: tomb.y + 270 },
+    position: gathering.groupPositions.mournerWoman,
     facing: "right",
   },
   jesus: {
-    position: { x: tomb.x - 220, y: tomb.y + 180 },
+    position: gathering.groupPositions.jesus,
     facing: "right",
   },
   guide: {
-    position: { x: tomb.x - 300, y: tomb.y + 180 },
+    position: {
+      x: gathering.center.x - 150,
+      y: gathering.center.y + 100,
+    },
     facing: "left",
   },
   "older-witness": {
-    position: { x: tomb.x + 300, y: tomb.y + 180 },
+    position: {
+      x: gathering.center.x + 120,
+      y: gathering.center.y + 100,
+    },
     facing: "right",
   },
   thomas: {
@@ -66,15 +73,15 @@ export const STORY_COMPLETION_PRESENTATION: Readonly<
     facing: "left",
   },
   "memory-carrier-bread": {
-    position: { x: 2100, y: 1160 },
+    position: FIND_JESUS_MEMORY_CARRIERS["memory-carrier-bread"].placement,
     facing: "front",
   },
   "memory-carrier-water": {
-    position: { x: 2260, y: 1130 },
+    position: FIND_JESUS_MEMORY_CARRIERS["memory-carrier-water"].placement,
     facing: "front",
   },
   "memory-carrier-mud": {
-    position: { x: 2440, y: 1170 },
+    position: FIND_JESUS_MEMORY_CARRIERS["memory-carrier-mud"].placement,
     facing: "front",
   },
 };

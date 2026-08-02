@@ -17,6 +17,14 @@
           <strong id="objective-reference" class="reference">约翰福音 11</strong>
         </section>
         <div class="hud-actions">
+          <section
+            id="stage-goal"
+            class="stage-goal is-hidden"
+            aria-label="当前阶段目标"
+          >
+            <span id="stage-goal-mode" class="stage-goal-mode">当前目标</span>
+            <strong id="stage-goal-text">走近拉撒路</strong>
+          </section>
           <section class="score-panel" aria-label="经文观察分">
             <span class="eyebrow">分数</span>
             <strong><span id="score">100</span> / 100</strong>
@@ -25,10 +33,10 @@
             id="music-toggle"
             class="music-toggle"
             type="button"
-            aria-label="切换叙事音乐"
+            aria-label="切换音乐与语音"
             aria-pressed="false"
           >
-            音乐：开
+            声音：开
           </button>
         </div>
       </header>
@@ -49,7 +57,17 @@
             <span id="dialogue-kind" class="content-kind"></span>
             <span id="dialogue-reference" class="reference"></span>
           </div>
-          <h2 id="dialogue-speaker"></h2>
+          <div class="dialogue-speaker-row">
+            <h2 id="dialogue-speaker"></h2>
+            <button
+              id="dialogue-audio"
+              class="dialogue-audio is-hidden"
+              type="button"
+              aria-label="从头重播当前经文语音"
+            >
+              重播语音
+            </button>
+          </div>
           <p id="dialogue-text"></p>
           <button id="dialogue-next" type="button">继续　SPACE</button>
         </div>

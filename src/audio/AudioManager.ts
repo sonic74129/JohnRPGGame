@@ -37,6 +37,7 @@ export class AudioManager {
   private state: MusicState = "silence";
   private unlocked = false;
   private muted = false;
+  private voiceDuckLevel = 1;
   private fadeFrame?: number;
   private transitionToken = 0;
 
@@ -96,6 +97,13 @@ export class AudioManager {
     return this.muted;
   }
 
+  setVoiceDuck(active: boolean, musicVolume = 0.3): void {
+    this.voiceDuckLevel = active
+      ? Math.max(0, Math.min(1, musicVolume))
+      : 1;
+    this.applyState(180);
+  }
+
   pause(reason: AudioPauseReason = "game"): void {
     this.pauseReasons.add(reason);
     this.applyState(0);
@@ -112,6 +120,7 @@ export class AudioManager {
   stop(): void {
     this.state = "silence";
     this.pauseReasons.clear();
+    this.voiceDuckLevel = 1;
     this.applyState(0);
     for (const track of this.tracks.values()) {
       track.currentTime = 0;
@@ -152,7 +161,10 @@ export class AudioManager {
       );
       for (const [state, track] of this.tracks) {
         const start = startingVolumes.get(state) ?? 0;
-        const target = state === activeState ? TRACKS[state].volume : 0;
+        const target =
+          state === activeState
+            ? TRACKS[state].volume * this.voiceDuckLevel
+            : 0;
         track.volume = start + (target - start) * progress;
       }
 

@@ -1,6 +1,11 @@
 import Phaser from "phaser";
 
 import { AudioManager } from "../audio/AudioManager";
+import { VoiceManager } from "../audio/VoiceManager";
+import {
+  VOICE_CUES,
+  type VoiceCueId,
+} from "../audio/VoiceManifest";
 import {
   createActorLabel,
   type ActorLabelController,
@@ -56,6 +61,10 @@ import {
   type HouseArtPlacement,
 } from "./EnvironmentAssets";
 import {
+  FIND_JESUS_MEMORY_CARRIERS,
+  FIND_JESUS_STORY_CONTRACT,
+} from "./FindJesusStories";
+import {
   MapSequence,
   type MapSequenceDefinition,
   type MapSequenceOperation,
@@ -89,6 +98,8 @@ import {
 import { dialogueLinesForBeat } from "./ScriptureDialogue";
 import { applyStoryCompletionPresentation } from "./StoryCompletionPresentation";
 import { StoryEngine } from "./StoryEngine";
+import { STAGE_GOALS } from "./StageGoals";
+import { TOMB_ANCHORS } from "./TombAnchors";
 import { TOMB_PROP_ASSETS } from "./TombAssets";
 import type { ActorId, DialogueLine, MusicState } from "./types";
 import {
@@ -107,6 +118,8 @@ import {
   WORLD_REGIONS,
   WORLD_ROUTES,
   WORLD_WIDTH,
+  WORLD_TOMB_STONE_OBSTACLE,
+  createWorldNavigation,
 } from "./WorldLayout";
 
 const PLAYER_SPEED = 260;
@@ -136,13 +149,16 @@ const WORLD_ACTOR_POSITIONS: Readonly<Record<ActorId, Point>> = {
   "mourner-woman": { x: 970, y: 1080 },
   guide: { x: 1030, y: 1040 },
   "older-witness": { x: 1100, y: 1080 },
-  jesus: WORLD_LANDMARKS.jesusCamp,
+  jesus: FIND_JESUS_STORY_CONTRACT.reservedCamp.center,
   thomas: { x: 2360, y: 1270 },
   "older-disciple": { x: 2300, y: 1350 },
   "younger-disciple": { x: 2180, y: 1350 },
-  "memory-carrier-bread": { x: 2100, y: 1160 },
-  "memory-carrier-water": { x: 2260, y: 1130 },
-  "memory-carrier-mud": { x: 2440, y: 1170 },
+  "memory-carrier-bread":
+    FIND_JESUS_MEMORY_CARRIERS["memory-carrier-bread"].placement,
+  "memory-carrier-water":
+    FIND_JESUS_MEMORY_CARRIERS["memory-carrier-water"].placement,
+  "memory-carrier-mud":
+    FIND_JESUS_MEMORY_CARRIERS["memory-carrier-mud"].placement,
 };
 
 type SequenceActor = ActorId | "player" | "lazarus" | "stone-group";
@@ -187,6 +203,9 @@ const completedOperation = (): MapSequenceOperation => ({
 const isPoint = (target: CameraTarget): target is Point =>
   typeof target === "object" && "x" in target && "y" in target;
 
+const isVoiceCueId = (value: unknown): value is VoiceCueId =>
+  value === "opening-john11-1-3" || value === "jesus-resurrection-life";
+
 export class BethanyScene extends Phaser.Scene {
   private story = new StoryEngine();
   private actorRegistry = new ActorRegistry();
@@ -196,6 +215,8 @@ export class BethanyScene extends Phaser.Scene {
 
   private ui!: GameUI;
   private audio!: AudioManager;
+  private voice!: VoiceManager;
+  private validVoiceCues!: Promise<ReadonlySet<VoiceCueId>>;
   private player!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private movementKeys!: {
@@ -221,9 +242,12 @@ export class BethanyScene extends Phaser.Scene {
   private resources: AreaResource[] = [];
   private decorations: Phaser.GameObjects.GameObject[] = [];
   private daylightOverlay?: Phaser.GameObjects.Rectangle;
-  private stone?: Phaser.GameObjects.Image;
+  private stone?: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+  private stoneCollider?: Phaser.Physics.Arcade.Collider;
   private stoneGroupPose?: Phaser.GameObjects.Sprite;
   private lazarus?: Phaser.GameObjects.Sprite;
+  private tombLazarus?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  private lazarusCollider?: Phaser.Physics.Arcade.Collider;
   private lazarusLabel?: ActorLabelController;
 
   constructor() {
@@ -262,11 +286,30 @@ export class BethanyScene extends Phaser.Scene {
   create(): void {
     const ui = this.registry.get("ui");
     const audio = this.registry.get("audio");
-    if (!(ui instanceof GameUI) || !(audio instanceof AudioManager)) {
-      throw new Error("Bethany scene requires initialized UI and audio services.");
+    const voice = this.registry.get("voice");
+    const validVoiceCues = this.registry.get("valid-voice-cues");
+    if (
+      !(ui instanceof GameUI) ||
+      !(audio instanceof AudioManager) ||
+      !(voice instanceof VoiceManager) ||
+      !(validVoiceCues instanceof Promise)
+    ) {
+      throw new Error(
+        "Bethany scene requires initialized UI, music, and voice services.",
+      );
     }
     this.ui = ui;
     this.audio = audio;
+    this.voice = voice;
+    this.validVoiceCues = validVoiceCues.then((value: unknown) => {
+      if (
+        !(value instanceof Set) ||
+        [...value].some((cueId) => !isVoiceCueId(cueId))
+      ) {
+        throw new Error("Voice validation returned invalid cue identifiers.");
+      }
+      return new Set([...value].filter(isVoiceCueId));
+    });
     applyLinearTextureFiltering({
       linearMode: Phaser.Textures.FilterMode.LINEAR,
       textureKeys: this.textures.getTextureKeys(),
@@ -290,6 +333,7 @@ export class BethanyScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.registry.set("bethany-ready", false);
       this.game.events.off("start-story", this.startStory, this);
+      this.voice.handleSceneChange();
       void this.sequence?.dispose();
       this.worldRuntime?.cleanup();
       this.clearSceneResources();
@@ -386,8 +430,8 @@ export class BethanyScene extends Phaser.Scene {
       this.placeActor(id, WORLD_ACTOR_POSITIONS[id], true);
     }
     this.player.setPosition(
-      WORLD_LANDMARKS.jesusCamp.x - 440,
-      WORLD_LANDMARKS.jesusCamp.y + 80,
+      FIND_JESUS_STORY_CONTRACT.playerStart.x,
+      FIND_JESUS_STORY_CONTRACT.playerStart.y,
     );
     this.applyActorScale(this.player, "messenger", "outdoor");
     this.applyBeatPresentation(this.story.beatId, false);
@@ -546,15 +590,32 @@ export class BethanyScene extends Phaser.Scene {
     if (this.stone?.active) {
       return;
     }
-    const entrance = WORLD_LANDMARKS.tombEntrance;
-    this.stone = this.add
-      .image(entrance.x + 40, entrance.y, TOMB_PROP_ASSETS.stone.key)
-      .setDisplaySize(120, 120)
-      .setDepth(entrance.y + 20);
-    this.lazarus = this.add
+    const stoneBounds = TOMB_ANCHORS.stone.initialBounds;
+    const stoneCenter = {
+      x: (stoneBounds.xMin + stoneBounds.xMax) / 2,
+      y: (stoneBounds.yMin + stoneBounds.yMax) / 2,
+    };
+    const stone = this.physics.add
+      .image(stoneCenter.x, stoneCenter.y, TOMB_PROP_ASSETS.stone.key)
+      .setDisplaySize(
+        TOMB_ANCHORS.stone.size.width,
+        TOMB_ANCHORS.stone.size.height,
+      )
+      .setImmovable(true)
+      .setPushable(false)
+      .setDepth(stoneCenter.y + 20);
+    stone.body.setAllowGravity(false);
+    stone.body.setSize(
+      TOMB_ANCHORS.stone.size.width,
+      TOMB_ANCHORS.stone.size.height,
+      true,
+    );
+    this.stone = stone;
+    this.stoneCollider = this.physics.add.collider(this.player, stone);
+    const tombLazarus = this.physics.add
       .sprite(
-        entrance.x,
-        entrance.y + 15,
+        TOMB_ANCHORS.lazarus.hiddenStart.x,
+        TOMB_ANCHORS.lazarus.hiddenStart.y,
         lazarusTextureKey(),
         lazarusFrame("wrapped-idle"),
       )
@@ -565,13 +626,24 @@ export class BethanyScene extends Phaser.Scene {
         }),
       )
       .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight)
-      .setDepth(entrance.y + 10)
+      .setImmovable(true)
+      .setPushable(false)
+      .setDepth(TOMB_ANCHORS.lazarus.hiddenStart.y + 10)
       .setVisible(false);
-    this.lazarusLabel = createActorLabel(this, this.lazarus, {
+    tombLazarus.body.setAllowGravity(false);
+    tombLazarus.body.enable = false;
+    this.tombLazarus = tombLazarus;
+    this.lazarus = tombLazarus;
+    this.lazarusCollider = this.physics.add.collider(
+      this.player,
+      tombLazarus,
+    );
+    this.lazarusLabel = createActorLabel(this, tombLazarus, {
       text: ACTOR_LABELS.lazarus ?? "拉撒路",
-      resolveVisibility: () => Boolean(this.lazarus?.visible),
+      resolveVisibility: () => tombLazarus.visible,
     });
-    this.decorations.push(this.stone, this.lazarus);
+    this.decorations.push(stone, tombLazarus);
+    this.setStoneOpen(false);
   }
 
   private placeActor(id: ActorId, position: Point, visible: boolean): void {
@@ -735,6 +807,10 @@ export class BethanyScene extends Phaser.Scene {
   }
 
   private clearSceneResources(): void {
+    this.stoneCollider?.destroy();
+    this.stoneCollider = undefined;
+    this.lazarusCollider?.destroy();
+    this.lazarusCollider = undefined;
     for (const resource of this.resources) {
       resource.destroy();
     }
@@ -746,6 +822,7 @@ export class BethanyScene extends Phaser.Scene {
     this.lazarusLabel?.destroy();
     this.lazarusLabel = undefined;
     this.lazarus = undefined;
+    this.tombLazarus = undefined;
     this.stone = undefined;
     this.stoneGroupPose?.destroy();
     this.stoneGroupPose = undefined;
@@ -832,8 +909,10 @@ export class BethanyScene extends Phaser.Scene {
       uiPointer,
     });
     if (route === "advance-dialogue") {
+      this.voice.handleAdvance();
       this.ui.advanceDialogue();
     } else if (route === "skip") {
+      this.voice.handleSkip();
       this.sequenceInput.emit(
         kind === "pointer"
           ? { kind: "pointer" }
@@ -951,7 +1030,16 @@ export class BethanyScene extends Phaser.Scene {
       }
     }
     this.nearestActor = nearest;
-    this.ui.setInteractionPrompt(nearest !== undefined);
+    const carrier =
+      nearest && this.story.beatId === "find-jesus" && isMemoryCarrier(nearest)
+        ? FIND_JESUS_MEMORY_CARRIERS[nearest]
+        : undefined;
+    this.ui.setInteractionPrompt(
+      nearest !== undefined,
+      carrier
+        ? `${carrier.proximityObservation}\nSPACE / 互动`
+        : "SPACE / 互动",
+    );
   }
 
   private moveTowardActor(id: ActorId): void {
@@ -1009,20 +1097,36 @@ export class BethanyScene extends Phaser.Scene {
       this.showActorEcho(id);
       return;
     }
-    const result = this.story.identifyJesus(id);
-    if (result.kind === "identified") {
+    if (id === FIND_JESUS_STORY_CONTRACT.correctTargetId) {
+      this.story.identifyJesus(id);
+      this.setActorLabel(
+        "jesus",
+        FIND_JESUS_STORY_CONTRACT.onJesusSelected.revealLabel,
+      );
+      this.ui.hideVerseEcho();
+      this.ui.setInteractionPrompt(false);
       void this.runActiveBeat();
       return;
     }
+    const carrier = isMemoryCarrier(id)
+      ? FIND_JESUS_MEMORY_CARRIERS[id]
+      : undefined;
+    if (!carrier) {
+      this.showActorEcho(id);
+      return;
+    }
+    this.story.identifyJesus(id);
     const visual = this.visuals.get(id);
     if (!visual) {
       return;
     }
     this.ui.showVerseEcho({
-      mode: "player-memory",
-      text: `${result.memory.text}\n\n${result.memory.followUp.text}`,
-      reference: result.memory.references.join("、"),
+      mode: "natural-story",
+      speaker: carrier.temporaryLabel,
+      text: carrier.interactionStory.join("\n"),
+      reference: carrier.reference,
       anchor: this.screenAnchor(visual.container),
+      duration: 7600,
     });
   }
 
@@ -1397,7 +1501,7 @@ export class BethanyScene extends Phaser.Scene {
     ) {
       return WORLD_LANDMARKS.bethanyMeeting;
     }
-    return WORLD_LANDMARKS.tombGarden;
+    return TOMB_ANCHORS.cameraFocus;
   }
 
   private createSequenceHost(): PhaserSequenceHost<BethanySequenceSchema> {
@@ -1431,6 +1535,7 @@ export class BethanyScene extends Phaser.Scene {
       applyFinalState: (state) => this.applySequenceFinalState(state),
       handoff: () => undefined,
       finalize: (beatId) => {
+        this.voice.handleSceneChange();
         this.story.completeCurrent(beatId);
       },
       acquireInputLock: () => this.playerController.lock(),
@@ -1480,6 +1585,7 @@ export class BethanyScene extends Phaser.Scene {
       finished,
       cancel: () => {
         if (!settled) {
+          this.voice.handleSkip();
           tween.stop();
           this.restoreSequenceActorIdle(actor);
           settled = true;
@@ -1558,27 +1664,33 @@ export class BethanyScene extends Phaser.Scene {
       if (!stone) {
         return completedOperation();
       }
-      return this.tweenGameObject(
+      const operation = this.tweenGameObject(
         stone,
-        { x: stone.x + 150, angle: 32 },
-        durationMs,
-      );
-    }
-    if (state === "lazarus-emerge") {
-      this.createTombElements();
-      this.lazarus?.setVisible(true);
-      const lazarus = this.lazarus;
-      if (!lazarus) {
-        return completedOperation();
-      }
-      return this.tweenGameObject(
-        lazarus,
         {
-          x: WORLD_LANDMARKS.tombGarden.x,
-          y: WORLD_LANDMARKS.tombGarden.y + 130,
+          x: TOMB_ANCHORS.stone.rolledTarget.center.x,
+          y: TOMB_ANCHORS.stone.rolledTarget.center.y,
+          angle: 32,
         },
         durationMs,
       );
+      void operation.finished.then(() => this.setStoneOpen(true));
+      return operation;
+    }
+    if (state === "lazarus-emerge") {
+      this.createTombElements();
+      this.tombLazarus?.setVisible(true);
+      const lazarus = this.tombLazarus;
+      if (!lazarus) {
+        return completedOperation();
+      }
+      lazarus.body.enable = false;
+      const operation = this.tweenGameObjectAlongPath(
+        lazarus,
+        TOMB_ANCHORS.lazarus.path.slice(1),
+        durationMs,
+      );
+      void operation.finished.then(() => this.setLazarusEmerged(false));
+      return operation;
     }
     if (state === "wait-dusk" || state === "wait-day") {
       const overlay = this.daylightOverlay;
@@ -1626,6 +1738,49 @@ export class BethanyScene extends Phaser.Scene {
     };
   }
 
+  private tweenGameObjectAlongPath(
+    target: Phaser.GameObjects.GameObject,
+    points: readonly Point[],
+    durationMs: number,
+  ): MapSequenceOperation {
+    if (points.length === 0) {
+      return completedOperation();
+    }
+    let settled = false;
+    let currentTween: Phaser.Tweens.Tween | undefined;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    const advance = (index: number): void => {
+      const point = points[index];
+      if (!point) {
+        settled = true;
+        resolveFinished();
+        return;
+      }
+      currentTween = this.tweens.add({
+        targets: target,
+        x: point.x,
+        y: point.y,
+        duration: durationMs / points.length,
+        ease: "Sine.easeInOut",
+        onComplete: () => advance(index + 1),
+      });
+    };
+    advance(0);
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          currentTween?.stop();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
   private dialogueOperation(
     dialogue: readonly DialogueLine[],
   ): MapSequenceOperation {
@@ -1633,15 +1788,29 @@ export class BethanyScene extends Phaser.Scene {
     let resolveFinished = (): void => undefined;
     const finished = new Promise<void>((resolve) => {
       resolveFinished = resolve;
-      this.ui.showDialogue(dialogue, () => {
-        settled = true;
-        resolve();
-      });
+      const beatId = this.story.beatId;
+      const replayCueId = this.voiceCueForBeat(beatId);
+      this.ui.showDialogue(
+        dialogue,
+        () => {
+          settled = true;
+          resolve();
+        },
+        undefined,
+        replayCueId
+          ? () => void this.playVoiceCue(replayCueId, true)
+          : undefined,
+      );
+      const autoplayCueId = this.autoplayVoiceCueForBeat(beatId);
+      if (autoplayCueId) {
+        void this.playVoiceCue(autoplayCueId, false);
+      }
     });
     return {
       finished,
       cancel: () => {
         if (!settled) {
+          this.voice.handleSkip();
           this.ui.dismissBlocking();
           settled = true;
           resolveFinished();
@@ -1701,30 +1870,24 @@ export class BethanyScene extends Phaser.Scene {
     }
     if (beatId === "tomb-arrival") {
       this.createTombElements();
+      this.setStoneOpen(false);
+      this.setLazarusHidden();
     }
     if (beatId === "stone-and-prayer") {
       this.createTombElements();
-      this.stone?.setPosition(
-        WORLD_LANDMARKS.tombEntrance.x + 190,
-        WORLD_LANDMARKS.tombEntrance.y,
-      );
+      this.setStoneOpen(true);
     }
     if (beatId === "call-and-emergence") {
       this.createTombElements();
-      this.lazarus
-        ?.setVisible(true)
-        .setFrame(lazarusFrame("restored"))
-        .setPosition(
-          WORLD_LANDMARKS.tombGarden.x,
-          WORLD_LANDMARKS.tombGarden.y + 130,
-        );
+      this.setStoneOpen(true);
+      this.setLazarusEmerged(true);
     }
     this.followPlayerCamera();
   }
 
   private applyFinalPositions(beatId: VerseBeatId): void {
     const meeting = WORLD_LANDMARKS.bethanyMeeting;
-    const tomb = WORLD_LANDMARKS.tombGarden;
+    const gathering = TOMB_ANCHORS.tombGathering.groupPositions;
     if (beatId === "four-days") {
       this.setSequencePosition("jesus", meeting);
       this.setSequencePosition("thomas", { x: meeting.x + 120, y: meeting.y + 80 });
@@ -1745,22 +1908,20 @@ export class BethanyScene extends Phaser.Scene {
       this.setSequencePosition("older-witness", { x: meeting.x + 100, y: meeting.y + 120 });
     }
     if (["come-and-see", "tomb-arrival"].includes(beatId)) {
-      const actors: readonly SequenceActor[] = [
-        "jesus",
-        "martha",
-        "mary",
-        "mourner",
-        "mourner-woman",
-        "guide",
-        "older-witness",
-        "player",
-      ];
-      actors.forEach((actor, index) =>
-        this.setSequencePosition(actor, {
-          x: tomb.x - 220 + (index % 4) * 100,
-          y: tomb.y + 180 + Math.floor(index / 4) * 90,
-        }),
-      );
+      this.setSequencePosition("jesus", gathering.jesus);
+      this.setSequencePosition("martha", gathering.martha);
+      this.setSequencePosition("mary", gathering.mary);
+      this.setSequencePosition("mourner", gathering.mourner);
+      this.setSequencePosition("mourner-woman", gathering.mournerWoman);
+      this.setSequencePosition("player", gathering.player);
+      this.setSequencePosition("guide", {
+        x: TOMB_ANCHORS.tombGathering.center.x - 150,
+        y: TOMB_ANCHORS.tombGathering.center.y + 100,
+      });
+      this.setSequencePosition("older-witness", {
+        x: TOMB_ANCHORS.tombGathering.center.x + 120,
+        y: TOMB_ANCHORS.tombGathering.center.y + 100,
+      });
     }
   }
 
@@ -1835,16 +1996,16 @@ export class BethanyScene extends Phaser.Scene {
         throw new Error("The stone group requires a supporting action pose.");
       }
       const presentation = resolveSpecialActorPresentation("mourner-man", pose);
-      const entrance = WORLD_LANDMARKS.tombEntrance;
+      const mouth = TOMB_ANCHORS.tombMouth.center;
       this.stoneGroupPose?.destroy();
       this.stoneGroupPose = this.add.sprite(
-        entrance.x - 35,
-        entrance.y + 75,
+        mouth.x - 105,
+        mouth.y + 100,
         presentation.textureKey,
         presentation.frame,
       );
       this.applySpritePresentation(this.stoneGroupPose, presentation);
-      this.stoneGroupPose.setDepth(entrance.y + 25);
+      this.stoneGroupPose.setDepth(mouth.y + 25);
       return;
     }
     if (actor === "player" || actor === "lazarus") {
@@ -1958,11 +2119,13 @@ export class BethanyScene extends Phaser.Scene {
       (key) => JOHN_11_VERSES[key].reference,
     );
     this.ui.setReference(references.join("、") || "约翰福音");
+    this.ui.setStageGoal(STAGE_GOALS[this.story.beatId]);
     this.ui.setScore(this.story.score);
   }
 
   private finishStory(): void {
     this.stopPlayerMovement();
+    this.voice.handleSceneChange();
     this.restoreAllSequenceActors();
     applyStoryCompletionPresentation({
       setPosition: (actor, position) =>
@@ -1970,22 +2133,19 @@ export class BethanyScene extends Phaser.Scene {
       setFacing: (actor, facing) => this.setSequenceFacing(actor, facing),
     });
     this.createTombElements();
-    this.stone?.setPosition(
-      WORLD_LANDMARKS.tombEntrance.x + 190,
-      WORLD_LANDMARKS.tombEntrance.y,
-    );
-    this.lazarus
-      ?.setVisible(true)
-      .setFrame(lazarusFrame("restored"))
-      .setPosition(
-        WORLD_LANDMARKS.tombGarden.x,
-        WORLD_LANDMARKS.tombGarden.y + 130,
-      );
+    this.setStoneOpen(true);
+    this.setLazarusEmerged(true);
     this.ui.showResult(
       this.story.score,
       this.story.resultLabel(),
-      () => window.location.reload(),
-      () => window.location.reload(),
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
     );
   }
 
@@ -2051,10 +2211,17 @@ export class BethanyScene extends Phaser.Scene {
     this.paused = true;
     this.physics.world.pause();
     this.audio.pause("game");
+    this.voice.pause("game");
     this.ui.showPause(
       () => this.resumeGame(),
-      () => window.location.reload(),
-      () => window.location.reload(),
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
     );
   }
 
@@ -2062,6 +2229,120 @@ export class BethanyScene extends Phaser.Scene {
     this.paused = false;
     this.physics.world.resume();
     this.audio.resume("game");
+    void this.voice.resume("game");
     this.ui.hidePause();
+  }
+
+  private setStoneOpen(open: boolean): void {
+    const stone = this.stone;
+    if (!stone) {
+      return;
+    }
+    const target = open
+      ? TOMB_ANCHORS.stone.rolledTarget.center
+      : {
+          x:
+            (TOMB_ANCHORS.stone.initialBounds.xMin +
+              TOMB_ANCHORS.stone.initialBounds.xMax) /
+            2,
+          y:
+            (TOMB_ANCHORS.stone.initialBounds.yMin +
+              TOMB_ANCHORS.stone.initialBounds.yMax) /
+            2,
+        };
+    stone.setPosition(target.x, target.y).setAngle(open ? 32 : 0);
+    stone.body.reset(target.x, target.y);
+    stone.body.enable = !open;
+    this.rebuildWorldNavigation(!open);
+  }
+
+  private setLazarusHidden(): void {
+    const lazarus = this.tombLazarus;
+    if (!lazarus) {
+      return;
+    }
+    lazarus
+      .setPosition(
+        TOMB_ANCHORS.lazarus.hiddenStart.x,
+        TOMB_ANCHORS.lazarus.hiddenStart.y,
+      )
+      .setFrame(lazarusFrame("wrapped-idle"))
+      .setVisible(false);
+    lazarus.body.reset(
+      TOMB_ANCHORS.lazarus.hiddenStart.x,
+      TOMB_ANCHORS.lazarus.hiddenStart.y,
+    );
+    lazarus.body.enable = false;
+  }
+
+  private setLazarusEmerged(restored: boolean): void {
+    const lazarus = this.tombLazarus;
+    if (!lazarus) {
+      return;
+    }
+    lazarus
+      .setPosition(
+        TOMB_ANCHORS.lazarus.emergenceTarget.x,
+        TOMB_ANCHORS.lazarus.emergenceTarget.y,
+      )
+      .setFrame(lazarusFrame(restored ? "restored" : "wrapped-idle"))
+      .setVisible(true);
+    lazarus.body.reset(
+      TOMB_ANCHORS.lazarus.emergenceTarget.x,
+      TOMB_ANCHORS.lazarus.emergenceTarget.y,
+    );
+    lazarus.body.enable = true;
+  }
+
+  private rebuildWorldNavigation(stoneBlocked: boolean): void {
+    if (!this.inWorld) {
+      return;
+    }
+    this.navigation = createWorldNavigation(
+      stoneBlocked ? [WORLD_TOMB_STONE_OBSTACLE] : [],
+    );
+  }
+
+  private voiceCueForBeat(beatId: VerseBeatId): VoiceCueId | undefined {
+    if (beatId === "illness" || beatId === "sisters-send") {
+      return "opening-john11-1-3";
+    }
+    return beatId === "resurrection-life"
+      ? "jesus-resurrection-life"
+      : undefined;
+  }
+
+  private autoplayVoiceCueForBeat(
+    beatId: VerseBeatId,
+  ): VoiceCueId | undefined {
+    return beatId === "illness"
+      ? "opening-john11-1-3"
+      : beatId === "resurrection-life"
+        ? "jesus-resurrection-life"
+        : undefined;
+  }
+
+  private async playVoiceCue(cueId: VoiceCueId, replay: boolean): Promise<void> {
+    const validCueIds = await this.validVoiceCues;
+    if (!validCueIds.has(cueId)) {
+      console.warn(
+        `Voice cue ${cueId} was not played because its textHash is stale.`,
+      );
+      this.ui.showTechnicalError(
+        "语音版本与当前经文不一致，已继续显示字幕。",
+        "browser",
+        2200,
+      );
+      return;
+    }
+    const cue = VOICE_CUES[cueId];
+    if (!cue) {
+      return;
+    }
+    if (replay) {
+      await this.voice.replay(cueId);
+    } else {
+      await this.voice.autoplay(cueId);
+    }
   }
 }

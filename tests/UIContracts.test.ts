@@ -34,14 +34,19 @@ describe("minimal UI contract", () => {
     );
   });
 
-  it("renders only Scripture reference, score, and music in the HUD", () => {
+  it("keeps Scripture reference separate from the single-line stage goal", () => {
     const hud = html.match(/<header id="hud"[\s\S]*?<\/header>/)?.[0] ?? "";
 
     expect(hud).toContain('id="objective-reference"');
+    expect(hud).toContain('id="stage-goal"');
+    expect(hud).toContain('id="stage-goal-mode"');
+    expect(hud).toContain('id="stage-goal-text"');
     expect(hud).toContain('id="score"');
     expect(hud).toContain('id="music-toggle"');
     expect(hud).not.toContain('id="objective"');
     expect(uiSource).not.toContain("objective.textContent");
+    expect(styles).toContain("white-space: nowrap");
+    expect(styles).toContain('.stage-goal[data-mode="watch"]');
   });
 
   it("defaults interaction prompts to the generic action", () => {
@@ -100,5 +105,16 @@ describe("minimal UI contract", () => {
     expect(narrowStyles).toMatch(
       /\.dialogue--without-portrait\s*\{\s*grid-template-columns: 1fr;\s*\}/,
     );
+    expect(narrowStyles).toContain(".stage-goal");
+  });
+
+  it("suppresses goals for blocking UI and exposes replay only for voiced lines", () => {
+    expect(html).toContain('id="dialogue-audio"');
+    expect(uiSource).toContain("setStageGoalSuppressed(true)");
+    expect(uiSource).toContain("setStageGoalSuppressed(false)");
+    expect(uiSource).toContain(
+      'this.dialogueAudio.classList.toggle("is-hidden", !onReplay)',
+    );
+    expect(uiSource).toContain("this.dialogueReplay?.()");
   });
 });

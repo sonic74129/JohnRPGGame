@@ -7,6 +7,7 @@ import {
   PORTRAIT_ASSETS,
   type PortraitKey,
 } from "../game/CharacterAssets";
+import type { StageGoal } from "../game/StageGoals";
 
 type VoidCallback = () => void;
 
@@ -36,6 +37,10 @@ export type VerseEchoPresentation =
   | (VerseEchoBase & {
       readonly mode: "player-memory";
       readonly speaker?: never;
+    })
+  | (VerseEchoBase & {
+      readonly mode: "natural-story";
+      readonly speaker: string;
     });
 
 export class GameUI {
@@ -43,6 +48,7 @@ export class GameUI {
   private dialogueIndex = 0;
   private dialogueComplete?: VoidCallback;
   private dialogueLineChanged?: (line: DialogueLine) => void;
+  private dialogueReplay?: VoidCallback;
   private dialogueLocked = false;
   private dialogueTimer?: number;
   private toastTimer?: number;
@@ -55,6 +61,9 @@ export class GameUI {
 
   private readonly hud = this.element("hud");
   private readonly objectiveReference = this.element("objective-reference");
+  private readonly stageGoal = this.element("stage-goal");
+  private readonly stageGoalMode = this.element("stage-goal-mode");
+  private readonly stageGoalText = this.element("stage-goal-text");
   private readonly score = this.element("score");
   private readonly musicToggle = this.button("music-toggle");
   private readonly interactionPrompt = this.element("interaction-prompt");
@@ -64,6 +73,7 @@ export class GameUI {
   private readonly dialogueReference = this.element("dialogue-reference");
   private readonly dialogueSpeaker = this.element("dialogue-speaker");
   private readonly dialogueText = this.element("dialogue-text");
+  private readonly dialogueAudio = this.button("dialogue-audio");
   private readonly dialogueNext = this.button("dialogue-next");
   private readonly technicalToast = this.element("technical-toast");
   private readonly verseEcho = this.element("verse-echo");
@@ -82,6 +92,7 @@ export class GameUI {
 
   constructor() {
     this.dialogueNext.addEventListener("click", () => this.advanceDialogue());
+    this.dialogueAudio.addEventListener("click", () => this.dialogueReplay?.());
     document.addEventListener("keydown", (event) =>
       this.handleChoiceKeyboard(event),
     );
@@ -110,7 +121,7 @@ export class GameUI {
   }
 
   setMusicMuted(muted: boolean): void {
-    this.musicToggle.textContent = muted ? "音乐：关" : "音乐：开";
+    this.musicToggle.textContent = muted ? "声音：关" : "声音：开";
     this.musicToggle.setAttribute("aria-pressed", String(muted));
   }
 
@@ -121,6 +132,19 @@ export class GameUI {
 
   setReference(reference: string): void {
     this.objectiveReference.textContent = reference;
+  }
+
+  setStageGoal(goal: StageGoal): void {
+    this.stageGoal.dataset.mode = goal.mode;
+    this.stageGoalMode.textContent =
+      goal.mode === "watch" ? "观看阶段" : "当前目标";
+    this.stageGoalText.textContent = goal.shortText;
+    this.stageGoal.classList.remove("is-hidden");
+  }
+
+  setStageGoalSuppressed(suppressed: boolean): void {
+    this.stageGoal.classList.toggle("is-suppressed", suppressed);
+    this.stageGoal.setAttribute("aria-hidden", String(suppressed));
   }
 
   setScore(value: number): void {
@@ -136,6 +160,7 @@ export class GameUI {
     lines: readonly DialogueLine[],
     onComplete: VoidCallback,
     onLineChanged?: (line: DialogueLine) => void,
+    onReplay?: VoidCallback,
   ): void {
     if (lines.length === 0) {
       onComplete();
@@ -146,7 +171,10 @@ export class GameUI {
     this.dialogueIndex = 0;
     this.dialogueComplete = onComplete;
     this.dialogueLineChanged = onLineChanged;
+    this.dialogueReplay = onReplay;
+    this.dialogueAudio.classList.toggle("is-hidden", !onReplay);
     this.dialogue.classList.remove("is-hidden");
+    this.setStageGoalSuppressed(true);
     this.interactionPrompt.classList.add("is-hidden");
     this.renderDialogueLine();
     this.dialogueNext.focus();
@@ -167,6 +195,8 @@ export class GameUI {
       const callback = this.dialogueComplete;
       this.dialogueComplete = undefined;
       this.dialogueLineChanged = undefined;
+      this.dialogueReplay = undefined;
+      this.setStageGoalSuppressed(false);
       this.focusGame();
       callback?.();
       return true;
@@ -212,6 +242,7 @@ export class GameUI {
         }
         this.choiceScreen.classList.add("is-hidden");
         this.hud.classList.remove("is-hidden");
+        this.setStageGoalSuppressed(false);
         this.focusGame();
         onCorrect();
       });
@@ -219,6 +250,7 @@ export class GameUI {
     });
 
     this.hud.classList.add("is-hidden");
+    this.setStageGoalSuppressed(true);
     this.interactionPrompt.classList.add("is-hidden");
     this.choiceScreen.classList.remove("is-hidden");
     this.choiceOptions.querySelector("button")?.focus();
@@ -266,9 +298,13 @@ export class GameUI {
     this.verseEcho.style.left = `${x}px`;
     this.verseEcho.style.top = `${y}px`;
     this.verseEchoKind.textContent =
-      presentation.mode === "player-memory" ? "玩家回想" : "经文回看";
+      presentation.mode === "player-memory"
+        ? "玩家回想"
+        : presentation.mode === "natural-story"
+          ? "路人所述"
+          : "经文回看";
     this.verseEchoSpeaker.textContent =
-      presentation.mode === "npc-scripture" ? presentation.speaker : "";
+      presentation.mode === "player-memory" ? "" : presentation.speaker;
     this.verseEchoText.textContent = presentation.text;
     this.verseEchoReference.textContent = presentation.reference;
     this.verseEcho.classList.remove("is-hidden");
@@ -295,7 +331,9 @@ export class GameUI {
     this.choiceScreen.classList.add("is-hidden");
     this.dialogueComplete = undefined;
     this.dialogueLineChanged = undefined;
+    this.dialogueReplay = undefined;
     this.dialogueLocked = false;
+    this.setStageGoalSuppressed(false);
   }
 
   showPause(
@@ -304,12 +342,14 @@ export class GameUI {
     exit: VoidCallback,
   ): void {
     this.pauseHandlers = { resume, restart, exit };
+    this.setStageGoalSuppressed(true);
     this.pauseScreen.classList.remove("is-hidden");
     this.button("resume-game").focus();
   }
 
   hidePause(): void {
     this.pauseScreen.classList.add("is-hidden");
+    this.setStageGoalSuppressed(false);
   }
 
   isPauseOpen(): boolean {
@@ -323,6 +363,7 @@ export class GameUI {
     onExit: VoidCallback,
   ): void {
     this.hud.classList.add("is-hidden");
+    this.setStageGoalSuppressed(true);
     this.interactionPrompt.classList.add("is-hidden");
     this.element("final-score").textContent = String(score);
     this.element("result-title").textContent = title;
