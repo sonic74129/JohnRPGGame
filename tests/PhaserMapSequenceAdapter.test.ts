@@ -94,6 +94,19 @@ describe("Phaser MapSequence input routing", () => {
     expect(isUiEventTarget({ closest: () => null })).toBe(false);
   });
 
+  it("does not skip a cinematic marked as unskippable", () => {
+    for (const kind of ["enter", "space", "pointer"] as const) {
+      expect(
+        routePhaserSequenceInput(kind, {
+          dialogueOpen: false,
+          choiceOpen: false,
+          sequenceRunning: true,
+          sequenceSkippable: false,
+        }),
+      ).toBe("ui");
+    }
+  });
+
   it("filters blocked signals and unsubscribes idempotently", () => {
     let blocking = true;
     const source = new PhaserMapSequenceInputSource(() => !blocking);

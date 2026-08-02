@@ -93,6 +93,7 @@ export const dialogueLinesForBeat = (
             ...line,
             speaker: assignment.displayedSpeaker ?? line.speaker,
             portrait: assignment.portrait,
+            secondaryPortrait: assignment.secondaryPortrait,
           }
         : line;
     }),

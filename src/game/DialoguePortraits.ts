@@ -7,6 +7,7 @@ export interface DialoguePortraitAssignment {
   readonly verseKey: John11VerseKey;
   readonly sourceSpeaker: string;
   readonly portrait: PortraitKey;
+  readonly secondaryPortrait?: PortraitKey;
   readonly displayedSpeaker?: string;
 }
 
@@ -215,6 +216,7 @@ export const DIALOGUE_PORTRAIT_ASSIGNMENTS = [
     verseKey: "john11:3",
     sourceSpeaker: "姐妹二人",
     portrait: "martha-worried",
+    secondaryPortrait: "mary-worried",
   },
   {
     beatId: "two-day-wait",

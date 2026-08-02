@@ -435,7 +435,7 @@ export class GameUI {
     this.dialogueReference.textContent = line.reference ?? "";
     this.dialogueSpeaker.textContent = line.speaker;
     this.dialogueText.textContent = line.text;
-    this.renderPortrait(line.portrait);
+    this.renderPortrait(line.portrait, line.secondaryPortrait);
     this.dialogueLocked = Boolean(line.pauseMs);
     this.dialogueNext.toggleAttribute("disabled", this.dialogueLocked);
     if (this.dialogueTimer !== undefined) {
@@ -455,14 +455,30 @@ export class GameUI {
         : "继续　SPACE";
   }
 
-  private renderPortrait(portrait?: PortraitKey): void {
+  private renderPortrait(
+    portrait?: PortraitKey,
+    secondaryPortrait?: PortraitKey,
+  ): void {
     const selected = portrait ? PORTRAIT_ASSETS[portrait] : undefined;
+    const secondary = secondaryPortrait
+      ? PORTRAIT_ASSETS[secondaryPortrait]
+      : undefined;
     this.dialogue.classList.toggle("dialogue--without-portrait", !selected);
+    this.dialogue.classList.toggle("dialogue--dual-portrait", Boolean(secondary));
     this.dialoguePortrait.classList.toggle("is-hidden", !selected);
     if (!selected) {
+      this.dialoguePortrait.style.backgroundImage = "";
       return;
     }
-    this.dialoguePortrait.style.backgroundImage = `url("${selected}")`;
+    this.dialoguePortrait.style.backgroundImage = secondary
+      ? `url("${selected}"), url("${secondary}")`
+      : `url("${selected}")`;
+    this.dialoguePortrait.style.backgroundPosition = secondary
+      ? "left center, right center"
+      : "center";
+    this.dialoguePortrait.style.backgroundSize = secondary
+      ? "50% 100%, 50% 100%"
+      : "cover";
   }
 
   private focusGame(): void {

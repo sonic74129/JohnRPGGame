@@ -12,6 +12,7 @@ export interface PhaserSequenceInputState {
   readonly dialogueOpen: boolean;
   readonly choiceOpen: boolean;
   readonly sequenceRunning: boolean;
+  readonly sequenceSkippable?: boolean;
   readonly uiPointer?: boolean;
 }
 
@@ -63,7 +64,7 @@ export const routePhaserSequenceInput = (
     return "choice";
   }
   if (state.sequenceRunning) {
-    return "skip";
+    return state.sequenceSkippable === false ? "ui" : "skip";
   }
   return "gameplay";
 };

@@ -63,6 +63,7 @@ describe("Scripture dialogue attribution", () => {
     expect(entrusted[0]).toMatchObject({
       speaker: "姐妹二人",
       portrait: "martha-worried",
+      secondaryPortrait: "mary-worried",
     });
 
     const returnDialogue = dialogueLinesForBeat(
@@ -106,6 +107,9 @@ describe("Scripture dialogue attribution", () => {
 
     for (const assignment of DIALOGUE_PORTRAIT_ASSIGNMENTS) {
       expect(PORTRAIT_ASSETS).toHaveProperty(assignment.portrait);
+      if ("secondaryPortrait" in assignment) {
+        expect(PORTRAIT_ASSETS).toHaveProperty(assignment.secondaryPortrait);
+      }
       const lines = dialogueLinesForBeat(
         VERSE_BEAT_BY_ID[assignment.beatId],
       );

@@ -15,6 +15,7 @@ export interface DialogueLine {
   readonly reference?: string;
   readonly kind: "scripture";
   readonly portrait?: PortraitKey;
+  readonly secondaryPortrait?: PortraitKey;
   readonly pauseMs?: number;
 }
 

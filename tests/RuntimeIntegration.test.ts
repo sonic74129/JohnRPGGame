@@ -44,6 +44,9 @@ describe("unified runtime integration", () => {
     expect(sceneSource).toContain('state: "time-skip-return"');
     expect(sceneSource).toContain('"两天后"');
     expect(sceneSource).toContain("this.restoreTwoDayCamp()");
+    expect(sceneSource).toContain(
+      'sequenceSkippable: this.story.beatId !== "two-day-wait"',
+    );
     expect(sceneSource).not.toContain('state: "wait-dusk"');
   });
 

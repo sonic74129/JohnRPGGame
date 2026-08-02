@@ -209,6 +209,10 @@ button.primary {
   grid-template-columns: 1fr;
 }
 
+.dialogue--dual-portrait {
+  grid-template-columns: 256px 1fr;
+}
+
 .dialogue-portrait {
   min-height: 168px;
   border-right: 2px solid rgba(244, 200, 106, 0.45);
@@ -553,6 +557,10 @@ blockquote cite {
 
   .dialogue--without-portrait {
     grid-template-columns: 1fr;
+  }
+
+  .dialogue--dual-portrait {
+    grid-template-columns: 176px 1fr;
   }
 
   .dialogue-portrait {

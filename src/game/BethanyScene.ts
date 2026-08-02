@@ -961,6 +961,7 @@ export class BethanyScene extends Phaser.Scene {
       dialogueOpen: this.ui.isDialogueOpen(),
       choiceOpen: this.ui.isChoiceOpen(),
       sequenceRunning: this.sequence?.isRunning ?? false,
+      sequenceSkippable: this.story.beatId !== "two-day-wait",
       uiPointer,
     });
     if (route === "advance-dialogue") {
