@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "pose.disciples-witnesses",
+    "family": "special-pose",
+    "purpose": "Source sheet of restrained supporting-character actions for listening, following, mourning, guiding, moving the stone and reacting within playable map scenes.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v3",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.disciples",
+      "character.witnesses",
+      "master.tomb-garden"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:17:06.818Z",
+    "updatedAt": "2026-08-01T16:24:23.650Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/special-pose/pose__disciples-witnesses/v3/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/special-pose/pose__disciples-witnesses/v3/run-001",
+    "selectedSource": "production/art-source/special-pose/pose__disciples-witnesses/v3/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/special-pose/pose__disciples-witnesses/v3/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/special-pose/pose__disciples-witnesses/v3/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__disciples-witnesses/v3/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:18:59.175Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/special-pose/pose__disciples-witnesses/v3/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:23:07.427Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 2,
+    "sourcePath": "production/art-pipeline/candidates/special-pose/pose__disciples-witnesses/v3/run-001/candidate-02.png",
+    "selectedSourcePath": "production/art-source/special-pose/pose__disciples-witnesses/v3/run-001-selected.png",
+    "reason": "Only passing full-body action sheet: all nine map poses retain complete silhouettes and visible foot anchors, approved palette/identity cues, readable restrained actions, and no runtime UI or supernatural content.",
+    "selectedAt": "2026-08-01T16:24:23.649Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-cuddly-train/production/art-source/special-pose/pose__disciples-witnesses/v3/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-cuddly-train/public/assets/art/special-pose/pose__disciples-witnesses/v3/run-001/pose__disciples-witnesses.png"
+    ],
+    "startedAt": "2026-08-01T16:24:23.891363Z",
+    "completedAt": "2026-08-01T16:24:24.564839Z",
+    "failureReason": null
+  },
+  "runtimeMapping": {
+    "columns": 3,
+    "rows": 3,
+    "frames": [
+      "mourner-care",
+      "older-witness-rising",
+      "mourner-kneeling-grief",
+      "thomas-listening",
+      "younger-disciple-following",
+      "older-disciple-praying",
+      "guide-calling",
+      "stone-moving",
+      "restrained-group-reaction"
+    ]
+  },
+  "normalization": {
+    "componentCount": 9,
+    "sheetSize": [
+      1167,
+      804
+    ],
+    "cellSize": [
+      389,
+      268
+    ],
+    "perFrameScaling": false,
+    "mirroredFrames": [],
+    "backgroundRemoval": "Deterministic background-to-alpha cleanup from the approved source.",
+    "alignment": "Each approved row-major action is cropped independently, centered without scaling, and bottom-aligned with eight transparent pixels."
+  }
+}

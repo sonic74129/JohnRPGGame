@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0.0",
+  "assetId": "environment.world-map",
+  "promptVersion": "v1.1",
+  "maiRequestCount": 3,
+  "contactSheet": "production/art-pipeline/review/environment/environment__world-map/v1.1/run-001-contact-sheet.jpg",
+  "automatedAudit": "production/art-pipeline/review/environment/environment__world-map/v1.1/run-001-audit.json",
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "visualFinding": "Best locked-layout fidelity: complete natural border, clearest lower-left compound and center-left village hierarchy, broad center-right and lower-right playable clearings, and the most readable connected route to the upper-right cave landmark."
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "visualFinding": "Continuous and usable, but the lower-right olive clearing is more crowded and the central route hierarchy is weaker."
+    },
+    {
+      "index": 3,
+      "status": "rejected",
+      "visualFinding": "The pale outer margin reads as an isolated vignette and the building cluster is too concentrated for the locked continuous-world composition."
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "selectedSource": "production/art-source/environment/environment__world-map/v1.1/run-001-selected.png",
+    "runtimeAsset": "public/assets/art/environment/environment__world-map/v1.1/run-001/environment__world-map.png"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "character.mary",
+    "family": "character",
+    "purpose": "Source character sheet for Mary, including four-direction idle and two-step walk poses with identity and clothing locked for map actions and portraits.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v3",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:17:40.194Z",
+    "updatedAt": "2026-08-01T16:20:52.928Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/character/character__mary/v3/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/character/character__mary/v3/run-001",
+    "selectedSource": "production/art-source/characters/core/character__mary/v3/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/character__mary/v3/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/character/character__mary/v3/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__mary/v3/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:18:29.334Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__mary/v3/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:20:09.432Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 2,
+    "sourcePath": "production/art-pipeline/candidates/character/character__mary/v3/run-001/candidate-02.png",
+    "selectedSourcePath": "production/art-source/characters/core/character__mary/v3/run-001-selected.png",
+    "reason": "Selected after v3 two-candidate comparison: exact 3x4 twelve-figure layout, stable Mary identity and approved storybook style; runtime row four will be mirrored deterministically to supply the missing opposite profile direction.",
+    "selectedAt": "2026-08-01T16:20:52.928Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "idle",
+      "step-left",
+      "step-right"
+    ],
+    "rows": [
+      "front",
+      "back",
+      "right",
+      "left"
+    ]
+  },
+  "normalization": {
+    "componentCount": 12,
+    "sheetSize": [
+      360,
+      896
+    ],
+    "cellSize": [
+      120,
+      224
+    ],
+    "footBaseline": 217,
+    "perFrameScaling": false,
+    "mirroredRows": [
+      "left"
+    ],
+    "backgroundRemoval": "Smooth flat background converted to antialiased alpha; partial-alpha RGB unmatted against the measured beige background and disconnected pixels excluded while preserving each connected character silhouette.",
+    "alignment": "Each unscaled component is horizontally centered and vertically translated so its alpha>=32 bottom lands at cell y=217; only the runtime left-facing row is mirrored."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/character__mary/v3/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/character__mary/v3/run-001/character__mary.png"
+    ],
+    "startedAt": "2026-08-01T16:22:58.265210Z",
+    "completedAt": "2026-08-01T16:22:58.833798Z",
+    "failureReason": null
+  }
+}

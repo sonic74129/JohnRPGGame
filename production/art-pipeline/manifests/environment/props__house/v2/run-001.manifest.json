@@ -1,0 +1,200 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "props.house",
+    "family": "environment",
+    "purpose": "Source atlas of reusable household props at believable indoor human scale for placement and occlusion in the runtime house.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v2",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "environment.house-base"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:26:03.888Z",
+    "updatedAt": "2026-08-01T16:29:18.653Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/environment/props__house/v2/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/environment/props__house/v2/run-001",
+    "selectedSource": "production/art-source/environment/interior/props__house/v2/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/environment/interior/props__house/v2/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/environment/props__house/v2/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/props__house/v2/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:26:38.276Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/props__house/v2/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:28:24.117Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/environment/props__house/v2/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/environment/interior/props__house/v2/run-001-selected.png",
+    "reason": "Best approved v2 atlas: exact 4x3 layout, twelve complete independent prop identities, separate bowl and linen, credible indoor scale and materials, and no connected room scene.",
+    "selectedAt": "2026-08-01T16:29:18.652Z"
+  },
+  "review": {
+    "contactSheet": {
+      "path": "production/art-pipeline/review/environment/props__house/v2/run-001-contact-sheet.jpg",
+      "width": 1600,
+      "height": 498,
+      "bytes": 122372
+    },
+    "criteria": [
+      "beauty",
+      "approvedMasterConsistency",
+      "camera",
+      "scale",
+      "materials",
+      "decomposition",
+      "bannedContentCompliance"
+    ],
+    "promptIterations": [
+      {
+        "promptVersion": "v1",
+        "observedDefect": "Connected room scenery and shared atlas cells prevent stable extraction.",
+        "failedCandidatePaths": [
+          "production/art-pipeline/candidates/environment/props__house/v1/run-001/candidate-01.png",
+          "production/art-pipeline/candidates/environment/props__house/v1/run-001/candidate-02.png"
+        ],
+        "candidates": [
+          {
+            "candidate": 1,
+            "scores": [
+              9,
+              9,
+              9,
+              9,
+              9,
+              1,
+              6
+            ],
+            "total": 52,
+            "maximum": 70
+          },
+          {
+            "candidate": 2,
+            "scores": [
+              9,
+              9,
+              9,
+              8.5,
+              9,
+              5,
+              7
+            ],
+            "total": 56.5,
+            "maximum": 70
+          }
+        ]
+      },
+      {
+        "promptVersion": "v2",
+        "observedDefect": null,
+        "failedCandidatePaths": [
+          "production/art-pipeline/candidates/environment/props__house/v2/run-001/candidate-02.png"
+        ],
+        "candidates": [
+          {
+            "candidate": 1,
+            "scores": [
+              9,
+              9.5,
+              9.5,
+              9,
+              9.5,
+              10,
+              10
+            ],
+            "total": 66.5,
+            "maximum": 70
+          },
+          {
+            "candidate": 2,
+            "scores": [
+              9.5,
+              9.5,
+              9.5,
+              9,
+              9.5,
+              8,
+              10
+            ],
+            "total": 65,
+            "maximum": 70
+          }
+        ],
+        "selectionReason": "Exact 4x3 layout, twelve complete independent prop identities, separate bowl and linen, credible indoor scale and materials, and no connected room scene.",
+        "approvedCandidatePath": "production/art-source/environment/interior/props__house/v2/run-001-selected.png",
+        "runtimeOutputMapping": "public/assets/art/environment/interior/props__house/v2/run-001/props__house.png"
+      }
+    ]
+  },
+  "runtimeValidation": {
+    "width": 1360,
+    "height": 768,
+    "mode": "RGBA",
+    "alphaExtrema": [0, 255],
+    "transparentPixels": 759983,
+    "partialAlphaPixels": 35088,
+    "opaquePixels": 249409,
+    "nontransparentBorderPixels": 0,
+    "componentsAtAlpha128": 12,
+    "primaryComponentsAtLeast1000Pixels": 12,
+    "transparentPixelsWithNonzeroRgb": 0,
+    "lampHandleAlpha": 7,
+    "cupHandleAlpha": 1,
+    "transparencyCleanup": "Thresholded connected plain-background removal with explicit lamp and cup handle-hole clearing, retention of the twelve primary connected prop components, and a 0.8-pixel premultiplied alpha feather."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-turbo-system/production/art-source/environment/interior/props__house/v2/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-turbo-system/public/assets/art/environment/interior/props__house/v2/run-001/props__house.png"
+    ],
+    "startedAt": "2026-08-01T16:29:38.014364Z",
+    "completedAt": "2026-08-01T16:29:38.356107Z",
+    "failureReason": null
+  }
+}

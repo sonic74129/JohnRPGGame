@@ -1,0 +1,2398 @@
+import Phaser from "phaser";
+
+import { AudioManager } from "../audio/AudioManager";
+import { VoiceManager } from "../audio/VoiceManager";
+import {
+  VOICE_CUES,
+  type VoiceCueId,
+} from "../audio/VoiceManifest";
+import {
+  createActorLabel,
+  type ActorLabelController,
+} from "../ui/ActorLabel";
+import { GameUI } from "../ui/GameUI";
+import {
+  resolveBaseActorPresentation,
+  resolveSpecialActorPresentation,
+  type ActorPosePresentation,
+  type SequenceSpecialPose,
+} from "./ActorPosePresentation";
+import { ActorRegistry } from "./ActorRegistry";
+import type { AreaResource } from "./AreaRuntime";
+import { getLatestActorVerseEcho } from "./ActorVerseEcho";
+import {
+  TWO_DAY_EXIT_POINTS,
+  TWO_DAY_TRANSITION_STATES,
+  TWO_DAY_WALK_ACTORS,
+  WORLD_HOUSE_EXIT_SPAWN,
+  resolveHouseDoorTransition,
+} from "./BethanyFlow";
+import { Character } from "./Character";
+import {
+  CORE_POSE_SHEETS,
+  LAZARUS_SHEET,
+  SUPPORTING_ACTION_SHEET,
+} from "./CharacterAssets";
+import {
+  allCharacterSheets,
+  actorSpriteCharacter,
+  characterOriginY,
+  hasWalkFrames,
+  lazarusFrame,
+  lazarusScaleToFit,
+  lazarusTextureKey,
+  resolveFacing,
+  spriteFrame,
+  spriteSheet,
+  spriteTextureKey,
+  walkAnimationKey,
+  walkFrames,
+  type Facing,
+  type SpriteCharacter,
+} from "./CharacterSprites";
+import {
+  DEFAULT_DISPLAY_SCALE,
+  applyLinearTextureFiltering,
+  resolveActorSizeMultiplier,
+  resolveDisplayMetrics,
+} from "./DisplayScale";
+import {
+  HOUSE_ART,
+  HOUSE_DOOR_REENTRY_SPAWN,
+  HOUSE_FOREGROUND_PLACEMENTS,
+  HOUSE_OBSTACLES,
+  HOUSE_PLAYER_SPAWN,
+  HOUSE_PROP_PLACEMENTS,
+  HOUSE_SICK_LAZARUS_POSITION,
+  HOUSE_SICK_LAZARUS_SIZE,
+  HOUSE_SICK_LAZARUS_ANGLE,
+  HOUSE_SICK_LAZARUS_DEPTH,
+  HOUSE_SICK_LAZARUS_FLIP_X,
+  HOUSE_STORY_FOCUS,
+  type HouseArtPlacement,
+} from "./EnvironmentAssets";
+import {
+  FIND_JESUS_MEMORY_CARRIERS,
+  FIND_JESUS_STORY_CONTRACT,
+} from "./FindJesusStories";
+import {
+  MapSequence,
+  type MapSequenceDefinition,
+  type MapSequenceOperation,
+  type MapSequenceSchema,
+  type MapSequenceStep,
+} from "./MapSequence";
+import {
+  isMemoryCarrier,
+  MEMORY_CLUE_ATLAS,
+  MEMORY_CLUE_DISPLAY_SIZE,
+  MEMORY_CLUE_FRAMES,
+} from "./MemoryClueAssets";
+import { NavigationGrid, type Point, type Rectangle } from "./NavigationGrid";
+import {
+  createPhaserMapSequenceAdapters,
+  isUiEventTarget,
+  PhaserMapSequenceInputSource,
+  routePhaserSequenceInput,
+  type PhaserSequenceHost,
+  type PhaserSequenceInputKind,
+} from "./PhaserMapSequenceAdapter";
+import { PlayerController } from "./PlayerController";
+import {
+  ACTOR_LABELS,
+  FIND_JESUS_CONTRACT,
+  JOHN_11_VERSES,
+  RECALL_QUESTIONS,
+  type RecallQuestion,
+  type StoryActorId,
+} from "./ScriptureContent";
+import { dialogueLinesForBeat } from "./ScriptureDialogue";
+import { applyStoryCompletionPresentation } from "./StoryCompletionPresentation";
+import { StoryEngine } from "./StoryEngine";
+import { STAGE_GOALS } from "./StageGoals";
+import { TOMB_ANCHORS } from "./TombAnchors";
+import { TOMB_PROP_ASSETS } from "./TombAssets";
+import type { ActorId, DialogueLine, MusicState } from "./types";
+import {
+  VERSE_BEATS,
+  type VerseBeat,
+  type VerseBeatId,
+} from "./VerseBeats";
+import { WorldRuntime, type WorldHost } from "./WorldRuntime";
+import {
+  WORLD_HEIGHT,
+  WORLD_LANDMARKS,
+  WORLD_MAP_FALLBACK_KEY,
+  WORLD_MAP_FALLBACK_URL,
+  WORLD_MAP_RUNTIME_URL,
+  WORLD_MAP_SOURCE_KEY,
+  WORLD_REGIONS,
+  WORLD_ROUTES,
+  WORLD_WIDTH,
+  WORLD_TOMB_STONE_OBSTACLE,
+  createWorldNavigation,
+} from "./WorldLayout";
+
+const PLAYER_SPEED = 260;
+const INTERACTION_DISTANCE = 125;
+const EXTERIOR_CHARACTER_HEIGHT = DEFAULT_DISPLAY_SCALE.outdoorVisibleHeight;
+
+const ACTOR_IDS = [
+  "martha",
+  "mary",
+  "mourner",
+  "mourner-woman",
+  "jesus",
+  "guide",
+  "older-witness",
+  "thomas",
+  "older-disciple",
+  "younger-disciple",
+  "memory-carrier-bread",
+  "memory-carrier-water",
+  "memory-carrier-mud",
+] as const satisfies readonly ActorId[];
+
+const WORLD_ACTOR_POSITIONS: Readonly<Record<ActorId, Point>> = {
+  martha: { x: 650, y: 1120 },
+  mary: { x: 720, y: 1170 },
+  mourner: { x: 900, y: 1020 },
+  "mourner-woman": { x: 970, y: 1080 },
+  guide: { x: 1030, y: 1040 },
+  "older-witness": { x: 1100, y: 1080 },
+  jesus: FIND_JESUS_STORY_CONTRACT.reservedCamp.center,
+  thomas: { x: 2360, y: 1270 },
+  "older-disciple": { x: 2300, y: 1350 },
+  "younger-disciple": { x: 2180, y: 1350 },
+  "memory-carrier-bread":
+    FIND_JESUS_MEMORY_CARRIERS["memory-carrier-bread"].placement,
+  "memory-carrier-water":
+    FIND_JESUS_MEMORY_CARRIERS["memory-carrier-water"].placement,
+  "memory-carrier-mud":
+    FIND_JESUS_MEMORY_CARRIERS["memory-carrier-mud"].placement,
+};
+
+type SequenceActor = ActorId | "player" | "lazarus" | "stone-group";
+type EnvironmentState =
+  | "none"
+  | (typeof TWO_DAY_TRANSITION_STATES)[number]
+  | "stone-open"
+  | "lazarus-emerge";
+type CameraTarget = SequenceActor | Point;
+
+interface BethanySequenceSchema extends MapSequenceSchema {
+  readonly actor: SequenceActor;
+  readonly point: Point;
+  readonly facing: Facing;
+  readonly ordinaryPose: "idle";
+  readonly specialPose: SequenceSpecialPose;
+  readonly cameraTarget: CameraTarget;
+  readonly environment: EnvironmentState;
+  readonly dialogue: readonly DialogueLine[];
+  readonly choice: RecallQuestion;
+  readonly music: MusicState;
+  readonly finalState: VerseBeat["finalState"];
+  readonly handoff: VerseBeat["handoff"];
+  readonly finalize: VerseBeatId;
+}
+
+interface ActorVisual {
+  readonly container: Phaser.GameObjects.Container;
+  readonly sprite: Phaser.GameObjects.Sprite;
+  readonly character: SpriteCharacter;
+  readonly shadow: Phaser.GameObjects.Ellipse;
+  readonly label: ActorLabelController;
+  facing: Facing;
+}
+
+const completedOperation = (): MapSequenceOperation => ({
+  finished: Promise.resolve(),
+  cancel: () => undefined,
+});
+
+const isPoint = (target: CameraTarget): target is Point =>
+  typeof target === "object" && "x" in target && "y" in target;
+
+const isVoiceCueId = (value: unknown): value is VoiceCueId =>
+  value === "opening-john11-1-3" || value === "jesus-resurrection-life";
+
+export class BethanyScene extends Phaser.Scene {
+  private story = new StoryEngine();
+  private actorRegistry = new ActorRegistry();
+  private playerController = new PlayerController();
+  private readonly visuals = new Map<ActorId, ActorVisual>();
+  private readonly labelTexts = new Map<ActorId, string | null>();
+
+  private ui!: GameUI;
+  private audio!: AudioManager;
+  private voice!: VoiceManager;
+  private validVoiceCues!: Promise<ReadonlySet<VoiceCueId>>;
+  private player!: Phaser.Physics.Arcade.Sprite;
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private movementKeys!: {
+    readonly W: Phaser.Input.Keyboard.Key;
+    readonly A: Phaser.Input.Keyboard.Key;
+    readonly S: Phaser.Input.Keyboard.Key;
+    readonly D: Phaser.Input.Keyboard.Key;
+  };
+  private worldRuntime?: WorldRuntime;
+  private sequence?: MapSequence<BethanySequenceSchema>;
+  private readonly sequenceInput = new PhaserMapSequenceInputSource(
+    () => !this.ui.isBlockingOpen(),
+  );
+  private navigation?: NavigationGrid;
+  private movementPath: Point[] = [];
+  private pendingActor?: ActorId;
+  private nearestActor?: ActorId;
+  private started = false;
+  private inWorld = false;
+  private paused = false;
+  private sequenceStarting = false;
+  private playerFacing: Facing = "front";
+  private resources: AreaResource[] = [];
+  private decorations: Phaser.GameObjects.GameObject[] = [];
+  private daylightOverlay?: Phaser.GameObjects.Rectangle;
+  private timeSkipCurtain?: Phaser.GameObjects.Rectangle;
+  private timeSkipTitle?: Phaser.GameObjects.Text;
+  private stone?: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+  private stoneCollider?: Phaser.Physics.Arcade.Collider;
+  private stoneGroupPose?: Phaser.GameObjects.Sprite;
+  private lazarus?: Phaser.GameObjects.Sprite;
+  private tombLazarus?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  private lazarusCollider?: Phaser.Physics.Arcade.Collider;
+  private lazarusLabel?: ActorLabelController;
+
+  constructor() {
+    super("bethany");
+  }
+
+  preload(): void {
+    this.load.image(HOUSE_ART.base.key, HOUSE_ART.base.path);
+    this.load.spritesheet(HOUSE_ART.foreground.key, HOUSE_ART.foreground.path, {
+      frameWidth: HOUSE_ART.foreground.frameWidth,
+      frameHeight: HOUSE_ART.foreground.frameHeight,
+    });
+    this.load.spritesheet(HOUSE_ART.props.key, HOUSE_ART.props.path, {
+      frameWidth: HOUSE_ART.props.frameWidth,
+      frameHeight: HOUSE_ART.props.frameHeight,
+    });
+    this.load.image(WORLD_MAP_SOURCE_KEY, WORLD_MAP_RUNTIME_URL);
+    this.load.image(WORLD_MAP_FALLBACK_KEY, WORLD_MAP_FALLBACK_URL);
+    this.load.image(MEMORY_CLUE_ATLAS.key, MEMORY_CLUE_ATLAS.path);
+    for (const asset of Object.values(TOMB_PROP_ASSETS)) {
+      this.load.image(asset.key, asset.path);
+    }
+    for (const sheet of [
+      ...allCharacterSheets(),
+      ...Object.values(CORE_POSE_SHEETS),
+      SUPPORTING_ACTION_SHEET,
+      LAZARUS_SHEET,
+    ]) {
+      this.load.spritesheet(sheet.key, sheet.path, {
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
+      });
+    }
+  }
+
+  create(): void {
+    const ui = this.registry.get("ui");
+    const audio = this.registry.get("audio");
+    const voice = this.registry.get("voice");
+    const validVoiceCues = this.registry.get("valid-voice-cues");
+    if (
+      !(ui instanceof GameUI) ||
+      !(audio instanceof AudioManager) ||
+      !(voice instanceof VoiceManager) ||
+      !(validVoiceCues instanceof Promise)
+    ) {
+      throw new Error(
+        "Bethany scene requires initialized UI, music, and voice services.",
+      );
+    }
+    this.ui = ui;
+    this.audio = audio;
+    this.voice = voice;
+    this.validVoiceCues = validVoiceCues.then((value: unknown) => {
+      if (
+        !(value instanceof Set) ||
+        [...value].some((cueId) => !isVoiceCueId(cueId))
+      ) {
+        throw new Error("Voice validation returned invalid cue identifiers.");
+      }
+      return new Set([...value].filter(isVoiceCueId));
+    });
+    applyLinearTextureFiltering({
+      linearMode: Phaser.Textures.FilterMode.LINEAR,
+      textureKeys: this.textures.getTextureKeys(),
+      setFilter: (textureKey, filterMode) =>
+        this.textures.get(textureKey).setFilter(filterMode),
+    });
+    this.createMemoryClueFrames();
+    this.createWalkAnimations();
+    this.createPlayer();
+    this.registerActors();
+    this.worldRuntime = new WorldRuntime(this.createWorldHost());
+    this.sequence = new MapSequence(
+      createPhaserMapSequenceAdapters(this.createSequenceHost()),
+    );
+    this.enterHouse();
+    this.configureInput();
+    this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+    this.game.events.on("start-story", this.startStory, this);
+    this.registry.set("bethany-ready", true);
+    this.game.events.emit("bethany-ready");
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.registry.set("bethany-ready", false);
+      this.game.events.off("start-story", this.startStory, this);
+      this.voice.handleSceneChange();
+      void this.sequence?.dispose();
+      this.worldRuntime?.cleanup();
+      this.clearSceneResources();
+      this.clearActorVisuals();
+    });
+  }
+
+  update(): void {
+    if (!this.canAcceptPlayerInput()) {
+      this.player.setVelocity(0);
+      this.updatePlayerAnimation(0, 0);
+      this.ui.setInteractionPrompt(false);
+      return;
+    }
+
+    this.updateMovement();
+    this.updateNearestActor();
+    this.tryProximityBeat();
+    this.tryHouseTransition();
+    this.updateDepths();
+  }
+
+  private startStory(): void {
+    if (this.started) {
+      return;
+    }
+    this.started = true;
+    this.ui.showGameHud();
+    this.syncHud();
+    this.audio.setState("exploration", 900);
+    this.cameras.main.fadeIn(450, 20, 18, 14);
+  }
+
+  private createPlayer(): void {
+    this.player = this.physics.add.sprite(
+      0,
+      0,
+      spriteTextureKey("messenger"),
+      spriteFrame("messenger", this.playerFacing, "idle"),
+    );
+    this.applyActorScale(this.player, "messenger", "indoor");
+    this.player
+      .setOrigin(0.5, characterOriginY("messenger"))
+      .setCollideWorldBounds(true)
+      .setBodySize(72, 60)
+      .setOffset(44, 150);
+  }
+
+  private registerActors(): void {
+    for (const id of ACTOR_IDS) {
+      const initialLabel = isMemoryCarrier(id)
+        ? FIND_JESUS_MEMORY_CARRIERS[id].temporaryLabel
+        : ACTOR_LABELS[id] ?? FIND_JESUS_CONTRACT.temporaryLabel;
+      this.actorRegistry.register(
+        new Character(
+          id,
+          initialLabel,
+          "lazarus-house",
+          { x: 0, y: 0 },
+          false,
+        ),
+      );
+      this.labelTexts.set(id, ACTOR_LABELS[id]);
+    }
+  }
+
+  private enterHouse(playerSpawn: Point = HOUSE_PLAYER_SPAWN): void {
+    this.inWorld = false;
+    this.worldRuntime?.cleanup();
+    this.clearSceneResources();
+    this.clearActorVisuals();
+    this.physics.world.setBounds(0, 0, HOUSE_ART.width, HOUSE_ART.height);
+    this.cameras.main.setBounds(0, 0, HOUSE_ART.width, HOUSE_ART.height);
+    this.createHouseBackground();
+    this.resources.push(...HOUSE_OBSTACLES.map((obstacle) => this.createObstacle(obstacle)));
+    this.navigation = new NavigationGrid(
+      HOUSE_ART.width,
+      HOUSE_ART.height,
+      40,
+      HOUSE_OBSTACLES,
+    );
+    this.actorRegistry.hideAll();
+    this.placeActor("martha", { x: 690, y: 455 }, true);
+    this.placeActor("mary", { x: 705, y: 535 }, true);
+    this.player.setPosition(playerSpawn.x, playerSpawn.y);
+    this.applyActorScale(this.player, "messenger", "indoor");
+    this.createSickLazarus();
+    this.cameras.main.centerOn(this.player.x, this.player.y);
+  }
+
+  private enterWorld(playerSpawn: Point = WORLD_HOUSE_EXIT_SPAWN): void {
+    this.inWorld = true;
+    this.clearSceneResources();
+    this.clearActorVisuals();
+    this.worldRuntime?.activate();
+    this.createTombElements();
+    this.actorRegistry.hideAll();
+    for (const id of ACTOR_IDS) {
+      this.placeActor(id, WORLD_ACTOR_POSITIONS[id], true);
+    }
+    this.player.setPosition(playerSpawn.x, playerSpawn.y);
+    this.applyActorScale(this.player, "messenger", "outdoor");
+    this.applyBeatPresentation(this.story.beatId, false);
+    this.stopPlayerMovement();
+    this.cameras.main.centerOn(this.player.x, this.player.y);
+  }
+
+  private createWorldHost(): WorldHost {
+    return {
+      setBounds: (width, height) => {
+        this.physics.world.setBounds(0, 0, width, height);
+        this.cameras.main.setBounds(0, 0, width, height);
+      },
+      createWorldSource: () => this.createWorldSource(),
+      createObstacle: (obstacle) => this.createObstacle(obstacle),
+      setNavigation: (navigation) => {
+        this.navigation = navigation;
+      },
+    };
+  }
+
+  private createWorldSource(): AreaResource {
+    const textureKey = this.textures.exists(WORLD_MAP_SOURCE_KEY)
+      ? WORLD_MAP_SOURCE_KEY
+      : WORLD_MAP_FALLBACK_KEY;
+    const texture = this.textures.get(textureKey);
+    const halfWidth = WORLD_WIDTH / 2;
+    const halfHeight = WORLD_HEIGHT / 2;
+    const frames = [
+      { name: "world-nw", x: 0, y: 0 },
+      { name: "world-ne", x: halfWidth, y: 0 },
+      { name: "world-sw", x: 0, y: halfHeight },
+      { name: "world-se", x: halfWidth, y: halfHeight },
+    ] as const;
+    const container = this.add.container(0, 0).setDepth(-50);
+    for (const frame of frames) {
+      if (!texture.has(frame.name)) {
+        texture.add(
+          frame.name,
+          0,
+          frame.x,
+          frame.y,
+          halfWidth,
+          halfHeight,
+        );
+      }
+      container.add(
+        this.add
+          .image(
+            frame.x + halfWidth / 2,
+            frame.y + halfHeight / 2,
+            textureKey,
+            frame.name,
+          )
+          .setDisplaySize(halfWidth, halfHeight),
+      );
+    }
+    const compound = WORLD_REGIONS.marthaCompound;
+    const courtyard = this.add
+      .rectangle(
+        compound.x + compound.width / 2,
+        compound.y + compound.height / 2,
+        compound.width,
+        compound.height,
+        0x514638,
+        0.16,
+      )
+      .setBlendMode(Phaser.BlendModes.MULTIPLY)
+      .setDepth(-45);
+    const houseShadow = this.add
+      .ellipse(480, 1130, 520, 180, 0x1e1a15, 0.2)
+      .setDepth(-44);
+    this.daylightOverlay = this.add
+      .rectangle(
+        WORLD_WIDTH / 2,
+        WORLD_HEIGHT / 2,
+        WORLD_WIDTH,
+        WORLD_HEIGHT,
+        0x25314c,
+        0,
+      )
+      .setDepth(100000);
+    this.timeSkipCurtain = this.add
+      .rectangle(
+        0,
+        0,
+        this.cameras.main.width,
+        this.cameras.main.height,
+        0x000000,
+        1,
+      )
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setAlpha(0)
+      .setDepth(200000);
+    this.timeSkipTitle = this.add
+      .text(
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        "两天后",
+        {
+          color: "#fffaf0",
+          fontFamily: '"Noto Serif SC", serif',
+          fontSize: "52px",
+          fontStyle: "bold",
+          stroke: "#1b1713",
+          strokeThickness: 5,
+        },
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setAlpha(0)
+      .setDepth(200001);
+    return {
+      destroy: () => {
+        container.destroy();
+        courtyard.destroy();
+        houseShadow.destroy();
+        this.daylightOverlay?.destroy();
+        this.daylightOverlay = undefined;
+        this.timeSkipCurtain?.destroy();
+        this.timeSkipCurtain = undefined;
+        this.timeSkipTitle?.destroy();
+        this.timeSkipTitle = undefined;
+      },
+    };
+  }
+
+  private createHouseBackground(): void {
+    const base = this.add
+      .rectangle(
+        HOUSE_ART.width / 2,
+        HOUSE_ART.height / 2,
+        HOUSE_ART.width,
+        HOUSE_ART.height,
+        0x4f4435,
+      )
+      .setDepth(-50);
+    const art = this.add
+      .image(HOUSE_ART.width / 2, HOUSE_ART.height / 2, HOUSE_ART.base.key)
+      .setDisplaySize(HOUSE_ART.width, HOUSE_ART.height)
+      .setDepth(-48);
+    this.decorations.push(base, art);
+    for (const placement of [
+      ...HOUSE_FOREGROUND_PLACEMENTS,
+      ...HOUSE_PROP_PLACEMENTS,
+    ]) {
+      this.decorations.push(this.createHouseArtPlacement(placement));
+    }
+  }
+
+  private createHouseArtPlacement(
+    placement: HouseArtPlacement,
+  ): Phaser.GameObjects.Image {
+    const atlas = HOUSE_ART[placement.atlas];
+    const centerX =
+      placement.sourceBounds.x + placement.sourceBounds.width / 2;
+    const bottomY =
+      placement.sourceBounds.y + placement.sourceBounds.height;
+    return this.add
+      .image(
+        placement.anchor.x -
+          (centerX - atlas.frameWidth / 2) * placement.scale,
+        placement.anchor.y -
+          (bottomY - atlas.frameHeight / 2) * placement.scale,
+        atlas.key,
+        placement.frame,
+      )
+      .setScale(placement.scale)
+      .setDepth(placement.depth);
+  }
+
+  private createSickLazarus(): void {
+    this.lazarus = this.add
+      .sprite(
+        HOUSE_SICK_LAZARUS_POSITION.x,
+        HOUSE_SICK_LAZARUS_POSITION.y,
+        lazarusTextureKey(),
+        lazarusFrame("sick"),
+      )
+      .setScale(
+        lazarusScaleToFit("sick", HOUSE_SICK_LAZARUS_SIZE) *
+          resolveActorSizeMultiplier("lazarus"),
+      )
+      .setFlipX(HOUSE_SICK_LAZARUS_FLIP_X)
+      .setAngle(HOUSE_SICK_LAZARUS_ANGLE)
+      .setDepth(HOUSE_SICK_LAZARUS_DEPTH);
+    this.lazarusLabel = createActorLabel(this, this.lazarus, {
+      text: ACTOR_LABELS.lazarus ?? "拉撒路",
+      resolveVisibility: () => Boolean(this.lazarus?.visible),
+    });
+    this.decorations.push(this.lazarus);
+  }
+
+  private createTombElements(): void {
+    if (this.stone?.active) {
+      return;
+    }
+    const stoneBounds = TOMB_ANCHORS.stone.initialBounds;
+    const stoneCenter = {
+      x: (stoneBounds.xMin + stoneBounds.xMax) / 2,
+      y: (stoneBounds.yMin + stoneBounds.yMax) / 2,
+    };
+    const stone = this.physics.add
+      .image(stoneCenter.x, stoneCenter.y, TOMB_PROP_ASSETS.stone.key)
+      .setDisplaySize(
+        TOMB_ANCHORS.stone.size.width,
+        TOMB_ANCHORS.stone.size.height,
+      )
+      .setImmovable(true)
+      .setPushable(false)
+      .setDepth(stoneCenter.y + 20);
+    stone.body.setAllowGravity(false);
+    stone.body.setSize(
+      TOMB_ANCHORS.stone.size.width,
+      TOMB_ANCHORS.stone.size.height,
+      true,
+    );
+    this.stone = stone;
+    this.stoneCollider = this.physics.add.collider(this.player, stone);
+    const tombLazarus = this.physics.add
+      .sprite(
+        TOMB_ANCHORS.lazarus.hiddenStart.x,
+        TOMB_ANCHORS.lazarus.hiddenStart.y,
+        lazarusTextureKey(),
+        lazarusFrame("wrapped-idle"),
+      )
+      .setScale(
+        lazarusScaleToFit("wrapped-idle", {
+          width: EXTERIOR_CHARACTER_HEIGHT,
+          height: EXTERIOR_CHARACTER_HEIGHT,
+        }) * resolveActorSizeMultiplier("lazarus"),
+      )
+      .setOrigin(0.5, 535 / LAZARUS_SHEET.frameHeight)
+      .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)
+      .setImmovable(true)
+      .setPushable(false)
+      .setDepth(TOMB_ANCHORS.lazarus.hiddenStart.y + 10)
+      .setVisible(false);
+    tombLazarus.body.setAllowGravity(false);
+    tombLazarus.body.enable = false;
+    this.tombLazarus = tombLazarus;
+    this.lazarus = tombLazarus;
+    this.lazarusCollider = this.physics.add.collider(
+      this.player,
+      tombLazarus,
+    );
+    this.lazarusLabel = createActorLabel(this, tombLazarus, {
+      text: ACTOR_LABELS.lazarus ?? "拉撒路",
+      resolveVisibility: () => tombLazarus.visible,
+    });
+    this.decorations.push(stone, tombLazarus);
+    this.setStoneOpen(false);
+  }
+
+  private placeActor(id: ActorId, position: Point, visible: boolean): void {
+    const area = this.inWorld ? "bethany-world" : "lazarus-house";
+    this.actorRegistry.move(id, area, position);
+    this.actorRegistry.setVisible(id, visible);
+    if (visible) {
+      this.createActorVisual(id);
+    }
+  }
+
+  private createActorVisual(id: ActorId): void {
+    const actor = this.actorRegistry.require(id).state;
+    const character = actorSpriteCharacter(id);
+    const facing: Facing = "front";
+    const sprite = this.add
+      .sprite(
+        0,
+        0,
+        spriteTextureKey(character),
+        spriteFrame(character, facing, "idle"),
+      )
+      .setOrigin(0.5, characterOriginY(character));
+    this.applyActorScale(
+      sprite,
+      character,
+      this.inWorld ? "outdoor" : "indoor",
+    );
+    const shadow = this.add.ellipse(
+      0,
+      0,
+      Math.max(sprite.displayWidth * 0.72, 24),
+      11,
+      0x1c1814,
+      0.32,
+    );
+    const clueProp = this.createMemoryClueProp(id);
+    const container = this.add.container(actor.position.x, actor.position.y, [
+      shadow,
+      ...(clueProp ? [clueProp] : []),
+      sprite,
+    ]);
+    container
+      .setSize(sprite.displayWidth + 16, sprite.displayHeight + 24)
+      .setInteractive({ useHandCursor: true })
+      .on(
+        "pointerdown",
+        (
+          _pointer: Phaser.Input.Pointer,
+          _localX: number,
+          _localY: number,
+          event: Phaser.Types.Input.EventData,
+        ) => {
+          event.stopPropagation();
+          this.moveTowardActor(id);
+        },
+      );
+    const label = createActorLabel(this, container, {
+      text: this.labelTexts.get(id) ?? "",
+      resolveVisibleBounds: () => sprite.getBounds(),
+      resolveVisibility: () =>
+        container.visible && Boolean(this.labelTexts.get(id)),
+    });
+    this.visuals.set(id, {
+      container,
+      sprite,
+      character,
+      shadow,
+      label,
+      facing,
+    });
+  }
+
+  private createMemoryClueFrames(): void {
+    const texture = this.textures.get(MEMORY_CLUE_ATLAS.key);
+    for (const frame of Object.values(MEMORY_CLUE_FRAMES)) {
+      if (!texture.has(frame.name)) {
+        texture.add(
+          frame.name,
+          0,
+          frame.x,
+          0,
+          frame.width,
+          MEMORY_CLUE_ATLAS.height,
+        );
+      }
+    }
+  }
+
+  private createMemoryClueProp(
+    id: ActorId,
+  ): Phaser.GameObjects.Image | undefined {
+    if (!isMemoryCarrier(id)) {
+      return undefined;
+    }
+    const frame = MEMORY_CLUE_FRAMES[id];
+    return this.add
+      .image(70, -30, MEMORY_CLUE_ATLAS.key, frame.name)
+      .setDisplaySize(
+        MEMORY_CLUE_DISPLAY_SIZE.width,
+        MEMORY_CLUE_DISPLAY_SIZE.height,
+      );
+  }
+
+  private applyActorScale(
+    sprite: Phaser.GameObjects.Sprite,
+    character: SpriteCharacter,
+    area: "indoor" | "outdoor",
+  ): void {
+    const sheet = spriteSheet(character);
+    const metrics = resolveDisplayMetrics(DEFAULT_DISPLAY_SCALE, {
+      kind: "base-sheet",
+      area,
+      sourceBounds: { width: sheet.frameWidth, height: sheet.frameHeight },
+    });
+    sprite.setScale(metrics.scale * resolveActorSizeMultiplier(character));
+  }
+
+  private applyBeatPresentation(
+    beatId: VerseBeatId,
+    finalState: boolean,
+  ): void {
+    const beat = VERSE_BEATS.find((candidate) => candidate.id === beatId);
+    if (!beat) {
+      throw new Error(`Missing beat ${beatId}.`);
+    }
+    const snapshot =
+      finalState || !beat.duringBeatActors
+        ? beat.finalState.actors
+        : beat.duringBeatActors;
+    for (const id of ACTOR_IDS) {
+      const visible = snapshot.visibleActorIds.includes(id);
+      this.setActorVisible(id, visible);
+      const override = snapshot.labelOverrides?.[id];
+      const label = override === undefined ? ACTOR_LABELS[id] : override;
+      this.setActorLabel(id, label);
+    }
+  }
+
+  private setActorLabel(id: ActorId, label: string | null): void {
+    this.labelTexts.set(id, label);
+    this.visuals.get(id)?.label.updateText(label ?? "");
+  }
+
+  private setActorVisible(id: ActorId, visible: boolean): void {
+    this.actorRegistry.setVisible(id, visible);
+    let visual = this.visuals.get(id);
+    if (visible && !visual) {
+      this.createActorVisual(id);
+      visual = this.visuals.get(id);
+    }
+    visual?.container.setVisible(visible);
+  }
+
+  private clearActorVisuals(): void {
+    for (const visual of this.visuals.values()) {
+      visual.label.destroy();
+      visual.container.destroy();
+    }
+    this.visuals.clear();
+  }
+
+  private clearSceneResources(): void {
+    this.stoneCollider?.destroy();
+    this.stoneCollider = undefined;
+    this.lazarusCollider?.destroy();
+    this.lazarusCollider = undefined;
+    for (const resource of this.resources) {
+      resource.destroy();
+    }
+    this.resources = [];
+    for (const decoration of this.decorations) {
+      decoration.destroy();
+    }
+    this.decorations = [];
+    this.lazarusLabel?.destroy();
+    this.lazarusLabel = undefined;
+    this.lazarus = undefined;
+    this.tombLazarus = undefined;
+    this.stone = undefined;
+    this.stoneGroupPose?.destroy();
+    this.stoneGroupPose = undefined;
+  }
+
+  private createObstacle(obstacle: Rectangle): AreaResource {
+    const body = this.add
+      .rectangle(
+        obstacle.x + obstacle.width / 2,
+        obstacle.y + obstacle.height / 2,
+        obstacle.width,
+        obstacle.height,
+        0,
+        0,
+      )
+      .setDepth(-20);
+    this.physics.add.existing(body, true);
+    const collider = this.physics.add.collider(this.player, body);
+    return {
+      destroy: () => {
+        collider.destroy();
+        body.destroy();
+      },
+    };
+  }
+
+  private configureInput(): void {
+    const keyboard = this.input.keyboard;
+    if (!keyboard) {
+      throw new Error("Keyboard input is unavailable.");
+    }
+    this.cursors = keyboard.createCursorKeys();
+    this.movementKeys = {
+      W: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      A: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      S: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      D: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+    };
+    keyboard.on("keydown-SPACE", (event: KeyboardEvent) => {
+      if (event.repeat) {
+        return;
+      }
+      this.routeSequenceInput("space");
+    });
+    keyboard.on("keydown-ENTER", (event: KeyboardEvent) => {
+      if (!event.repeat) {
+        this.routeSequenceInput("enter");
+      }
+    });
+    keyboard.on("keydown-ESC", (event: KeyboardEvent) => {
+      if (
+        !event.repeat &&
+        this.started &&
+        !this.ui.isBlockingOpen() &&
+        !this.playerController.isLocked
+      ) {
+        this.togglePause();
+      }
+    });
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (!pointer.leftButtonDown()) {
+        return;
+      }
+      const route = this.routeSequenceInput(
+        "pointer",
+        isUiEventTarget(pointer.event?.target),
+      );
+      if (route !== "gameplay" || !this.canAcceptPlayerInput()) {
+        return;
+      }
+      this.pendingActor = undefined;
+      this.setMovementPath({ x: pointer.worldX, y: pointer.worldY });
+    });
+  }
+
+  private routeSequenceInput(
+    kind: PhaserSequenceInputKind,
+    uiPointer = false,
+  ): ReturnType<typeof routePhaserSequenceInput> {
+    const route = routePhaserSequenceInput(kind, {
+      dialogueOpen: this.ui.isDialogueOpen(),
+      choiceOpen: this.ui.isChoiceOpen(),
+      sequenceRunning: this.sequence?.isRunning ?? false,
+      sequenceSkippable: this.story.beatId !== "two-day-wait",
+      uiPointer,
+    });
+    if (route === "advance-dialogue") {
+      this.ui.advanceDialogue();
+    } else if (route === "skip") {
+      this.voice.handleSkip();
+      this.sequenceInput.emit(
+        kind === "pointer"
+          ? { kind: "pointer" }
+          : { kind: "key", key: kind === "enter" ? "Enter" : "Space" },
+      );
+    } else if (route === "gameplay" && kind === "space") {
+      this.interactWithNearestActor();
+    }
+    return route;
+  }
+
+  private canAcceptPlayerInput(): boolean {
+    return (
+      this.started &&
+      !this.paused &&
+      !this.ui.isBlockingOpen() &&
+      !this.playerController.isLocked &&
+      !this.sequenceStarting
+    );
+  }
+
+  private updateMovement(): void {
+    const horizontal =
+      Number(this.cursors.right.isDown || this.movementKeys.D.isDown) -
+      Number(this.cursors.left.isDown || this.movementKeys.A.isDown);
+    const vertical =
+      Number(this.cursors.down.isDown || this.movementKeys.S.isDown) -
+      Number(this.cursors.up.isDown || this.movementKeys.W.isDown);
+    const direction = this.playerController.resolveMovement(horizontal, vertical);
+    if (direction.x !== 0 || direction.y !== 0) {
+      this.movementPath = [];
+      this.pendingActor = undefined;
+      this.player.setVelocity(
+        direction.x * PLAYER_SPEED,
+        direction.y * PLAYER_SPEED,
+      );
+      this.updatePlayerAnimation(direction.x, direction.y);
+      return;
+    }
+    const waypoint = this.movementPath[0];
+    if (waypoint) {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        waypoint.x,
+        waypoint.y,
+      );
+      if (distance < 13) {
+        this.movementPath.shift();
+        this.player.setVelocity(0);
+        this.updatePlayerAnimation(0, 0);
+      } else {
+        this.physics.moveTo(this.player, waypoint.x, waypoint.y, PLAYER_SPEED);
+        this.updatePlayerAnimation(
+          waypoint.x - this.player.x,
+          waypoint.y - this.player.y,
+        );
+      }
+      return;
+    }
+    this.player.setVelocity(0);
+    this.updatePlayerAnimation(0, 0);
+    if (this.pendingActor) {
+      const target = this.visuals.get(this.pendingActor)?.container;
+      if (target) {
+        const distance = Phaser.Math.Distance.Between(
+          this.player.x,
+          this.player.y,
+          target.x,
+          target.y,
+        );
+        if (distance <= INTERACTION_DISTANCE) {
+          const actor = this.pendingActor;
+          this.pendingActor = undefined;
+          this.handleActorInteraction(actor);
+        }
+      }
+    }
+  }
+
+  private setMovementPath(target: Point): void {
+    const path = this.navigation?.findPath(
+      { x: this.player.x, y: this.player.y },
+      target,
+    );
+    if (!path || path.length === 0) {
+      this.movementPath = [];
+      this.ui.showTechnicalError("目标点不可达。", "unreachable", 1800);
+      return;
+    }
+    this.movementPath = path;
+  }
+
+  private eligibleActors(): readonly ActorId[] {
+    return ACTOR_IDS.filter((id) => this.visuals.get(id)?.container.visible);
+  }
+
+  private updateNearestActor(): void {
+    let nearest: ActorId | undefined;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (const id of this.eligibleActors()) {
+      const visual = this.visuals.get(id);
+      if (!visual) {
+        continue;
+      }
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        visual.container.x,
+        visual.container.y,
+      );
+      if (distance <= INTERACTION_DISTANCE && distance < nearestDistance) {
+        nearest = id;
+        nearestDistance = distance;
+      }
+    }
+    this.nearestActor = nearest;
+    const carrier =
+      nearest && this.story.beatId === "find-jesus" && isMemoryCarrier(nearest)
+        ? FIND_JESUS_MEMORY_CARRIERS[nearest]
+        : undefined;
+    this.ui.setInteractionPrompt(
+      nearest !== undefined,
+      carrier
+        ? `${carrier.proximityObservation}\nSPACE / 互动`
+        : "SPACE / 互动",
+    );
+  }
+
+  private moveTowardActor(id: ActorId): void {
+    if (!this.canAcceptPlayerInput()) {
+      return;
+    }
+    const visual = this.visuals.get(id);
+    if (!visual?.container.visible) {
+      return;
+    }
+    this.pendingActor = id;
+    const distance = Phaser.Math.Distance.Between(
+      this.player.x,
+      this.player.y,
+      visual.container.x,
+      visual.container.y,
+    );
+    if (distance <= INTERACTION_DISTANCE) {
+      this.pendingActor = undefined;
+      this.handleActorInteraction(id);
+      return;
+    }
+    this.setMovementPath({
+      x: visual.container.x,
+      y: visual.container.y + 72,
+    });
+  }
+
+  private interactWithNearestActor(): void {
+    if (this.canAcceptPlayerInput() && this.nearestActor) {
+      this.handleActorInteraction(this.nearestActor);
+    }
+  }
+
+  private handleActorInteraction(id: ActorId): void {
+    this.stopPlayerMovement();
+    if (this.story.beatId === "find-jesus") {
+      this.handleFindJesus(id);
+      return;
+    }
+    if (this.story.canTrigger(id)) {
+      void this.runActiveBeat();
+      return;
+    }
+    this.showActorEcho(id);
+  }
+
+  private handleFindJesus(id: ActorId): void {
+    if (
+      id !== "jesus" &&
+      !FIND_JESUS_CONTRACT.clueCarrierIds.includes(
+        id as (typeof FIND_JESUS_CONTRACT.clueCarrierIds)[number],
+      )
+    ) {
+      this.showActorEcho(id);
+      return;
+    }
+    if (id === FIND_JESUS_STORY_CONTRACT.correctTargetId) {
+      this.story.identifyJesus(id);
+      this.setActorLabel(
+        "jesus",
+        FIND_JESUS_STORY_CONTRACT.onJesusSelected.revealLabel,
+      );
+      this.ui.hideVerseEcho();
+      this.ui.setInteractionPrompt(false);
+      void this.runActiveBeat();
+      return;
+    }
+    const carrier = isMemoryCarrier(id)
+      ? FIND_JESUS_MEMORY_CARRIERS[id]
+      : undefined;
+    if (!carrier) {
+      this.showActorEcho(id);
+      return;
+    }
+    this.story.identifyJesus(id);
+    const visual = this.visuals.get(id);
+    if (!visual) {
+      return;
+    }
+    this.ui.showVerseEcho({
+      mode: "natural-story",
+      speaker: carrier.temporaryLabel,
+      text: carrier.interactionStory.join("\n"),
+      reference: carrier.reference,
+      anchor: this.screenAnchor(visual.container),
+      duration: 7600,
+    });
+  }
+
+  private showActorEcho(id: ActorId): void {
+    const completedThrough = this.story.completedBeatIds.at(-1);
+    if (!completedThrough) {
+      return;
+    }
+    const echo = getLatestActorVerseEcho(
+      id as StoryActorId,
+      completedThrough,
+    );
+    const visual = this.visuals.get(id);
+    if (!echo || !visual) {
+      return;
+    }
+    this.ui.showVerseEcho({
+      mode: "npc-scripture",
+      speaker: ACTOR_LABELS[id] ?? "",
+      text: echo.text,
+      reference: echo.references.join("、"),
+      anchor: this.screenAnchor(visual.container),
+    });
+  }
+
+  private screenAnchor(object: Phaser.GameObjects.Components.Transform): Point {
+    const canvas = this.game.canvas.getBoundingClientRect();
+    return {
+      x: canvas.left + (object.x - this.cameras.main.worldView.x),
+      y: canvas.top + (object.y - this.cameras.main.worldView.y) - 90,
+    };
+  }
+
+  private tryProximityBeat(): void {
+    if (
+      this.story.beatId === "illness" &&
+      Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        HOUSE_STORY_FOCUS.x,
+        HOUSE_STORY_FOCUS.y,
+      ) <= 155
+    ) {
+      void this.runActiveBeat();
+    }
+  }
+
+  private tryHouseTransition(): void {
+    const transition = resolveHouseDoorTransition(
+      this.inWorld,
+      this.story.beatId,
+      this.player,
+    );
+    if (transition === "enter-world") {
+      this.enterWorld();
+    } else if (transition === "enter-house") {
+      this.enterHouse(HOUSE_DOOR_REENTRY_SPAWN);
+    }
+  }
+
+  private async runActiveBeat(): Promise<void> {
+    if (this.sequenceStarting || this.sequence?.isRunning) {
+      return;
+    }
+    const beat = this.story.beat;
+    this.sequenceStarting = true;
+    this.stopPlayerMovement();
+    try {
+      const definition = this.sequenceDefinition(beat);
+      await this.sequence?.run(definition);
+      if (this.story.isComplete) {
+        this.finishStory();
+        return;
+      }
+      this.syncHud();
+      if (beat.id === "sisters-send" && !this.inWorld) {
+        this.enterWorld();
+      }
+      const next = this.story.beat;
+      if (
+        beat.handoff.mode === "automatic" &&
+        ["automatic", "arrival", "recall-question"].includes(next.trigger.kind)
+      ) {
+        this.sequenceStarting = false;
+        await this.runActiveBeat();
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "未知的演出错误。";
+      this.ui.showTechnicalError(message, "transition");
+    } finally {
+      this.sequenceStarting = false;
+    }
+  }
+
+  private sequenceDefinition(
+    beat: VerseBeat,
+  ): MapSequenceDefinition<BethanySequenceSchema> {
+    const steps: MapSequenceStep<BethanySequenceSchema>[] = [
+      { kind: "camera-stop-follow" },
+      {
+        kind: "camera-pan",
+        target: this.beatFocus(beat.id),
+        durationMs: 450,
+      },
+      { kind: "music", state: "dialogue", durationMs: 700 },
+    ];
+    if (beat.recallBeforeReveal.kind === "required") {
+      steps.push({
+        kind: "choice",
+        choice: RECALL_QUESTIONS[beat.recallBeforeReveal.questionId],
+      });
+    }
+    steps.push(...this.actionSteps(beat.id));
+    const dialogue = this.dialogueForBeat(beat);
+    if (dialogue.length > 0) {
+      steps.push({ kind: "dialogue", dialogue });
+    }
+    steps.push(
+      { kind: "music", state: "exploration", durationMs: 900 },
+      { kind: "camera-follow", target: "player" },
+    );
+    return {
+      steps,
+      finalState: beat.finalState,
+      handoff: beat.handoff,
+      finalize: beat.id,
+    };
+  }
+
+  private actionSteps(
+    beatId: VerseBeatId,
+  ): readonly MapSequenceStep<BethanySequenceSchema>[] {
+    const move = (
+      actor: SequenceActor,
+      points: readonly Point[],
+      durationMs = 700,
+    ): MapSequenceStep<BethanySequenceSchema> => ({
+      kind: "move",
+      actor,
+      points: points.map((point) => ({ point, durationMs })),
+    });
+    switch (beatId) {
+      case "two-day-wait":
+        return [
+          {
+            kind: "parallel",
+            branches: TWO_DAY_WALK_ACTORS.map((actor) => [
+              move(actor, [TWO_DAY_EXIT_POINTS[actor]], 1_200),
+            ]),
+          },
+          { kind: "environment", state: "time-skip-black", durationMs: 650 },
+          { kind: "environment", state: "time-skip-title", durationMs: 1_100 },
+          { kind: "environment", state: "time-skip-return", durationMs: 650 },
+        ];
+      case "message":
+        return [
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "listening",
+            },
+          },
+        ];
+      case "thomas":
+        return [
+          {
+            kind: "parallel",
+            branches: [
+              [move("jesus", WORLD_ROUTES.campToMeeting.points)],
+              [move("thomas", WORLD_ROUTES.campToMeeting.points)],
+              [move("older-disciple", WORLD_ROUTES.campToMeeting.points)],
+              [move("younger-disciple", WORLD_ROUTES.campToMeeting.points)],
+              [move("player", WORLD_ROUTES.campToMeeting.points)],
+            ],
+          },
+          { kind: "facing", actor: "thomas", facing: "left" },
+          {
+            kind: "special-pose",
+            actor: "thomas",
+            pose: { kind: "supporting", pose: "thomas-listening" },
+          },
+        ];
+      case "martha-goes":
+        return [move("martha", [WORLD_LANDMARKS.bethanyMeeting], 1100)];
+      case "martha-calls":
+        return [
+          move("martha", [WORLD_LANDMARKS.villageCenter], 1100),
+          {
+            kind: "special-pose",
+            actor: "martha",
+            pose: {
+              kind: "core",
+              character: "martha",
+              pose: "quiet-call",
+            },
+          },
+        ];
+      case "mary-rises":
+        return [
+          {
+            kind: "special-pose",
+            actor: "mary",
+            pose: {
+              kind: "core",
+              character: "mary",
+              pose: "urgent-rise",
+            },
+          },
+          { kind: "wait", durationMs: 400 },
+          {
+            kind: "parallel",
+            branches: [
+              [move("mary", [WORLD_LANDMARKS.bethanyMeeting], 1200)],
+              [move("mourner", [WORLD_LANDMARKS.bethanyMeeting], 1200)],
+              [
+                move(
+                  "mourner-woman",
+                  [{ x: WORLD_LANDMARKS.bethanyMeeting.x + 60, y: WORLD_LANDMARKS.bethanyMeeting.y + 50 }],
+                  1200,
+                ),
+              ],
+              [
+                move(
+                  "older-witness",
+                  [{ x: WORLD_LANDMARKS.bethanyMeeting.x - 60, y: WORLD_LANDMARKS.bethanyMeeting.y + 50 }],
+                  1200,
+                ),
+              ],
+            ],
+          },
+        ];
+      case "mary-at-feet":
+        return [
+          { kind: "facing", actor: "mary", facing: "right" },
+          { kind: "facing", actor: "jesus", facing: "left" },
+          {
+            kind: "special-pose",
+            actor: "mary",
+            pose: {
+              kind: "core",
+              character: "mary",
+              pose: "kneeling-grief",
+            },
+          },
+        ];
+      case "jesus-weeps":
+        return [
+          {
+            kind: "special-pose",
+            actor: "mary",
+            pose: {
+              kind: "core",
+              character: "mary",
+              pose: "quiet-weeping",
+            },
+          },
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "visible-grief",
+            },
+          },
+        ];
+      case "come-and-see":
+        return [
+          {
+            kind: "parallel",
+            branches: [
+              [move("jesus", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("martha", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("mary", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("mourner", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("mourner-woman", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("guide", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("older-witness", WORLD_ROUTES.villageToTomb.points, 600)],
+              [move("player", WORLD_ROUTES.villageToTomb.points, 600)],
+            ],
+          },
+        ];
+      case "stone-and-prayer":
+        return [
+          {
+            kind: "special-pose",
+            actor: "stone-group",
+            pose: { kind: "supporting", pose: "stone-moving" },
+          },
+          { kind: "environment", state: "stone-open", durationMs: 1000 },
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "restrained-prayer",
+            },
+          },
+        ];
+      case "call-and-emergence":
+        return [
+          {
+            kind: "special-pose",
+            actor: "jesus",
+            pose: {
+              kind: "core",
+              character: "jesus",
+              pose: "authoritative-call",
+            },
+          },
+          { kind: "environment", state: "lazarus-emerge", durationMs: 1500 },
+        ];
+      case "responses":
+        return [
+          {
+            kind: "parallel",
+            branches: [
+              [
+                move(
+                  "guide",
+                  [{ x: WORLD_LANDMARKS.tombGarden.x - 300, y: WORLD_LANDMARKS.tombGarden.y + 180 }],
+                  900,
+                ),
+              ],
+              [
+                move(
+                  "older-witness",
+                  [{ x: WORLD_LANDMARKS.tombGarden.x + 300, y: WORLD_LANDMARKS.tombGarden.y + 180 }],
+                  900,
+                ),
+              ],
+            ],
+          },
+        ];
+      default:
+        return [];
+    }
+  }
+
+  private dialogueForBeat(beat: VerseBeat): readonly DialogueLine[] {
+    return dialogueLinesForBeat(beat);
+  }
+
+  private beatFocus(beatId: VerseBeatId): CameraTarget {
+    if (["illness", "sisters-send"].includes(beatId)) {
+      return HOUSE_STORY_FOCUS;
+    }
+    if (
+      [
+        "find-jesus",
+        "message",
+        "two-day-wait",
+        "return-to-judea",
+        "thomas",
+      ].includes(beatId)
+    ) {
+      return "jesus";
+    }
+    if (
+      [
+        "four-days",
+        "martha-goes",
+        "martha-hope",
+        "resurrection-life",
+        "martha-confession",
+        "martha-calls",
+        "mary-rises",
+        "mary-at-feet",
+        "jesus-weeps",
+      ].includes(beatId)
+    ) {
+      return WORLD_LANDMARKS.bethanyMeeting;
+    }
+    return TOMB_ANCHORS.cameraFocus;
+  }
+
+  private createSequenceHost(): PhaserSequenceHost<BethanySequenceSchema> {
+    return {
+      inputSource: this.sequenceInput,
+      moveActor: (actor, point, durationMs) =>
+        this.tweenActor(actor, point, durationMs),
+      setActorFacing: (actor, facing) => this.setSequenceFacing(actor, facing),
+      setActorOrdinaryPose: (actor) => this.restoreSequenceActorIdle(actor),
+      setActorSpecialPose: (actor, pose) =>
+        this.setSequenceSpecialPose(actor, pose),
+      setActorVisible: (actor, visible) =>
+        this.setSequenceActorVisible(actor, visible),
+      stopCameraFollow: () => this.cameras.main.stopFollow(),
+      panCamera: (target, durationMs) =>
+        this.panCameraTo(target, durationMs),
+      followCamera: (target) => {
+        if (target === "player") {
+          this.followPlayerCamera();
+        }
+      },
+      wait: (durationMs) => this.delayOperation(durationMs),
+      transitionEnvironment: (state, durationMs) =>
+        this.environmentOperation(state, durationMs),
+      showDialogue: (dialogue) => this.dialogueOperation(dialogue),
+      showChoice: (choice) => this.choiceOperation(choice),
+      setMusic: (state, durationMs) => {
+        this.audio.setState(state, durationMs);
+        return completedOperation();
+      },
+      applyFinalState: (state) => this.applySequenceFinalState(state),
+      handoff: () => undefined,
+      finalize: (beatId) => {
+        this.voice.handleSceneChange();
+        this.story.completeCurrent(beatId);
+      },
+      acquireInputLock: () => this.playerController.lock(),
+    };
+  }
+
+  private tweenActor(
+    actor: SequenceActor,
+    point: Point,
+    durationMs: number,
+  ): MapSequenceOperation {
+    const target = this.sequenceTarget(actor);
+    if (!target) {
+      return completedOperation();
+    }
+    this.startSequenceActorWalk(actor, point);
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    const tween = this.tweens.add({
+      targets: target,
+      x: point.x,
+      y: point.y,
+      duration: durationMs,
+      ease: "Sine.easeInOut",
+      onUpdate: () => {
+        if (
+          actor !== "player" &&
+          actor !== "lazarus" &&
+          actor !== "stone-group"
+        ) {
+          this.actorRegistry.move(actor, "bethany-world", {
+            x: target.x,
+            y: target.y,
+          });
+        }
+      },
+      onComplete: () => {
+        this.restoreSequenceActorIdle(actor);
+        settled = true;
+        resolveFinished();
+      },
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          this.voice.handleSkip();
+          tween.stop();
+          this.restoreSequenceActorIdle(actor);
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private panCameraTo(
+    target: CameraTarget,
+    durationMs: number,
+  ): MapSequenceOperation {
+    const point = isPoint(target)
+      ? target
+      : this.sequenceTarget(target) ?? this.player;
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+      this.cameras.main.pan(
+        point.x,
+        point.y,
+        durationMs,
+        "Sine.easeInOut",
+        false,
+        (_camera, progress) => {
+          if (progress === 1 && !settled) {
+            settled = true;
+            resolve();
+          }
+        },
+      );
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          this.cameras.main.panEffect.reset();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private delayOperation(durationMs: number): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    const timer = this.time.delayedCall(durationMs, () => {
+      settled = true;
+      resolveFinished();
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          timer.remove(false);
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private environmentOperation(
+    state: EnvironmentState,
+    durationMs: number,
+  ): MapSequenceOperation {
+    if (state === "stone-open") {
+      this.createTombElements();
+      const stone = this.stone;
+      if (!stone) {
+        return completedOperation();
+      }
+      const operation = this.tweenGameObject(
+        stone,
+        {
+          x: TOMB_ANCHORS.stone.rolledTarget.center.x,
+          y: TOMB_ANCHORS.stone.rolledTarget.center.y,
+          angle: 32,
+        },
+        durationMs,
+      );
+      void operation.finished.then(() => this.setStoneOpen(true));
+      return operation;
+    }
+    if (state === "lazarus-emerge") {
+      this.createTombElements();
+      const lazarus = this.tombLazarus;
+      if (!lazarus) {
+        return completedOperation();
+      }
+      lazarus
+        .setPosition(
+          TOMB_ANCHORS.lazarus.hiddenStart.x,
+          TOMB_ANCHORS.lazarus.hiddenStart.y,
+        )
+        .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)
+        .setVisible(true);
+      lazarus.body.enable = false;
+      const operation = this.tweenGameObject(
+        lazarus,
+        {
+          x: TOMB_ANCHORS.lazarus.emergenceTarget.x,
+          y: TOMB_ANCHORS.lazarus.emergenceTarget.y,
+          alpha: TOMB_ANCHORS.lazarus.entranceFade.toAlpha,
+        },
+        durationMs,
+      );
+      void operation.finished.then(() => this.setLazarusEmerged(false));
+      return operation;
+    }
+    if (state === "time-skip-black") {
+      this.timeSkipTitle?.setAlpha(0);
+      const curtain = this.timeSkipCurtain;
+      if (!curtain) {
+        return this.delayOperation(durationMs);
+      }
+      return this.tweenGameObject(curtain, { alpha: 1 }, durationMs);
+    }
+    if (state === "time-skip-title") {
+      this.timeSkipTitle?.setAlpha(1);
+      return this.delayOperation(durationMs);
+    }
+    if (state === "time-skip-return") {
+      this.restoreTwoDayCamp();
+      this.timeSkipTitle?.setAlpha(0);
+      const curtain = this.timeSkipCurtain;
+      if (!curtain) {
+        return this.delayOperation(durationMs);
+      }
+      return this.tweenGameObject(curtain, { alpha: 0 }, durationMs);
+    }
+    return this.delayOperation(durationMs);
+  }
+
+  private tweenGameObject(
+    target: Phaser.GameObjects.GameObject,
+    values: Record<string, number>,
+    durationMs: number,
+  ): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    const tween = this.tweens.add({
+      targets: target,
+      ...values,
+      duration: durationMs,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        settled = true;
+        resolveFinished();
+      },
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          tween.stop();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private dialogueOperation(
+    dialogue: readonly DialogueLine[],
+  ): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+      const beatId = this.story.beatId;
+      const replayCueId = this.voiceCueForBeat(beatId);
+      this.ui.showDialogue(
+        dialogue,
+        () => {
+          settled = true;
+          resolve();
+        },
+        undefined,
+        replayCueId
+          ? () => void this.playVoiceCue(replayCueId, true)
+          : undefined,
+        () => this.voice.handleAdvance(),
+      );
+      const autoplayCueId = this.autoplayVoiceCueForBeat(beatId);
+      if (autoplayCueId) {
+        void this.playVoiceCue(autoplayCueId, false);
+      }
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          this.voice.handleSkip();
+          this.ui.dismissBlocking();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private choiceOperation(choice: RecallQuestion): MapSequenceOperation {
+    let settled = false;
+    let resolveFinished = (): void => undefined;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+      this.ui.showChoice(
+        {
+          id: choice.id,
+          prompt: choice.prompt,
+          reference: choice.reference,
+          correctOption: choice.correctOption,
+          options: choice.options,
+        },
+        (optionId) => this.story.answerRecall(choice.id, optionId),
+        () => {
+          settled = true;
+          this.ui.setScore(this.story.score);
+          resolve();
+        },
+      );
+    });
+    return {
+      finished,
+      cancel: () => {
+        if (!settled) {
+          this.ui.dismissBlocking();
+          settled = true;
+          resolveFinished();
+        }
+      },
+    };
+  }
+
+  private applySequenceFinalState(state: VerseBeat["finalState"]): void {
+    const beatId = this.story.beatId;
+    this.restoreAllSequenceActors();
+    this.applyFinalPositions(beatId);
+    if (beatId === "two-day-wait") {
+      this.daylightOverlay?.setAlpha(0);
+      this.restoreTwoDayCamp();
+      this.timeSkipTitle?.setAlpha(0);
+      this.timeSkipCurtain?.setAlpha(0);
+    }
+    for (const id of ACTOR_IDS) {
+      const visible = state.actors.visibleActorIds.includes(id);
+      this.setActorVisible(id, visible);
+      const override = state.actors.labelOverrides?.[id];
+      this.setActorLabel(
+        id,
+        override === undefined ? ACTOR_LABELS[id] : override,
+      );
+    }
+    if (beatId === "tomb-arrival") {
+      this.createTombElements();
+      this.setStoneOpen(false);
+      this.setLazarusHidden();
+    }
+    if (beatId === "stone-and-prayer") {
+      this.createTombElements();
+      this.setStoneOpen(true);
+    }
+    if (beatId === "call-and-emergence") {
+      this.createTombElements();
+      this.setStoneOpen(true);
+      this.setLazarusEmerged(true);
+    }
+    this.followPlayerCamera();
+  }
+
+  private restoreTwoDayCamp(): void {
+    for (const actor of TWO_DAY_WALK_ACTORS) {
+      this.setSequencePosition(actor, WORLD_ACTOR_POSITIONS[actor]);
+    }
+  }
+
+  private applyFinalPositions(beatId: VerseBeatId): void {
+    const meeting = WORLD_LANDMARKS.bethanyMeeting;
+    const gathering = TOMB_ANCHORS.tombGathering.groupPositions;
+    if (beatId === "four-days") {
+      this.setSequencePosition("jesus", meeting);
+      this.setSequencePosition("thomas", { x: meeting.x + 120, y: meeting.y + 80 });
+      this.setSequencePosition("older-disciple", { x: meeting.x + 180, y: meeting.y + 40 });
+      this.setSequencePosition("younger-disciple", { x: meeting.x + 220, y: meeting.y + 100 });
+      this.setSequencePosition("player", { x: meeting.x - 160, y: meeting.y + 120 });
+    }
+    if (beatId === "martha-goes") {
+      this.setSequencePosition("martha", { x: meeting.x - 80, y: meeting.y + 40 });
+    }
+    if (beatId === "martha-calls") {
+      this.setSequencePosition("martha", WORLD_LANDMARKS.villageCenter);
+    }
+    if (beatId === "mary-rises") {
+      this.setSequencePosition("mary", { x: meeting.x - 80, y: meeting.y + 80 });
+      this.setSequencePosition("mourner", { x: meeting.x - 170, y: meeting.y + 130 });
+      this.setSequencePosition("mourner-woman", { x: meeting.x + 20, y: meeting.y + 140 });
+      this.setSequencePosition("older-witness", { x: meeting.x + 100, y: meeting.y + 120 });
+    }
+    if (["come-and-see", "tomb-arrival"].includes(beatId)) {
+      this.setSequencePosition("jesus", gathering.jesus);
+      this.setSequencePosition("martha", gathering.martha);
+      this.setSequencePosition("mary", gathering.mary);
+      this.setSequencePosition("mourner", gathering.mourner);
+      this.setSequencePosition("mourner-woman", gathering.mournerWoman);
+      this.setSequencePosition("player", gathering.player);
+      this.setSequencePosition("guide", {
+        x: TOMB_ANCHORS.tombGathering.center.x - 150,
+        y: TOMB_ANCHORS.tombGathering.center.y + 100,
+      });
+      this.setSequencePosition("older-witness", {
+        x: TOMB_ANCHORS.tombGathering.center.x + 120,
+        y: TOMB_ANCHORS.tombGathering.center.y + 100,
+      });
+    }
+  }
+
+  private sequenceTarget(
+    actor: SequenceActor,
+  ): Phaser.GameObjects.Components.Transform | undefined {
+    if (actor === "player") {
+      return this.player;
+    }
+    if (actor === "lazarus") {
+      return this.lazarus;
+    }
+    if (actor === "stone-group") {
+      return this.stoneGroupPose;
+    }
+    return this.visuals.get(actor)?.container;
+  }
+
+  private setSequencePosition(actor: SequenceActor, position: Point): void {
+    const target = this.sequenceTarget(actor);
+    target?.setPosition(position.x, position.y);
+    if (
+      actor !== "player" &&
+      actor !== "lazarus" &&
+      actor !== "stone-group"
+    ) {
+      this.actorRegistry.move(actor, "bethany-world", position);
+    }
+  }
+
+  private setSequenceFacing(actor: SequenceActor, facing: Facing): void {
+    if (actor === "player") {
+      this.playerFacing = facing;
+      this.restoreSequenceActorIdle("player");
+      return;
+    }
+    if (actor === "lazarus" || actor === "stone-group") {
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (!visual) {
+      return;
+    }
+    visual.facing = facing;
+    this.applyActorPresentation(
+      visual,
+      resolveBaseActorPresentation(visual.character, facing),
+    );
+  }
+
+  private setSequenceActorVisible(
+    actor: SequenceActor,
+    visible: boolean,
+  ): void {
+    if (actor === "player") {
+      this.player.setVisible(visible);
+    } else if (actor === "lazarus") {
+      this.lazarus?.setVisible(visible);
+    } else if (actor === "stone-group") {
+      this.stoneGroupPose?.setVisible(visible);
+    } else {
+      this.setActorVisible(actor, visible);
+    }
+  }
+
+  private setSequenceSpecialPose(
+    actor: SequenceActor,
+    pose: SequenceSpecialPose,
+  ): void {
+    if (actor === "stone-group") {
+      if (pose.kind !== "supporting") {
+        throw new Error("The stone group requires a supporting action pose.");
+      }
+      const presentation = resolveSpecialActorPresentation("mourner-man", pose);
+      const mouth = TOMB_ANCHORS.tombMouth.center;
+      this.stoneGroupPose?.destroy();
+      this.stoneGroupPose = this.add.sprite(
+        mouth.x - 105,
+        mouth.y + 100,
+        presentation.textureKey,
+        presentation.frame,
+      );
+      this.applySpritePresentation(this.stoneGroupPose, presentation);
+      this.stoneGroupPose.setDepth(mouth.y + 25);
+      return;
+    }
+    if (actor === "player" || actor === "lazarus") {
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (!visual) {
+      return;
+    }
+    this.applyActorPresentation(
+      visual,
+      resolveSpecialActorPresentation(visual.character, pose),
+    );
+  }
+
+  private applyActorPresentation(
+    visual: ActorVisual,
+    presentation: ActorPosePresentation,
+  ): void {
+    this.applySpritePresentation(visual.sprite, presentation);
+    visual.container.setSize(
+      visual.sprite.displayWidth + 16,
+      visual.sprite.displayHeight + 24,
+    );
+    visual.shadow.setSize(
+      Math.max(visual.sprite.displayWidth * 0.72, 24),
+      11,
+    );
+    visual.label.sync();
+  }
+
+  private applySpritePresentation(
+    sprite: Phaser.GameObjects.Sprite,
+    presentation: ActorPosePresentation,
+  ): void {
+    const metrics = resolveDisplayMetrics(DEFAULT_DISPLAY_SCALE, {
+      kind: presentation.scaleKind,
+      area: this.inWorld ? "outdoor" : "indoor",
+      sourceBounds: presentation.sourceBounds,
+    });
+    sprite
+      .stop()
+      .setTexture(presentation.textureKey, presentation.frame)
+      .setOrigin(0.5, presentation.originY)
+      .setScale(
+        metrics.scale * resolveActorSizeMultiplier(presentation.character),
+      );
+  }
+
+  private startSequenceActorWalk(
+    actor: SequenceActor,
+    destination: Point,
+  ): void {
+    const target = this.sequenceTarget(actor);
+    if (!target || actor === "lazarus" || actor === "stone-group") {
+      return;
+    }
+    const previous =
+      actor === "player"
+        ? this.playerFacing
+        : this.visuals.get(actor)?.facing ?? "front";
+    const facing = resolveFacing(
+      destination.x - target.x,
+      destination.y - target.y,
+      previous,
+    );
+    this.setSequenceFacing(actor, facing);
+    if (actor === "player") {
+      this.player.play(walkAnimationKey("messenger", facing), true);
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (visual && hasWalkFrames(visual.character)) {
+      visual.sprite.play(walkAnimationKey(visual.character, facing), true);
+    }
+  }
+
+  private restoreSequenceActorIdle(actor: SequenceActor): void {
+    if (actor === "stone-group") {
+      this.stoneGroupPose?.destroy();
+      this.stoneGroupPose = undefined;
+      return;
+    }
+    if (actor === "player") {
+      this.applySpritePresentation(
+        this.player,
+        resolveBaseActorPresentation("messenger", this.playerFacing),
+      );
+      return;
+    }
+    if (actor === "lazarus") {
+      return;
+    }
+    const visual = this.visuals.get(actor);
+    if (visual) {
+      this.applyActorPresentation(
+        visual,
+        resolveBaseActorPresentation(visual.character, visual.facing),
+      );
+    }
+  }
+
+  private restoreAllSequenceActors(): void {
+    this.restoreSequenceActorIdle("player");
+    for (const actor of ACTOR_IDS) {
+      this.restoreSequenceActorIdle(actor);
+    }
+    this.restoreSequenceActorIdle("stone-group");
+  }
+
+  private syncHud(): void {
+    const references = this.story.beat.verseKeys.map(
+      (key) => JOHN_11_VERSES[key].reference,
+    );
+    this.ui.setReference(references.join("、") || "约翰福音");
+    this.ui.setStageGoal(STAGE_GOALS[this.story.beatId]);
+    this.ui.setScore(this.story.score);
+  }
+
+  private finishStory(): void {
+    this.stopPlayerMovement();
+    this.voice.handleSceneChange();
+    this.restoreAllSequenceActors();
+    applyStoryCompletionPresentation({
+      setPosition: (actor, position) =>
+        this.setSequencePosition(actor, position),
+      setFacing: (actor, facing) => this.setSequenceFacing(actor, facing),
+    });
+    this.createTombElements();
+    this.setStoneOpen(true);
+    this.setLazarusEmerged(true);
+    this.ui.showResult(
+      this.story.score,
+      this.story.resultLabel(),
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
+    );
+  }
+
+  private createWalkAnimations(): void {
+    const walkingCharacters = [
+      "messenger",
+      "martha",
+      "mary",
+      "jesus",
+    ] as const;
+    for (const character of walkingCharacters) {
+      for (const facing of ["front", "back", "left", "right"] as const) {
+        const key = walkAnimationKey(character, facing);
+        if (!this.anims.exists(key)) {
+          this.anims.create({
+            key,
+            frames: Array.from(walkFrames(character, facing)),
+            frameRate: 8,
+            repeat: -1,
+          });
+        }
+      }
+    }
+  }
+
+  private updatePlayerAnimation(x: number, y: number): void {
+    const facing = resolveFacing(x, y, this.playerFacing);
+    this.playerFacing = facing;
+    if (x === 0 && y === 0) {
+      this.player.stop();
+      this.player.setFrame(spriteFrame("messenger", facing, "idle"));
+      return;
+    }
+    this.player.play(walkAnimationKey("messenger", facing), true);
+  }
+
+  private stopPlayerMovement(): void {
+    this.movementPath = [];
+    this.pendingActor = undefined;
+    this.player.setVelocity(0);
+    this.updatePlayerAnimation(0, 0);
+  }
+
+  private updateDepths(): void {
+    this.player.setDepth(this.player.y);
+    for (const visual of this.visuals.values()) {
+      visual.container.setDepth(visual.container.y);
+    }
+    if (this.lazarus?.visible) {
+      this.lazarus.setDepth(HOUSE_SICK_LAZARUS_DEPTH);
+    }
+  }
+
+  private followPlayerCamera(): void {
+    this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+  }
+
+  private togglePause(): void {
+    if (this.paused) {
+      this.resumeGame();
+      return;
+    }
+    this.paused = true;
+    this.physics.world.pause();
+    this.audio.pause("game");
+    this.voice.pause("game");
+    this.ui.showPause(
+      () => this.resumeGame(),
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
+      () => {
+        this.voice.handleSceneChange();
+        window.location.reload();
+      },
+    );
+  }
+
+  private resumeGame(): void {
+    this.paused = false;
+    this.physics.world.resume();
+    this.audio.resume("game");
+    void this.voice.resume("game");
+    this.ui.hidePause();
+  }
+
+  private setStoneOpen(open: boolean): void {
+    const stone = this.stone;
+    if (!stone) {
+      return;
+    }
+    const target = open
+      ? TOMB_ANCHORS.stone.rolledTarget.center
+      : {
+          x:
+            (TOMB_ANCHORS.stone.initialBounds.xMin +
+              TOMB_ANCHORS.stone.initialBounds.xMax) /
+            2,
+          y:
+            (TOMB_ANCHORS.stone.initialBounds.yMin +
+              TOMB_ANCHORS.stone.initialBounds.yMax) /
+            2,
+        };
+    stone.setPosition(target.x, target.y).setAngle(open ? 32 : 0);
+    stone.body.reset(target.x, target.y);
+    stone.body.enable = !open;
+    this.rebuildWorldNavigation(!open);
+  }
+
+  private setLazarusHidden(): void {
+    const lazarus = this.tombLazarus;
+    if (!lazarus) {
+      return;
+    }
+    lazarus
+      .setPosition(
+        TOMB_ANCHORS.lazarus.hiddenStart.x,
+        TOMB_ANCHORS.lazarus.hiddenStart.y,
+      )
+      .setFrame(lazarusFrame("wrapped-idle"))
+      .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.fromAlpha)
+      .setVisible(false);
+    lazarus.body.reset(
+      TOMB_ANCHORS.lazarus.hiddenStart.x,
+      TOMB_ANCHORS.lazarus.hiddenStart.y,
+    );
+    lazarus.body.enable = false;
+  }
+
+  private setLazarusEmerged(restored: boolean): void {
+    const lazarus = this.tombLazarus;
+    if (!lazarus) {
+      return;
+    }
+    lazarus
+      .setPosition(
+        TOMB_ANCHORS.lazarus.emergenceTarget.x,
+        TOMB_ANCHORS.lazarus.emergenceTarget.y,
+      )
+      .setFrame(lazarusFrame(restored ? "restored" : "wrapped-idle"))
+      .setAlpha(TOMB_ANCHORS.lazarus.entranceFade.toAlpha)
+      .setVisible(true);
+    lazarus.body.reset(
+      TOMB_ANCHORS.lazarus.emergenceTarget.x,
+      TOMB_ANCHORS.lazarus.emergenceTarget.y,
+    );
+    lazarus.body.enable = true;
+  }
+
+  private rebuildWorldNavigation(stoneBlocked: boolean): void {
+    if (!this.inWorld) {
+      return;
+    }
+    this.navigation = createWorldNavigation(
+      stoneBlocked ? [WORLD_TOMB_STONE_OBSTACLE] : [],
+    );
+  }
+
+  private voiceCueForBeat(beatId: VerseBeatId): VoiceCueId | undefined {
+    if (beatId === "illness" || beatId === "sisters-send") {
+      return "opening-john11-1-3";
+    }
+    return beatId === "resurrection-life"
+      ? "jesus-resurrection-life"
+      : undefined;
+  }
+
+  private autoplayVoiceCueForBeat(
+    beatId: VerseBeatId,
+  ): VoiceCueId | undefined {
+    return beatId === "illness"
+      ? "opening-john11-1-3"
+      : beatId === "resurrection-life"
+        ? "jesus-resurrection-life"
+        : undefined;
+  }
+
+  private async playVoiceCue(cueId: VoiceCueId, replay: boolean): Promise<void> {
+    const validCueIds = await this.validVoiceCues;
+    if (!validCueIds.has(cueId)) {
+      console.warn(
+        `Voice cue ${cueId} was not played because its textHash is stale.`,
+      );
+      this.ui.showTechnicalError(
+        "语音版本与当前经文不一致，已继续显示字幕。",
+        "browser",
+        2200,
+      );
+      return;
+    }
+    const cue = VOICE_CUES[cueId];
+    if (!cue) {
+      return;
+    }
+    if (replay) {
+      await this.voice.replay(cueId);
+    } else {
+      await this.voice.autoplay(cueId);
+    }
+  }
+}

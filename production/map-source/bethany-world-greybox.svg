@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="768" viewBox="0 0 2304 1536">
+  <rect width="2304" height="1536" fill="#8c815f"/>
+  <rect x="64" y="120" width="700" height="500" rx="36" fill="#89906a" opacity=".42" stroke="#ece2b6" stroke-dasharray="18 14" stroke-width="5"/>
+  <rect x="160" y="650" width="640" height="620" rx="36" fill="#9a7d58" opacity=".42" stroke="#ece2b6" stroke-dasharray="18 14" stroke-width="5"/>
+  <rect x="700" y="500" width="850" height="650" rx="36" fill="#b09a6a" opacity=".45" stroke="#ece2b6" stroke-dasharray="18 14" stroke-width="5"/>
+  <rect x="1250" y="940" width="520" height="360" rx="36" fill="#aa8d5c" opacity=".42" stroke="#ece2b6" stroke-dasharray="18 14" stroke-width="5"/>
+  <rect x="1540" y="980" width="700" height="490" rx="36" fill="#a78c5e" opacity=".42" stroke="#ece2b6" stroke-dasharray="18 14" stroke-width="5"/>
+  <rect x="1250" y="300" width="700" height="570" rx="36" fill="#7f8767" opacity=".45" stroke="#ece2b6" stroke-dasharray="18 14" stroke-width="5"/>
+  <rect x="1720" y="64" width="520" height="520" rx="36" fill="#747b60" opacity=".52" stroke="#ece2b6" stroke-dasharray="18 14" stroke-width="5"/>
+
+  <g fill="none" stroke="#d8c38b" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="480,1100 700,1030 880,910 1100,820" stroke-width="150"/>
+    <polyline points="2100,1330 1830,1260 1420,1080 1100,820" stroke-width="170"/>
+    <polyline points="1100,820 1320,650 1600,500 1990,390" stroke-width="150"/>
+    <polyline points="180,360 480,470 760,620 1100,820" stroke-width="140"/>
+  </g>
+  <g fill="none" stroke="#f0dfae" stroke-linecap="round" stroke-linejoin="round" opacity=".75">
+    <polyline points="480,1100 700,1030 880,910 1100,820" stroke-width="18"/>
+    <polyline points="2100,1330 1830,1260 1420,1080 1100,820" stroke-width="18"/>
+    <polyline points="1100,820 1320,650 1600,500 1990,390" stroke-width="18"/>
+    <polyline points="180,360 480,470 760,620 1100,820" stroke-width="18"/>
+  </g>
+
+  <g stroke="#4a4032" stroke-width="7">
+    <rect x="240" y="720" width="480" height="320" rx="14" fill="#b89562"/>
+    <rect x="760" y="280" width="320" height="250" rx="14" fill="#aa895f"/>
+    <rect x="1220" y="280" width="340" height="250" rx="14" fill="#aa895f"/>
+    <rect x="1450" y="810" width="300" height="240" rx="14" fill="#aa895f"/>
+    <circle cx="1100" cy="740" r="55" fill="#7890a0"/>
+    <path d="M1840 346V170Q1840 96 1914 96H2240V346Z" fill="#696452"/>
+    <rect x="64" y="210" width="250" height="70" fill="#6c6252"/>
+  </g>
+
+  <g fill="#231f18" font-family="Arial, sans-serif" font-size="38" font-weight="700">
+    <text x="270" y="890">Martha House</text>
+    <text x="880" y="650">Village Square</text>
+    <text x="1680" y="1215">Jesus Arrival Road</text>
+    <text x="1430" y="430">Tomb Road</text>
+    <text x="1880" y="235" fill="#f5eed1">Tomb</text>
+    <text x="105" y="185">Jerusalem (locked)</text>
+  </g>
+  <g fill="#f4c86a" stroke="#332a1d" stroke-width="6">
+    <circle cx="480" cy="1100" r="19"/>
+    <circle cx="1100" cy="820" r="19"/>
+    <circle cx="1420" cy="1080" r="19"/>
+    <circle cx="2100" cy="1330" r="19"/>
+    <circle cx="1320" cy="650" r="19"/>
+    <circle cx="1990" cy="390" r="19"/>
+    <circle cx="180" cy="360" r="19"/>
+  </g>
+  <rect x="3" y="3" width="2298" height="1530" fill="none" stroke="#2f2a21" stroke-width="12"/>
+</svg>

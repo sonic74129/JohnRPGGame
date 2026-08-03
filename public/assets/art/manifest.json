@@ -1,0 +1,17 @@
+{
+  "generator": "Microsoft MAI-Image-2.5-Pro",
+  "modelVersion": "2026-06-19",
+  "generatedAt": "2026-08-01",
+  "usage": "JohnRPGGame project artwork",
+  "containsEmbeddedText": false,
+  "files": {
+    "map-house-interior-clean.png": "Playable house interior without baked characters",
+    "portrait-martha.png": "Three-panel semi-realistic Martha portrait sheet",
+    "portrait-mary.png": "Three-panel semi-realistic Mary portrait sheet",
+    "portrait-jesus.png": "Three-panel semi-realistic Jesus portrait sheet",
+    "portrait-witnesses.png": "Three-panel semi-realistic messenger, Thomas, and witness sheet",
+    "world/tileset-bethany-ground.png": "Unified 4 by 4 Bethany ground and road tileset",
+    "world/tileset-bethany-ground.json": "Ground tile names and indices",
+    "world/objects-bethany-world.json": "Unified editable world-object manifest"
+  }
+}

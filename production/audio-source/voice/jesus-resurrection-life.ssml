@@ -1,0 +1,7 @@
+<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="zh-CN">
+  <voice name="zh-CN-Bo:MAI-Voice-2">
+    <mstts:express-as style="hopeful" styledegree="0.65">
+      <prosody rate="+3%">耶稣对她说：“复活在我，生命也在我。<break time="260ms"/>信我的人虽然死了，也必复活；<break time="180ms"/>凡活着信我的人必永远不死。<break time="320ms"/>你信这话吗？”</prosody>
+    </mstts:express-as>
+  </voice>
+</speak>

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0.0",
+  "assetId": "props.john-memory-clues",
+  "selectedPromptVersion": "v1.2",
+  "totalMaiRequestCount": 7,
+  "assetMaiRequestCount": 4,
+  "runs": [
+    {
+      "promptVersion": "v1.1",
+      "contactSheet": "production/art-pipeline/review/environment/props__john-memory-clues/v1.1/run-001-contact-sheet.jpg",
+      "automatedAudit": "production/art-pipeline/review/environment/props__john-memory-clues/v1.1/run-001-audit.json",
+      "candidates": [
+        {
+          "index": 1,
+          "status": "rejected",
+          "visualFinding": "All requested objects are present, but a checkerboard transparency preview is baked into the pixels and corner/gutter alpha checks fail."
+        },
+        {
+          "index": 2,
+          "status": "rejected",
+          "visualFinding": "Clean transparent separation and correct vessel groups, but the first cell contains only four loaves."
+        }
+      ]
+    },
+    {
+      "promptVersion": "v1.2",
+      "contactSheet": "production/art-pipeline/review/environment/props__john-memory-clues/v1.2/run-001-contact-sheet.jpg",
+      "automatedAudit": "production/art-pipeline/review/environment/props__john-memory-clues/v1.2/run-001-audit.json",
+      "candidates": [
+        {
+          "index": 1,
+          "status": "rejected",
+          "visualFinding": "Meets content and alpha requirements, but the larger loaf cluster overlaps more tightly and the groups sit closer to conceptual cell boundaries."
+        },
+        {
+          "index": 2,
+          "status": "selected",
+          "visualFinding": "Exactly five individually countable loaves and two distinct finned meal items, correct vessel groups, consistent scale, perfect inter-cell gutters and 90.1 percent transparent canvas."
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "promptVersion": "v1.2",
+    "candidate": 2,
+    "selectedSource": "production/art-source/environment/props__john-memory-clues/v1.2/run-001-selected.png",
+    "runtimeAsset": "public/assets/art/environment/props__john-memory-clues/v1.2/run-001/props__john-memory-clues.png"
+  }
+}

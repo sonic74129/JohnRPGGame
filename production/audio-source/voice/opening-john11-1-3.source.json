@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "opening-john11-1-3",
+  "textSource": "src/game/ScriptureContent.ts#JOHN_11_VERSES",
+  "verseKeys": ["john11:1", "john11:2", "john11:3"],
+  "textHash": {
+    "algorithm": "sha256",
+    "serialization": "JSON.stringify([[verseKey,text],...])",
+    "value": "1d9eadf6dc886a15abb456f24657c90079d0a428a6cde37f49f7b474bdba3f49"
+  },
+  "synthesis": {
+    "provider": "Azure AI Speech",
+    "resource": "ai-johnrpg-sonic-74129",
+    "region": "eastus",
+    "voice": "zh-CN-YunyangNeural",
+    "voiceStatus": "GA",
+    "ssml": "opening-john11-1-3.ssml",
+    "outputFormat": "audio-24khz-160kbitrate-mono-mp3"
+  },
+  "processing": {
+    "tool": "ffmpeg",
+    "trim": "leading and trailing silence only",
+    "loudnessTargetLufs": -16,
+    "truePeakLimitDbtp": -1.5
+  },
+  "asset": {
+    "url": "assets/audio/voice/opening-john11-1-3.mp3",
+    "mimeType": "audio/mpeg",
+    "durationMs": 18447,
+    "sampleRateHz": 24000,
+    "channels": 1,
+    "bitRateKbps": 160,
+    "integratedLufs": -16.75,
+    "truePeakDbtp": -1.89,
+    "sha256": "5b26e0dbd3dd02066d0b8bffca6749fead4c7bfaa8ecfedb65a1c5e3a1482665"
+  },
+  "fallback": {
+    "synthesisFallbackUsed": false,
+    "runtime": "silent-scripture-text"
+  }
+}

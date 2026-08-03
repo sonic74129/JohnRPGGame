@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.martha-grieving",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Martha grieving and questioning while remaining attentive.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.martha"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:42:23.404Z",
+    "updatedAt": "2026-08-01T15:48:35.164Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__martha-grieving/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__martha-grieving/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__martha-grieving/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__martha-grieving/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__martha-grieving/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__martha-grieving/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:43:05.048Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__martha-grieving/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:45:52.885Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__martha-grieving/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__martha-grieving/v1/run-001-selected.png",
+    "reason": "Candidate 01 scored 83/100 and won the tie through stronger approved-state identity continuity and centered dialogue-UI composition; restrained sorrow stayed at the emotion threshold without theatricality.",
+    "selectedAt": "2026-08-01T15:48:35.163Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__martha-grieving/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__martha-grieving/v1/run-001/portrait__martha-grieving.png"
+    ],
+    "startedAt": "2026-08-01T15:48:35.568097Z",
+    "completedAt": "2026-08-01T15:48:36.183673Z",
+    "failureReason": null
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "character.martha",
+    "family": "character",
+    "purpose": "Source character sheet for Martha, including four-direction idle and two-step walk poses with identity and clothing locked for map actions and portraits.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v3",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "resume",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:56:05.473Z",
+    "updatedAt": "2026-08-01T16:03:51.132Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/character/character__martha/v3/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/character/character__martha/v3/run-001",
+    "selectedSource": "production/art-source/characters/core/character__martha/v3/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/character__martha/v3/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/character/character__martha/v3/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__martha/v3/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:57:50.439Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 2,
+      "outputPath": "production/art-pipeline/candidates/character/character__martha/v3/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:03:08.805Z",
+      "lastFailure": null,
+      "failures": [
+        {
+          "at": "2026-08-01T16:01:09.613Z",
+          "attempt": 1,
+          "reason": "Image generation failed for character.martha: 429 {\"error\":{\"code\":\"RateLimitReached\",\"message\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\",\"details\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\"}}"
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/character/character__martha/v3/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/characters/core/character__martha/v3/run-001-selected.png",
+    "reason": "Candidate 01 scores 62/70: exact twelve-figure three-column by four-row sheet, stable Martha identity and dark-plum clothing, complete front/back/two-profile coverage, readable steps, consistent scale and usable foot anchors; candidate 02 fails with extra figures and uncontrolled layout.",
+    "selectedAt": "2026-08-01T16:03:51.131Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "idle",
+      "step-left",
+      "step-right"
+    ],
+    "rows": [
+      "front",
+      "back",
+      "right",
+      "left"
+    ]
+  },
+  "normalization": {
+    "componentCount": 12,
+    "sheetSize": [
+      288,
+      768
+    ],
+    "cellSize": [
+      96,
+      192
+    ],
+    "footBaseline": 185,
+    "perFrameScaling": false,
+    "mirroredRows": [],
+    "backgroundRemoval": "Smooth flat background converted to antialiased alpha; pale ground-shadow remnants and disconnected alpha islands removed while preserving the largest connected character silhouette.",
+    "alignment": "Each unscaled component is horizontally centered and vertically translated so the true shoe bottom lands at cell y=185."
+  },
+  "recovery": {
+    "resumeCount": 1,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/character__martha/v3/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/character__martha/v3/run-001/character__martha.png"
+    ],
+    "startedAt": "2026-08-01T16:06:02.560464Z",
+    "completedAt": "2026-08-01T16:06:03.463482Z",
+    "failureReason": null
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.mary-worried",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Mary watching Lazarus with quiet concern and tenderness.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.mary"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:05:05.550Z",
+    "updatedAt": "2026-08-01T16:10:35.685Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__mary-worried/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__mary-worried/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__mary-worried/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__mary-worried/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__mary-worried/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__mary-worried/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:05:41.687Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__mary-worried/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:09:38.442Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__mary-worried/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__mary-worried/v1/run-001-selected.png",
+    "reason": "Candidate 01 scored 86/100: centered chest-up composition with clear map identity (muted red mantle, auburn-brown wavy hair, olive complexion, oval-heart face), quiet concern and tenderness readable in furrowed brow and soft eyes, warm limestone backdrop with upper-left Mediterranean light, only a minor incidental plant tuft in the corner. Candidate 02 scored 79/100, below threshold: a visible stone bench prop/scenery element in the background reduced cleanliness and UI-composition scores below the simple-unobtrusive-background requirement.",
+    "selectedAt": "2026-08-01T16:10:35.684Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__mary-worried/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__mary-worried/v1/run-001/portrait__mary-worried.png"
+    ],
+    "startedAt": "2026-08-01T16:10:41.669383Z",
+    "completedAt": "2026-08-01T16:10:42.387875Z",
+    "failureReason": null
+  }
+}

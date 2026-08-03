@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "portrait.mary-grieving",
+    "family": "portrait",
+    "purpose": "Runtime dialogue portrait of Mary deeply grieving with visible restrained tears.",
+    "runtime": true,
+    "output": "runtime",
+    "width": 1024,
+    "height": 1024,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "character.mary"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:23:28.346Z",
+    "updatedAt": "2026-08-01T16:26:39.695Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/portrait/portrait__mary-grieving/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/portrait/portrait__mary-grieving/v1/run-001",
+    "selectedSource": "production/art-source/portrait/portrait__mary-grieving/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/portrait/portrait__mary-grieving/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/portrait/portrait__mary-grieving/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__mary-grieving/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:24:12.964Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/portrait/portrait__mary-grieving/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:25:54.825Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 2,
+    "sourcePath": "production/art-pipeline/candidates/portrait/portrait__mary-grieving/v1/run-001/candidate-02.png",
+    "selectedSourcePath": "production/art-source/portrait/portrait__mary-grieving/v1/run-001-selected.png",
+    "reason": "Candidate 02 scored 85/100: identity 18, emotion 18, style 16, UI 17, cleanliness 16. Warm limestone stone-block backdrop with soft light matches the locked masters and every other approved portrait; restrained visible tears and a humble downturned mouth read as deep grief without theatrical collapse; a small sky patch and plant sliver in the corners are minor and consistent with previously accepted incidental background bleed. Candidate 01 scored 85/100 overall but failed the category floor (style/palette 12/20 below the 14 minimum): its background was a flat cool sage-gray wall, deviating from the locked warm-limestone/earth palette used by every other approved portrait.",
+    "selectedAt": "2026-08-01T16:26:39.695Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/production/art-source/portrait/portrait__mary-grieving/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-congenial-happiness/public/assets/art/portrait/portrait__mary-grieving/v1/run-001/portrait__mary-grieving.png"
+    ],
+    "startedAt": "2026-08-01T16:26:47.004655Z",
+    "completedAt": "2026-08-01T16:26:47.726603Z",
+    "failureReason": null
+  }
+}

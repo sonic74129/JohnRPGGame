@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "character.jesus",
+    "family": "character",
+    "purpose": "Source character sheet for Jesus, including four-direction idle and two-step walk poses with a respectful stable identity for map actions and portraits.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v3",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior",
+      "master.bethany-world"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T16:36:14.972Z",
+    "updatedAt": "2026-08-01T16:39:12.493Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/character/character__jesus/v3/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/character/character__jesus/v3/run-001",
+    "selectedSource": "production/art-source/characters/core/character__jesus/v3/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/characters/core/character__jesus/v3/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/character/character__jesus/v3/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__jesus/v3/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T16:36:50.353Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/character/character__jesus/v3/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T16:38:30.419Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/character/character__jesus/v3/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/characters/core/character__jesus/v3/run-001-selected.png",
+    "reason": "Candidate 01 scores 60/70: exact 3x4 twelve-figure layout, respectful stable Jesus identity, correct front/back rows and clean style; runtime row four will be mirrored deterministically to supply the opposite profile direction.",
+    "selectedAt": "2026-08-01T16:39:12.492Z"
+  },
+  "runtimeMapping": {
+    "columns": [
+      "idle",
+      "step-left",
+      "step-right"
+    ],
+    "rows": [
+      "front",
+      "back",
+      "right",
+      "left"
+    ]
+  },
+  "normalization": {
+    "componentCount": 12,
+    "sheetSize": [
+      288,
+      800
+    ],
+    "cellSize": [
+      96,
+      200
+    ],
+    "footBaseline": 193,
+    "perFrameScaling": false,
+    "mirroredRows": [
+      "left"
+    ],
+    "backgroundRemoval": "Flat beige background converted to antialiased alpha; partial-alpha RGB unmatted against the measured background while preserving each connected character silhouette.",
+    "alignment": "Each unscaled component is horizontally centered and vertically translated so its alpha>=32 bottom lands at cell y=193 with at least eight transparent top pixels; only the runtime left-facing row is mirrored."
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/production/art-source/characters/core/character__jesus/v3/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-friendly-doodle/public/assets/art/characters/core/character__jesus/v3/run-001/character__jesus.png"
+    ],
+    "startedAt": "2026-08-01T16:39:52.227147Z",
+    "completedAt": "2026-08-01T16:39:52.718203Z",
+    "failureReason": null
+  }
+}

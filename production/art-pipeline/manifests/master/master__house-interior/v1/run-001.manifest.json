@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "master.house-interior",
+    "family": "master",
+    "purpose": "Art-direction reference for the complete Lazarus family house; locks the project style, indoor camera, materials, lighting, character identities and believable indoor scale before runtime assets are produced.",
+    "runtime": false,
+    "output": "reference",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 3,
+    "dependsOn": []
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "start",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:05:33.956Z",
+    "updatedAt": "2026-08-01T15:08:43.568Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/master/master__house-interior/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/master/master__house-interior/v1/run-001",
+    "selectedSource": "production/art-source/master/master__house-interior/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/master/master__house-interior/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/master/master__house-interior/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/master/master__house-interior/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:06:16.642Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/master/master__house-interior/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:06:59.297Z",
+      "lastFailure": null,
+      "failures": []
+    },
+    {
+      "index": 3,
+      "status": "selected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/master/master__house-interior/v1/run-001/candidate-03.png",
+      "generatedAt": "2026-08-01T15:07:36.262Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 3,
+    "sourcePath": "production/art-pipeline/candidates/master/master__house-interior/v1/run-001/candidate-03.png",
+    "selectedSourcePath": "production/art-source/master/master__house-interior/v1/run-001-selected.png",
+    "reason": "Best approved three-quarter top-down RPG camera, believable indoor scale, decomposable cutaway, unified warm materials and lighting, and no prohibited text, UI, modern, fantasy, or horror elements.",
+    "selectedAt": "2026-08-01T15:08:43.568Z"
+  },
+  "recovery": {
+    "resumeCount": 0,
+    "lastCompletedCandidate": 3,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "review",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/candidates/master/master__house-interior/v1/run-001/candidate-01.png",
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/candidates/master/master__house-interior/v1/run-001/candidate-02.png",
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/candidates/master/master__house-interior/v1/run-001/candidate-03.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-fuzzy-spoon/production/art-pipeline/review/master/master__house-interior/v1/run-001-contact-sheet.jpg"
+    ],
+    "startedAt": "2026-08-01T15:07:53.933872Z",
+    "completedAt": "2026-08-01T15:07:54.175176Z",
+    "failureReason": null
+  }
+}

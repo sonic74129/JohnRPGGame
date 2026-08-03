@@ -1,0 +1,93 @@
+[
+  {
+    "id": "master.house-interior",
+    "family": "master",
+    "purpose": "Art-direction reference for the complete Lazarus family house; locks the project style, indoor camera, materials, lighting, character identities and believable indoor scale before runtime assets are produced.",
+    "runtime": false,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the common project style.\nCreate a beautiful complete art-direction scene of a modest first-century Bethany stone house in a three-quarter top-down RPG view. Show Lazarus resting on a low bed, Martha and Mary nearby, and enough visible floor for gameplay. Door, bed, table, stools, shelf, lamp, pottery, water bowl, linen and baskets must have believable scale relative to the people. Use layered depth with clear foreground and background objects, warm window light and restrained oil-lamp glow. This image is an art-direction reference only, not a runtime story illustration. No text, no UI, no supernatural effect.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "No embedded text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly three review candidates."
+      ],
+      "visual": [
+        "The scene is a complete attractive house reference with a broad readable walkable floor.",
+        "Lazarus, Martha and Mary establish consistent first-century identities without theatrical acting.",
+        "People, door, bed, table, stools, shelf, lamp, pottery, bowl, linen and baskets have believable relative scale.",
+        "Foreground and background depth can be decomposed into runtime layers.",
+        "Warm window light and restrained oil-lamp light preserve readable silhouettes and believable materials."
+      ]
+    },
+    "candidateCount": 3,
+    "dependsOn": [],
+    "output": "reference"
+  },
+  {
+    "id": "master.bethany-world",
+    "family": "master",
+    "purpose": "Art-direction reference for one continuous exterior Bethany world; locks outdoor camera, palette, materials, lighting, routes and deliberately enlarged readable character scale.",
+    "runtime": false,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved indoor master style, palette, materials and character identities.\nCreate a beautiful complete art-direction scene of a continuous first-century Bethany RPG world in a three-quarter top-down view: family house, small village houses, open meeting area, road toward Jesus, olive trees, low walls, village well, road toward a hillside tomb and readable walkable routes. Include a few approved characters only to prove gameplay readability. Deliberately enlarge outdoor characters relative to small buildings so they remain easy to identify, while preserving a coherent charming game composition. This image is a production reference only and will not appear as a story illustration.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "No embedded text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly three review candidates."
+      ],
+      "visual": [
+        "One coherent composition includes the family house, village houses, meeting space, Jesus road, tomb road, well, olive trees and low walls.",
+        "Walkable routes and interaction areas are visually readable.",
+        "Outdoor characters clearly match approved identities and are deliberately enlarged relative to small buildings.",
+        "The world preserves the approved indoor palette, materials and charming storybook-realism.",
+        "The scene reads only as an art-direction reference, never as a cinematic story beat."
+      ]
+    },
+    "candidateCount": 3,
+    "dependsOn": [
+      "master.house-interior"
+    ],
+    "output": "reference"
+  },
+  {
+    "id": "master.tomb-garden",
+    "family": "master",
+    "purpose": "Art-direction reference for the hillside burial garden; locks the tomb composition, restrained late-afternoon light, gathering space and respectful non-horror material language.",
+    "runtime": false,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "width": 1360,
+    "height": 768,
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "prompt": "Use case: stylized-concept\nAsset type: production art for a respectful narrative Bible-study RPG\nPrimary request: create cohesive first-century Bethany game artwork in a warm stylized storybook-realism style, combining appealing gently cartooned shapes with believable human anatomy, linen clothing, limestone, clay, wood and vegetation\nStyle/medium: polished hand-painted game art, readable silhouettes, clean forms, subtle texture, not restricted to pixel art\nCamera: consistent three-quarter top-down RPG camera unless a dialogue portrait is requested\nColor palette: warm limestone, terracotta, dusty olive, muted blue, dark plum, sand and natural linen\nLighting/mood: soft natural Mediterranean light, reverent, human and emotionally restrained\nConstraints: historically plausible first-century Jewish setting; consistent approved character identities and clothing; clear gameplay readability\nAvoid: modern objects, fantasy aura, halo, magical beam, horror, theatrical poses, embedded text, letters, UI, frame, border, watermark\n\nUse the approved project style and outdoor scale contract.\nCreate a solemn but beautiful first-century hillside burial garden in a three-quarter top-down RPG view, with an open rock-cut tomb entrance, movable round stone as a separate visual element, olive trees, sparse plants, rocky ground and a broad gathering area. Use restrained late-afternoon light, readable character space and no supernatural glow, horror or body. This image is an environment reference only.",
+    "acceptance": {
+      "machine": [
+        "Image dimensions are exactly 1360x768.",
+        "No embedded text, letters, UI, frame, border or watermark.",
+        "candidateCount produces exactly three review candidates."
+      ],
+      "visual": [
+        "The burial garden is solemn, beautiful and consistent with the approved Bethany world.",
+        "The open rock-cut entrance and movable round stone are visually separable.",
+        "A broad readable gathering area supports several enlarged outdoor characters.",
+        "Late-afternoon light remains restrained without supernatural glow.",
+        "No body, horror imagery or theatrical miracle effect appears."
+      ]
+    },
+    "candidateCount": 3,
+    "dependsOn": [
+      "master.bethany-world"
+    ],
+    "output": "reference"
+  }
+]

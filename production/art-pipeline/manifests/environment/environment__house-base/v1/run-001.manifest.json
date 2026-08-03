@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "v1",
+  "backend": {
+    "provider": "Azure AI Foundry",
+    "deployment": "mai-image-2-5-pro",
+    "modelId": "MAI-Image-2.5-Pro@2026-06-19"
+  },
+  "asset": {
+    "id": "environment.house-base",
+    "family": "environment",
+    "purpose": "Source artwork for the empty Lazarus house floor, rear walls and fixed architecture that will be processed into the runtime indoor base layer.",
+    "runtime": true,
+    "output": "source",
+    "width": 1360,
+    "height": 768,
+    "model": "MAI-Image-2.5-Pro@2026-06-19",
+    "basePromptVersion": "v1",
+    "promptVersion": "v1",
+    "candidateCount": 2,
+    "dependsOn": [
+      "master.house-interior"
+    ]
+  },
+  "run": {
+    "number": 1,
+    "id": "run-001",
+    "mode": "resume",
+    "status": "approved",
+    "createdAt": "2026-08-01T15:29:42.951Z",
+    "updatedAt": "2026-08-01T15:42:49.380Z"
+  },
+  "paths": {
+    "manifest": "production/art-pipeline/manifests/environment/environment__house-base/v1/run-001.manifest.json",
+    "candidateDirectory": "production/art-pipeline/candidates/environment/environment__house-base/v1/run-001",
+    "selectedSource": "production/art-source/environment/interior/environment__house-base/v1/run-001-selected.png",
+    "runtimeDirectory": "public/assets/art/environment/interior/environment__house-base/v1/run-001",
+    "reviewContactSheet": "production/art-pipeline/review/environment/environment__house-base/v1/run-001-contact-sheet.jpg"
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "status": "selected",
+      "attempts": 2,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__house-base/v1/run-001/candidate-01.png",
+      "generatedAt": "2026-08-01T15:40:11.267Z",
+      "lastFailure": null,
+      "failures": [
+        {
+          "at": "2026-08-01T15:33:03.430Z",
+          "attempt": 1,
+          "reason": "Image generation failed for environment.house-base: 429 {\"error\":{\"code\":\"RateLimitReached\",\"message\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\",\"details\":\"Your requests to MAI-Image-2.5-Pro for mai-image-2-5-pro in eastus have exceeded rate limit.\"}}"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "status": "rejected",
+      "attempts": 1,
+      "outputPath": "production/art-pipeline/candidates/environment/environment__house-base/v1/run-001/candidate-02.png",
+      "generatedAt": "2026-08-01T15:41:56.735Z",
+      "lastFailure": null,
+      "failures": []
+    }
+  ],
+  "selection": {
+    "candidate": 1,
+    "sourcePath": "production/art-pipeline/candidates/environment/environment__house-base/v1/run-001/candidate-01.png",
+    "selectedSourcePath": "production/art-source/environment/interior/environment__house-base/v1/run-001-selected.png",
+    "reason": "Highest approved beauty and master consistency score; best broad walkable floor, three-quarter camera, credible scale and materials, with no baked foreground occluder.",
+    "selectedAt": "2026-08-01T15:42:49.379Z"
+  },
+  "review": {
+    "contactSheet": {
+      "path": "production/art-pipeline/review/environment/environment__house-base/v1/run-001-contact-sheet.jpg",
+      "width": 1600,
+      "height": 498,
+      "bytes": 148776
+    },
+    "criteria": [
+      "beauty",
+      "approvedMasterConsistency",
+      "camera",
+      "scale",
+      "materials",
+      "decomposition",
+      "bannedContentCompliance"
+    ],
+    "candidates": [
+      {
+        "candidate": 1,
+        "scores": [
+          9,
+          9,
+          9,
+          9,
+          9,
+          8,
+          10
+        ],
+        "total": 63,
+        "maximum": 70,
+        "finding": "Best broad walkable floor, approved cutaway camera, credible scale and materials, and no baked foreground occluder."
+      },
+      {
+        "candidate": 2,
+        "scores": [
+          8.5,
+          8,
+          9,
+          8,
+          9,
+          5,
+          10
+        ],
+        "total": 57.5,
+        "maximum": 70,
+        "finding": "Rejected because the front low wall and large curtain are baked foreground occluders and reduce usable floor."
+      }
+    ],
+    "decision": "Candidate 1 passes v1; no prompt v2 is required."
+  },
+  "recovery": {
+    "resumeCount": 1,
+    "lastCompletedCandidate": 2,
+    "nextCandidate": null
+  },
+  "processing": {
+    "status": "completed",
+    "mode": "runtime",
+    "resampling": "lanczos",
+    "sourcePaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-turbo-system/production/art-source/environment/interior/environment__house-base/v1/run-001-selected.png"
+    ],
+    "outputPaths": [
+      "/Users/microsoft/Github/copilot-worktrees/JohnRPGGame/sonic74129-turbo-system/public/assets/art/environment/interior/environment__house-base/v1/run-001/environment__house-base.png"
+    ],
+    "startedAt": "2026-08-01T15:43:08.449969Z",
+    "completedAt": "2026-08-01T15:43:08.902709Z",
+    "failureReason": null
+  }
+}
