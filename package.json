@@ -9,7 +9,9 @@
     "art:world": "python3 scripts/build-world-ground.py",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "vitest run",
+    "validate:continuity": "node scripts/validate-context-continuity.mjs",
+    "validate:structure": "node .github/scripts/validate-story-structure.mjs --story-root .",
+    "test": "npm run validate:continuity && npm run validate:structure && vitest run",
     "test:art-pipeline": "vitest run tests/artPipeline.test.mjs tests/artProcessing.test.mjs"
   },
   "dependencies": {
