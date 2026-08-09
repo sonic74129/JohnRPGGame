@@ -16,7 +16,29 @@ stop and complete this checklist:
 Do not call MAI, modify game code, process assets, or start the next phase until
 all five checks are complete.
 
-## STOP: mandatory compaction gate
+## STOP: mandatory context continuity and compaction gate
+
+<!-- FOUNDATION_CONTEXT_CONTINUITY_V1_BEGIN -->
+### Canonical context continuity policy
+
+Policy version: 1.
+
+- Emit a compact continuity record only at these events: a phase transition; a heavy, binary, or media
+  boundary; before waiting for user input after heavy work; and checkpoint or continuation takeover.
+  This is not a per-turn report and must not use token-percentage thresholds as a pre-send guard.
+- Record exactly six fields: `objective`; `status`; `anchors` (repository, branch, commit);
+  `decisions` (each labeled confirmed or hypothesis); `next_actions` (at most three, including
+  validation); and `risks_blockers`.
+- The coordinator must never directly receive screenshots, binary files, or base64. Inspect media in a
+  bounded child or session and return only durable path, SHA-256, status, and findings.
+- Treat token utilization and serialized request payload bytes as independent budgets. After heavy
+  work, save a compact decision brief and checkpoint, then use a clean continuation before `ask_user`.
+- After a request-size failure, do not retry from the poisoned session. Preserve checkpoint and
+  continuation metadata, including the six fields, parent/child relationship, completed boundary,
+  durable media references, and validation state; resume with a smaller batch in a clean continuation.
+- Reuse the existing handoff/checkpoint. This policy does not create a story planning artifact,
+  production stage, runtime manifest, readiness flag, or alternate plan schema.
+<!-- FOUNDATION_CONTEXT_CONTINUITY_V1_END -->
 
 Compaction is proactive. Do **not** wait for request-too-large, compaction failure,
 or visible context loss.
@@ -27,21 +49,17 @@ Write a fresh compact checkpoint before continuing whenever any of these occurs:
 - before a new MAI candidate batch;
 - after reviewing a large screenshot/image batch;
 - after a tool output is truncated once;
-- after a meaningful implementation or validation milestone;
+- after a meaningful implementation or validation milestone that closes a phase;
 - before switching from investigation to implementation;
-- whenever the user requests compaction.
+- before waiting for user input after heavy work or when a checkpoint takeover is requested.
 
 If request-too-large or compaction failure occurs, treat it as a process failure:
 stop immediately and checkpoint before retrying anything.
 
-Each checkpoint must contain:
-
-- committed baseline;
-- current uncommitted files and intent;
-- latest user decisions;
-- rejected approaches that must not be resumed;
-- blockers and verified environment details;
-- the single next execution phase and its acceptance criteria.
+Use the canonical six-field record above. Encode the committed baseline in `anchors`;
+current uncommitted files and intent in `status`; accepted and rejected approaches in
+`decisions`; blockers and verified environment details in `risks_blockers`; and the
+single next phase, its acceptance criteria, and validation in `next_actions`.
 
 Resume only after that checkpoint is complete. Never retry a large operation
 blindly. Split work into small, independently inspectable batches.
