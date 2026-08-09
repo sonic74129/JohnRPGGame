@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,13 @@ const CHECKOUT_ACTION =
   "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_NODE_ACTION =
   "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020";
+const FOUNDATION_PIN = {
+  repository: "sonic74129/bible-game-foundation",
+  commit: "e870049d53bc8da09becd178fd30198b8480a0ca",
+  source: "skills/bible-story-game-builder/SKILL.md",
+  target: ".foundation/skills/bible-story-game-builder/SKILL.md",
+  sha256: "5fafeb54b571666fd228cd3926b3253cfce4f900e256ae2cb000827efbad8ffa",
+};
 
 function parseStoryRoot(argv) {
   if (argv.length !== 2 || argv[0] !== "--story-root") {
@@ -130,9 +138,43 @@ export function validateWorkflowTrust(workflow) {
   }
 }
 
+export function validateFoundationLock(lockContent, foundationSkillContent) {
+  const lock = JSON.parse(lockContent);
+  if (
+    lock.schemaVersion !== "1.0.0" ||
+    lock.repository !== FOUNDATION_PIN.repository ||
+    lock.commit !== FOUNDATION_PIN.commit ||
+    lock.allowCandidateAssets !== false ||
+    !Array.isArray(lock.assetPacks) ||
+    lock.assetPacks.length !== 0
+  ) {
+    throw new Error("foundation.lock.json does not retain the canonical Foundation pin.");
+  }
+  if (
+    !Array.isArray(lock.guidance) ||
+    lock.guidance.length !== 1 ||
+    lock.guidance[0]?.source !== FOUNDATION_PIN.source ||
+    lock.guidance[0]?.target !== FOUNDATION_PIN.target ||
+    lock.guidance[0]?.sha256 !== FOUNDATION_PIN.sha256
+  ) {
+    throw new Error(
+      "foundation.lock.json must pin the canonical Bible Story Game Builder skill.",
+    );
+  }
+  const actualSkillHash = createHash("sha256")
+    .update(foundationSkillContent)
+    .digest("hex");
+  if (actualSkillHash !== lock.guidance[0].sha256) {
+    throw new Error(
+      `Pinned Foundation skill SHA-256 mismatch: expected ${lock.guidance[0].sha256}, got ${actualSkillHash}.`,
+    );
+  }
+}
+
 export async function validateStoryStructure(storyRoot) {
   const [
     foundationSkillContent,
+    foundationLockContent,
     instructionsContent,
     packageContent,
     ...enforcementContents
@@ -147,6 +189,7 @@ export async function validateStoryStructure(storyRoot) {
       ),
       "utf8",
     ),
+    fs.readFile(path.join(storyRoot, "foundation.lock.json"), "utf8"),
     fs.readFile(
       path.join(storyRoot, ".github", "copilot-instructions.md"),
       "utf8",
@@ -179,6 +222,7 @@ export async function validateStoryStructure(storyRoot) {
     );
   }
 
+  validateFoundationLock(foundationLockContent, foundationSkillContent);
   validateContextContinuityPolicy({
     foundationSkillContent,
     instructionsContent,

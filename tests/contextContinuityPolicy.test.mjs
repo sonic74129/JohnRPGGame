@@ -21,6 +21,7 @@ import {
 } from "../.github/scripts/context-continuity-policy.mjs";
 import {
   REQUIRED_ENFORCEMENT_FILES,
+  validateFoundationLock,
   validateStoryStructure,
 } from "../.github/scripts/validate-story-structure.mjs";
 
@@ -37,10 +38,22 @@ async function createStructuralFixture() {
     ]),
   );
   const files = {
-    ".foundation/skills/bible-story-game-builder/SKILL.md":
-      CANONICAL_CONTEXT_CONTINUITY_BLOCK_V1,
+    ".foundation/skills/bible-story-game-builder/SKILL.md": await readFile(
+      path.join(
+        repositoryRoot,
+        ".foundation",
+        "skills",
+        "bible-story-game-builder",
+        "SKILL.md",
+      ),
+      "utf8",
+    ),
     ".github/copilot-instructions.md":
       CANONICAL_CONTEXT_CONTINUITY_BLOCK_V1,
+    "foundation.lock.json": await readFile(
+      path.join(repositoryRoot, "foundation.lock.json"),
+      "utf8",
+    ),
     "package.json": JSON.stringify({
       scripts: {
         test: "npm run validate:continuity && vitest run",
@@ -163,5 +176,30 @@ describe("canonical context continuity policy", () => {
     await expect(validateStoryStructure(root)).rejects.toThrow(
       /must run validate:continuity/u,
     );
+  });
+
+  it("pins the local Foundation skill repository, commit, path, and SHA-256", async () => {
+    const [lockContent, skillContent] = await Promise.all([
+      readFile("foundation.lock.json", "utf8"),
+      readFile(
+        ".foundation/skills/bible-story-game-builder/SKILL.md",
+        "utf8",
+      ),
+    ]);
+    expect(() =>
+      validateFoundationLock(lockContent, skillContent),
+    ).not.toThrow();
+
+    const driftedLock = lockContent.replace(
+      "e870049d53bc8da09becd178fd30198b8480a0ca",
+      "0000000000000000000000000000000000000000",
+    );
+    expect(() =>
+      validateFoundationLock(driftedLock, skillContent),
+    ).toThrow(/canonical Foundation pin/u);
+
+    expect(() =>
+      validateFoundationLock(lockContent, `${skillContent}\n`),
+    ).toThrow(/SHA-256 mismatch/u);
   });
 });
